@@ -1,0 +1,247 @@
+{
+  "dataset_info": {
+    "name": "Indoor Navigation Dataset",
+    "description": "Dataset for evaluating PaliGemma models on indoor navigation assistance for visually impaired users",
+    "version": "1.0",
+    "total_images": 18,
+    "categories": ["corridors", "doors", "stairs", "obstacles", "signs"],
+    "created_for": "TFG Alberto Gomez - PaliGemma Evaluation"
+  },
+  "images": [
+    {
+      "id": 1,
+      "filename": "corridors/corridors_01.jpg",
+      "category": "corridors",
+      "description": "Long school corridor with multiple doors on the left side and open windows on the right",
+      "elements": ["corridor", "doors", "windows", "tile floor", "ceiling lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "What is in this image?",
+        "Are there any doors visible?",
+        "Is the path clear to walk?"
+      ],
+      "expected_answer": "A long corridor with doors on the left and windows on the right. The path is clear."
+    },
+    {
+      "id": 2,
+      "filename": "corridors/corridors_02.jpg",
+      "category": "corridors",
+      "description": "Modern curved corridor with wooden wall panels and a bench",
+      "elements": ["corridor", "bench", "curved wall", "wooden panels", "ceiling lights", "security camera"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is there any obstacle in the corridor?",
+        "What is on the right side?"
+      ],
+      "expected_answer": "A curved corridor with a wooden bench along the right wall. The path curves to the left."
+    },
+    {
+      "id": 3,
+      "filename": "corridors/corridors_03.jpg",
+      "category": "corridors",
+      "description": "Long straight corridor with striped floor tiles and doors on both sides",
+      "elements": ["corridor", "doors", "striped floor", "ceiling lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "How long is this corridor?",
+        "Are there doors on both sides?"
+      ],
+      "expected_answer": "A long straight corridor with alternating dark and light floor tiles. Doors are visible on both sides."
+    },
+    {
+      "id": 4,
+      "filename": "corridors/corridors_04.jpg",
+      "category": "corridors",
+      "description": "Dark corridor with dim lighting, doors on sides, fire extinguisher visible",
+      "elements": ["corridor", "doors", "dim lighting", "fire extinguisher", "shiny floor"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is this corridor well lit?",
+        "Are there any safety elements visible?"
+      ],
+      "expected_answer": "A dimly lit corridor with doors on both sides. A fire extinguisher is visible on the wall."
+    },
+    {
+      "id": 5,
+      "filename": "doors/doors_01.jpg",
+      "category": "doors",
+      "description": "White double doors with golden handles, wooden parquet floor",
+      "elements": ["double door", "door handles", "wooden floor", "trash bin", "light switch"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "What type of door is this?",
+        "How do I open this door?"
+      ],
+      "expected_answer": "A white double door with golden handles. Push the left handle to open."
+    },
+    {
+      "id": 6,
+      "filename": "doors/doors_02.jpg",
+      "category": "doors",
+      "description": "White bathroom door with male and female restroom symbols",
+      "elements": ["door", "restroom sign", "door handle", "bookshelf nearby"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is this a bathroom?",
+        "What does the sign on the door indicate?"
+      ],
+      "expected_answer": "This is a bathroom door with male and female symbols indicating a unisex restroom."
+    },
+    {
+      "id": 7,
+      "filename": "doors/doors_03.jpg",
+      "category": "doors",
+      "description": "Glass emergency exit doors with green exit sign above",
+      "elements": ["glass doors", "exit sign", "metal handles", "stairs visible through glass"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is this an emergency exit?",
+        "What is behind these doors?"
+      ],
+      "expected_answer": "Glass emergency exit doors with a green exit sign. Stairs are visible through the glass."
+    },
+    {
+      "id": 8,
+      "filename": "doors/doors_04.jpg",
+      "category": "doors",
+      "description": "Open red door leading to an outdoor area with stairs",
+      "elements": ["open door", "red door", "outdoor stairs", "plants", "white door frame"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is this door open or closed?",
+        "What is outside?"
+      ],
+      "expected_answer": "An open red door leading to an outdoor area with stairs going up."
+    },
+    {
+      "id": 9,
+      "filename": "stairs/stairs_01.jpg",
+      "category": "stairs",
+      "description": "Building staircase with metal handrail and wall-mounted lights",
+      "elements": ["stairs", "handrail", "wall lights", "window at top", "concrete ceiling"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Are there stairs here?",
+        "Is there a handrail?"
+      ],
+      "expected_answer": "A staircase going up with a metal handrail on the left. Wall-mounted lights provide illumination."
+    },
+    {
+      "id": 10,
+      "filename": "stairs/stairs_02.jpg",
+      "category": "stairs",
+      "description": "Modern floating staircase with wooden steps and glass railing",
+      "elements": ["stairs", "wooden steps", "glass railing", "light switches on wall", "plant"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "What type of stairs are these?",
+        "Is there a railing?"
+      ],
+      "expected_answer": "Modern floating stairs with wooden steps and a glass safety railing on the right side."
+    },
+    {
+      "id": 11,
+      "filename": "stairs/stairs_03.jpg",
+      "category": "stairs",
+      "description": "Wooden staircase viewed from above with traditional railing",
+      "elements": ["stairs", "wooden steps", "wooden railing", "windows", "wall lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Are these stairs going up or down?",
+        "How many flights are visible?"
+      ],
+      "expected_answer": "Wooden stairs going down with a traditional wooden railing. Multiple flights are visible."
+    },
+    {
+      "id": 12,
+      "filename": "stairs/stairs_04.jpg",
+      "category": "stairs",
+      "description": "Simple wooden staircase with railing, looking up towards windows",
+      "elements": ["stairs", "wooden steps", "wooden railing", "windows", "white walls"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Where do these stairs lead?",
+        "Is it safe to climb?"
+      ],
+      "expected_answer": "Wooden stairs going up towards a landing with windows. A wooden handrail is on the right."
+    },
+    {
+      "id": 13,
+      "filename": "obstacles/obstacles_01.jpg",
+      "category": "obstacles",
+      "description": "Hotel corridor with cleaning cart blocking the path",
+      "elements": ["corridor", "cleaning cart", "doors", "patterned carpet", "ceiling lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is the path clear?",
+        "What obstacle is in the way?"
+      ],
+      "expected_answer": "A hotel corridor with a cleaning cart in the middle of the path. Walk around it to continue."
+    },
+    {
+      "id": 14,
+      "filename": "obstacles/obstacles_02.jpg",
+      "category": "obstacles",
+      "description": "School corridor with recycling bins in the center of the path",
+      "elements": ["corridor", "recycling bins", "doors", "wooden floor", "fluorescent lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "What obstacles are in the corridor?",
+        "Can I walk straight?"
+      ],
+      "expected_answer": "Blue recycling bins are blocking the center of the corridor. Walk around them on either side."
+    },
+    {
+      "id": 15,
+      "filename": "obstacles/obstacles_03.jpg",
+      "category": "obstacles",
+      "description": "School corridor with a bench along the wall and a person walking",
+      "elements": ["corridor", "bench", "person", "fire alarm", "doors", "bulletin board"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is there anyone in the corridor?",
+        "What furniture is visible?"
+      ],
+      "expected_answer": "A corridor with a bench on the right side. A person is walking towards you."
+    },
+    {
+      "id": 16,
+      "filename": "signs/signs_01.jpg",
+      "category": "signs",
+      "description": "Office corridor with bathroom sign pointing direction",
+      "elements": ["corridor", "bathroom sign", "doors", "pictures on wall", "ceiling lights"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Where is the bathroom?",
+        "What does the sign indicate?"
+      ],
+      "expected_answer": "A bathroom sign shows restrooms are ahead to the right. Male and female symbols with an arrow."
+    },
+    {
+      "id": 17,
+      "filename": "signs/signs_02.jpg",
+      "category": "signs",
+      "description": "Hotel corridor with illuminated green EXIT sign and door at end",
+      "elements": ["corridor", "exit sign", "door", "ceiling lights", "patterned walls"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Where is the exit?",
+        "Is there an emergency exit nearby?"
+      ],
+      "expected_answer": "A green illuminated EXIT sign above indicates the emergency exit. A door is at the end of the corridor."
+    },
+    {
+      "id": 18,
+      "filename": "signs/signs_03.jpg",
+      "category": "signs",
+      "description": "Elevator entrance with accessibility sign showing wheelchair symbol",
+      "elements": ["elevator", "elevator sign", "call buttons", "accessibility symbol", "coral colored wall"],
+      "navigation_relevant": true,
+      "suggested_questions": [
+        "Is this an elevator?",
+        "Is it accessible for wheelchairs?"
+      ],
+      "expected_answer": "An elevator with accessibility signage showing it is wheelchair accessible. Call buttons are on the left."
+    }
+  ]
+}
