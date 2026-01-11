@@ -15,9 +15,9 @@
                 {
                     "id": "staircase_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list the main elements like stairs, handrails, or steps.",
-                    "expected_keywords": ["staircase", "stairs", "steps", "handrail", "railing", "banister"],
-                    "reference_answer": "Staircase with steps and handrail visible.",
+                    "question": "List ALL visible elements in this image: stairs, steps, handrails, railings, walls, floor, doors. Be specific and thorough.",
+                    "expected_keywords": ["staircase", "stairs", "steps", "handrail", "railing", "banister", "wall", "floor"],
+                    "reference_answer": "Stairs with steps and handrail, walls on the sides, floor visible.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -37,9 +37,9 @@
                 {
                     "id": "elevator_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list the main elements like doors, buttons, or panels.",
-                    "expected_keywords": ["elevator", "lift", "door", "doors", "button", "buttons", "panel"],
-                    "reference_answer": "Elevator doors with control panel and buttons.",
+                    "question": "List ALL visible elements: elevator doors, buttons, panels, numbers, lights, walls. Name everything you can see.",
+                    "expected_keywords": ["elevator", "lift", "door", "doors", "button", "buttons", "panel", "number", "light"],
+                    "reference_answer": "Elevator doors with buttons, control panel, floor numbers, and lights.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -59,9 +59,9 @@
                 {
                     "id": "corridor_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list the main elements like doors, floor, walls, or lighting.",
-                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "lighting", "ceiling"],
-                    "reference_answer": "Corridor with doors on the sides and lighting.",
+                    "question": "List ALL navigation elements: doors, floor, walls, lights, signs, windows, ceiling. Be thorough and specific.",
+                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "lighting", "ceiling", "window"],
+                    "reference_answer": "Hallway with doors on both sides, floor, walls, ceiling with lights.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -81,9 +81,9 @@
                 {
                     "id": "door_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list the main elements like door, handle, signs, or numbers.",
-                    "expected_keywords": ["door", "entrance", "exit", "handle", "glass", "sign", "number"],
-                    "reference_answer": "Door with handle, possibly with signage or room number.",
+                    "question": "List ALL visible elements: door, handle, frame, glass, signs, numbers, walls. Name everything you see.",
+                    "expected_keywords": ["door", "entrance", "exit", "handle", "glass", "sign", "number", "frame", "wall"],
+                    "reference_answer": "Door with handle, door frame, possibly glass window, signage or room number.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -103,9 +103,9 @@
                 {
                     "id": "bathroom_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list any signs, symbols, or text on the door.",
-                    "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair"],
-                    "reference_answer": "Bathroom door with gender sign or accessibility symbol.",
+                    "question": "List ALL visible elements: door, signs, symbols, text, handle, walls. Include any gender or accessibility symbols.",
+                    "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair", "handle"],
+                    "reference_answer": "Bathroom door with gender sign, accessibility symbol, handle, and walls.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -147,9 +147,9 @@
                 {
                     "id": "obstacle_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list any objects, furniture, or items that could block walking.",
+                    "question": "List ALL objects that could block walking: furniture, plants, boxes, carts, chairs, tables. Describe their position (left, right, center).",
                     "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "left", "right", "center", "path", "floor", "barrier"],
-                    "reference_answer": "Object blocking the walking path that needs to be avoided.",
+                    "reference_answer": "Obstacle in the center of the path, with furniture and objects that need to be avoided.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -169,9 +169,9 @@
                 {
                     "id": "crossing_elements",
                     "type": "element_list",
-                    "question": "Describe what you see: list any road markings, vehicles, or safety elements.",
-                    "expected_keywords": ["crossing", "crosswalk", "zebra", "stripes", "road", "street", "cars", "vehicles", "pedestrian", "traffic"],
-                    "reference_answer": "Pedestrian crossing with white stripes on the road.",
+                    "question": "List ALL visible elements: road markings, stripes, vehicles, traffic lights, signs, pedestrians. Be thorough.",
+                    "expected_keywords": ["crossing", "crosswalk", "zebra", "stripes", "road", "street", "cars", "vehicles", "pedestrian", "traffic", "light"],
+                    "reference_answer": "Pedestrian crossing with white stripes on road, traffic elements, and safety features.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]

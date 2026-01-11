@@ -360,6 +360,38 @@ def get_dataset_statistics(samples: List[ImageSample]) -> Dict:
     return stats
 
 
+def limit_dataset_by_category(
+    samples: List[ImageSample],
+    images_per_category: int = 5
+) -> List[ImageSample]:
+    """
+    Limit the dataset to a specified number of images per category.
+    
+    Useful for quick testing before running on the full dataset.
+    
+    Args:
+        samples: List of ImageSample objects
+        images_per_category: Maximum number of images per category
+    
+    Returns:
+        Filtered list of ImageSample objects
+    """
+    # Group samples by category
+    by_category = {}
+    for sample in samples:
+        if sample.category not in by_category:
+            by_category[sample.category] = []
+        by_category[sample.category].append(sample)
+    
+    # Take limited samples from each category
+    limited_samples = []
+    for category, cat_samples in by_category.items():
+        limited_samples.extend(cat_samples[:images_per_category])
+    
+    print(f"⚡ Quick test mode: {len(limited_samples)} images ({images_per_category} per category)")
+    return limited_samples
+
+
 def print_dataset_summary(samples: List[ImageSample]) -> None:
     """Print a summary of the dataset."""
     stats = get_dataset_statistics(samples)
