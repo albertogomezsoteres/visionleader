@@ -236,13 +236,21 @@ def load_dataset(
         List of ImageSample objects
     """
     folder_mapping = questions_config.get("folder_to_category_mapping", {})
+    excluded_categories = questions_config.get("excluded_categories", [])
     
     # Discover all images
     raw_images = discover_images(data_path)
     
     samples = []
+    excluded_count = 0
+    
     for img_info in raw_images:
         category = get_category_from_folder(img_info["folder_name"], folder_mapping)
+        
+        # Skip excluded categories
+        if category in excluded_categories:
+            excluded_count += 1
+            continue
         
         sample = ImageSample(
             image_id=img_info["image_id"],
@@ -261,6 +269,8 @@ def load_dataset(
         samples.append(sample)
     
     print(f"Loaded {len(samples)} images from {data_path}")
+    if excluded_count > 0:
+        print(f"  (Excluded {excluded_count} images from categories: {excluded_categories})")
     return samples
 
 

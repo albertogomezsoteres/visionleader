@@ -4,18 +4,14 @@ Metrics module for evaluating PaliGemma model outputs.
 This module provides functions to calculate various metrics:
 - Exact Match: For closed questions (yes/no)
 - Keyword F1/Recall/Precision: For element detection
-- CIDEr: For image captioning evaluation
 - BERTScore: For semantic similarity
-- METEOR: For text generation quality
+- VRAM Usage: GPU memory tracking
 """
 
 import re
 from typing import List, Dict, Tuple, Optional
 from collections import Counter
 import numpy as np
-
-# These will be imported conditionally when needed
-# to avoid issues if packages are not installed
 
 
 def normalize_text(text: str) -> str:
@@ -50,6 +46,50 @@ def tokenize(text: str) -> List[str]:
         List of tokens
     """
     return normalize_text(text).split()
+
+
+# ============================================================
+# VRAM USAGE TRACKING
+# ============================================================
+
+def get_gpu_memory_usage() -> Dict[str, float]:
+    """
+    Get current GPU memory usage.
+    
+    Returns:
+        Dictionary with allocated and reserved memory in GB
+    """
+    try:
+        import torch
+        if torch.cuda.is_available():
+            allocated = torch.cuda.memory_allocated() / (1024 ** 3)  # GB
+            reserved = torch.cuda.memory_reserved() / (1024 ** 3)  # GB
+            max_allocated = torch.cuda.max_memory_allocated() / (1024 ** 3)  # GB
+            return {
+                "allocated_gb": round(allocated, 2),
+                "reserved_gb": round(reserved, 2),
+                "max_allocated_gb": round(max_allocated, 2),
+                "available": True
+            }
+    except Exception as e:
+        pass
+    
+    return {
+        "allocated_gb": 0.0,
+        "reserved_gb": 0.0,
+        "max_allocated_gb": 0.0,
+        "available": False
+    }
+
+
+def reset_gpu_memory_stats() -> None:
+    """Reset GPU memory statistics for fresh tracking."""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats()
+    except Exception:
+        pass
 
 
 # ============================================================
@@ -217,7 +257,6 @@ def calculate_keyword_metrics(
     true_positives = len(matched)
     
     # Precision: of the keywords we "found", how many were expected?
-    # For this case, we count all matched keywords as true positives
     precision = true_positives / len(expected_keywords) if expected_keywords else 0.0
     
     # Recall: of the expected keywords, how many did we find?
@@ -264,51 +303,6 @@ def calculate_keyword_f1_batch(
         "avg_recall": np.mean([m["recall"] for m in all_metrics]),
         "avg_f1": np.mean([m["f1"] for m in all_metrics]),
         "individual_metrics": all_metrics
-    }
-
-
-# ============================================================
-# CIDEr
-# ============================================================
-
-def calculate_cider(
-    predictions: List[str],
-    references: List[List[str]]
-) -> Dict[str, float]:
-    """
-    Calculate CIDEr score using pycocoevalcap.
-    
-    Args:
-        predictions: List of model predictions
-        references: List of reference answers (list of lists for multiple refs per item)
-    
-    Returns:
-        Dictionary with CIDEr score
-    """
-    try:
-        from pycocoevalcap.cider.cider import Cider
-    except ImportError:
-        print("Warning: pycocoevalcap not installed. Install with: pip install pycocoevalcap")
-        return {"cider": 0.0, "error": "pycocoevalcap not installed"}
-    
-    # Format for CIDEr: {id: [caption]} for both hypo and ref
-    gts = {}  # Ground truth (references)
-    res = {}  # Results (predictions)
-    
-    for i, (pred, refs) in enumerate(zip(predictions, references)):
-        res[i] = [pred]
-        # Ensure refs is a list
-        if isinstance(refs, str):
-            refs = [refs]
-        gts[i] = refs
-    
-    # Calculate CIDEr
-    cider_scorer = Cider()
-    score, scores = cider_scorer.compute_score(gts, res)
-    
-    return {
-        "cider": float(score),
-        "individual_scores": [float(s) for s in scores]
     }
 
 
@@ -365,77 +359,21 @@ def calculate_bertscore(
 
 
 # ============================================================
-# METEOR
-# ============================================================
-
-def calculate_meteor(
-    predictions: List[str],
-    references: List[str]
-) -> Dict[str, float]:
-    """
-    Calculate METEOR score.
-    
-    Args:
-        predictions: List of model predictions
-        references: List of reference answers
-    
-    Returns:
-        Dictionary with METEOR score
-    """
-    try:
-        import nltk
-        from nltk.translate.meteor_score import meteor_score
-        
-        # Ensure wordnet is downloaded
-        try:
-            nltk.data.find('corpora/wordnet')
-        except LookupError:
-            nltk.download('wordnet', quiet=True)
-            nltk.download('omw-1.4', quiet=True)
-    except ImportError:
-        print("Warning: nltk not installed. Install with: pip install nltk")
-        return {"meteor": 0.0, "error": "nltk not installed"}
-    
-    scores = []
-    for pred, ref in zip(predictions, references):
-        # METEOR expects tokenized input
-        pred_tokens = tokenize(pred)
-        ref_tokens = tokenize(ref)
-        
-        if not pred_tokens or not ref_tokens:
-            scores.append(0.0)
-        else:
-            try:
-                score = meteor_score([ref_tokens], pred_tokens)
-                scores.append(score)
-            except Exception as e:
-                print(f"Warning: METEOR calculation error: {e}")
-                scores.append(0.0)
-    
-    return {
-        "meteor": float(np.mean(scores)),
-        "individual_scores": scores
-    }
-
-
-# ============================================================
 # MAIN METRICS CALCULATOR
 # ============================================================
 
 def calculate_all_metrics(
     results: List[Dict],
-    calculate_cider_metric: bool = True,
     calculate_bertscore_metric: bool = True,
-    calculate_meteor_metric: bool = True
+    vram_usage: Optional[Dict] = None
 ) -> Dict[str, Dict]:
     """
     Calculate all metrics for a set of inference results.
     
     Args:
         results: List of inference result dictionaries
-        calculate_cider_metric: Whether to calculate CIDEr
         calculate_bertscore_metric: Whether to calculate BERTScore
-        calculate_meteor_metric: Whether to calculate METEOR
+        vram_usage: Optional VRAM usage dictionary to include
     
     Returns:
         Dictionary with all calculated metrics
@@ -481,32 +419,18 @@ def calculate_all_metrics(
     metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
     
     # ==========================================
-    # CIDEr, BERTScore, METEOR (for open questions with references)
+    # BERTScore (for open questions with references)
     # ==========================================
     results_with_refs = [r for r in results if r.get("reference_answer")]
     
-    if results_with_refs:
+    if results_with_refs and calculate_bertscore_metric:
         predictions = [r["model_response"] for r in results_with_refs]
         references = [r["reference_answer"] for r in results_with_refs]
         
-        # CIDEr
-        if calculate_cider_metric:
-            # CIDEr needs list of lists for references
-            refs_for_cider = [[ref] for ref in references]
-            cider_results = calculate_cider(predictions, refs_for_cider)
-            metrics["overall"]["cider"] = cider_results.get("cider", 0.0)
-        
-        # BERTScore
-        if calculate_bertscore_metric:
-            bertscore_results = calculate_bertscore(predictions, references)
-            metrics["overall"]["bertscore_f1"] = bertscore_results.get("bertscore_f1", 0.0)
-            metrics["overall"]["bertscore_precision"] = bertscore_results.get("bertscore_precision", 0.0)
-            metrics["overall"]["bertscore_recall"] = bertscore_results.get("bertscore_recall", 0.0)
-        
-        # METEOR
-        if calculate_meteor_metric:
-            meteor_results = calculate_meteor(predictions, references)
-            metrics["overall"]["meteor"] = meteor_results.get("meteor", 0.0)
+        bertscore_results = calculate_bertscore(predictions, references)
+        metrics["overall"]["bertscore_f1"] = bertscore_results.get("bertscore_f1", 0.0)
+        metrics["overall"]["bertscore_precision"] = bertscore_results.get("bertscore_precision", 0.0)
+        metrics["overall"]["bertscore_recall"] = bertscore_results.get("bertscore_recall", 0.0)
     
     # ==========================================
     # METRICS BY CATEGORY
@@ -551,6 +475,13 @@ def calculate_all_metrics(
         metrics["overall"]["min_inference_time"] = float(min(inference_times))
         metrics["overall"]["max_inference_time"] = float(max(inference_times))
     
+    # ==========================================
+    # VRAM USAGE
+    # ==========================================
+    if vram_usage:
+        metrics["overall"]["vram_allocated_gb"] = vram_usage.get("allocated_gb", 0.0)
+        metrics["overall"]["vram_max_allocated_gb"] = vram_usage.get("max_allocated_gb", 0.0)
+    
     return metrics
 
 
@@ -571,18 +502,15 @@ def print_metrics_summary(metrics: Dict) -> None:
     print(f"  Keyword Recall:                 {overall.get('keyword_recall', 0):.4f}")
     print(f"  Keyword Precision:              {overall.get('keyword_precision', 0):.4f}")
     
-    if "cider" in overall:
-        print(f"  CIDEr:                          {overall['cider']:.4f}")
-    
     if "bertscore_f1" in overall:
         print(f"  BERTScore F1:                   {overall['bertscore_f1']:.4f}")
-    
-    if "meteor" in overall:
-        print(f"  METEOR:                         {overall['meteor']:.4f}")
     
     if "avg_inference_time" in overall:
         print(f"\n⏱️  Avg Inference Time:            {overall['avg_inference_time']:.2f}s")
         print(f"  Total Inference Time:           {overall['total_inference_time']:.2f}s")
+    
+    if "vram_max_allocated_gb" in overall:
+        print(f"\n💾 VRAM Max Allocated:            {overall['vram_max_allocated_gb']:.2f} GB")
     
     print("\n📁 METRICS BY CATEGORY:")
     print("-" * 40)
