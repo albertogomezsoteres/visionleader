@@ -15,8 +15,10 @@
                 {
                     "id": "staircase_elements",
                     "type": "element_list",
-                    "question": "caption Describe the staircase and all visible elements: steps, handrails, walls, floor, ceiling.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["stairs", "steps", "handrail", "railing", "wall", "floor", "ceiling"],
+                    "expected_keywords_primary": ["stairs", "steps"],
+                    "expected_keywords_secondary": ["handrail", "railing", "wall", "floor", "ceiling"],
                     "reference_answer": "Stairs with steps and handrail, walls, floor visible.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -37,8 +39,10 @@
                 {
                     "id": "elevator_elements",
                     "type": "element_list",
-                    "question": "caption Describe the elevator and all visible elements: doors, buttons, panels, walls, floor.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["elevator", "door", "doors", "button", "buttons", "panel", "wall", "floor"],
+                    "expected_keywords_primary": ["elevator"],
+                    "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
                     "reference_answer": "Elevator doors with buttons and control panel.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -59,8 +63,10 @@
                 {
                     "id": "corridor_elements",
                     "type": "element_list",
-                    "question": "caption Describe the corridor and all visible elements: doors, walls, floor, ceiling, lights, windows.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "ceiling", "window"],
+                    "expected_keywords_primary": ["corridor", "hallway"],
+                    "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
                     "reference_answer": "Hallway with doors, floor, walls, and ceiling with lights.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -81,8 +87,10 @@
                 {
                     "id": "door_elements",
                     "type": "element_list",
-                    "question": "caption Describe the door and all visible elements: handle, frame, glass, walls, floor, numbers, signs.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["door", "handle", "frame", "glass", "wall", "floor", "number", "sign"],
+                    "expected_keywords_primary": ["door"],
+                    "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "number", "sign"],
                     "reference_answer": "Door with handle and frame, possibly with glass or signage.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -103,8 +111,10 @@
                 {
                     "id": "bathroom_elements",
                     "type": "element_list",
-                    "question": "caption Describe the bathroom door and all visible elements: door, signs, symbols, gender indicators, accessibility symbols.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair"],
+                    "expected_keywords_primary": ["bathroom", "restroom", "door"],
+                    "expected_keywords_secondary": ["sign", "symbol", "men", "women", "accessible", "wheelchair"],
                     "reference_answer": "Bathroom door with gender sign or accessibility symbol.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -125,8 +135,10 @@
                 {
                     "id": "obstacle_elements",
                     "type": "element_list",
-                    "question": "caption Describe all objects that could block walking: furniture, plants, boxes, carts, chairs, tables, barriers, poles.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "floor", "barrier", "pole"],
+                    "expected_keywords_primary": ["obstacle", "object"],
+                    "expected_keywords_secondary": ["plant", "furniture", "chair", "table", "cart", "box", "floor", "barrier", "pole"],
                     "reference_answer": "Objects in the path that could block walking.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }
@@ -147,8 +159,10 @@
                 {
                     "id": "crossing_elements",
                     "type": "element_list",
-                    "question": "caption Describe the pedestrian crossing and all visible elements: stripes, road, street, vehicles, traffic, pedestrians.",
+                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
                     "expected_keywords": ["crossing", "crosswalk", "stripes", "road", "street", "pedestrian", "traffic", "car"],
+                    "expected_keywords_primary": ["crossing", "crosswalk"],
+                    "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "car"],
                     "reference_answer": "Pedestrian crossing with white stripes on road.",
                     "metrics": ["keyword_f1", "bertscore"]
                 }

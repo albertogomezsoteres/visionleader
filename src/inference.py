@@ -31,6 +31,8 @@ class InferenceResult:
     dataset_source: str
     metrics_to_calculate: List[str] = field(default_factory=list)
     acceptable_answers: List[str] = field(default_factory=list)  # For semantic matching
+    expected_keywords_primary: Optional[List[str]] = None  # Primary (essential) keywords
+    expected_keywords_secondary: Optional[List[str]] = None  # Secondary (detail) keywords
 
 
 def run_single_inference(
@@ -156,7 +158,9 @@ def run_inference_on_item(
         category=eval_item.image_sample.category,
         dataset_source=eval_item.image_sample.dataset_source,
         metrics_to_calculate=eval_item.question.metrics,
-        acceptable_answers=eval_item.question.acceptable_answers or []
+        acceptable_answers=eval_item.question.acceptable_answers or [],
+        expected_keywords_primary=eval_item.question.expected_keywords_primary,
+        expected_keywords_secondary=eval_item.question.expected_keywords_secondary
     )
     
     return result
@@ -217,7 +221,9 @@ def run_inference_on_dataset(
                 inference_time=0.0,
                 category=eval_item.image_sample.category,
                 dataset_source=eval_item.image_sample.dataset_source,
-                metrics_to_calculate=[]
+                metrics_to_calculate=[],
+                expected_keywords_primary=eval_item.question.expected_keywords_primary,
+                expected_keywords_secondary=eval_item.question.expected_keywords_secondary
             )
             results.append(error_result)
     
@@ -314,7 +320,9 @@ def results_to_dict(results: List[InferenceResult]) -> List[Dict]:
             "category": r.category,
             "dataset_source": r.dataset_source,
             "metrics_to_calculate": r.metrics_to_calculate,
-            "acceptable_answers": r.acceptable_answers
+            "acceptable_answers": r.acceptable_answers,
+            "expected_keywords_primary": r.expected_keywords_primary,
+            "expected_keywords_secondary": r.expected_keywords_secondary
         }
         for r in results
     ]

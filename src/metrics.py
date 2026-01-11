@@ -225,26 +225,41 @@ def calculate_exact_match_batch(
 
 def calculate_keyword_metrics(
     prediction: str,
-    expected_keywords: List[str]
+    expected_keywords: List[str],
+    expected_keywords_primary: Optional[List[str]] = None,
+    expected_keywords_secondary: Optional[List[str]] = None
 ) -> Dict[str, float]:
     """
     Calculate keyword-based metrics.
     
     Args:
         prediction: Model prediction
-        expected_keywords: List of expected keywords
+        expected_keywords: List of expected keywords (all)
+        expected_keywords_primary: Optional list of primary (essential) keywords
+        expected_keywords_secondary: Optional list of secondary (detail) keywords
     
     Returns:
-        Dictionary with precision, recall, and F1 scores
+        Dictionary with precision, recall, F1 scores, and primary/secondary recalls
     """
     if not expected_keywords:
-        return {"precision": 0.0, "recall": 0.0, "f1": 0.0, "matched_keywords": []}
+        return {
+            "precision": 0.0, "recall": 0.0, "f1": 0.0, 
+            "recall_primary": 0.0, "recall_secondary": 0.0,
+            "matched_keywords": []
+        }
+    
+    # Common stopwords to filter out for precision calculation
+    STOPWORDS = {
+        "the", "with", "and", "shows", "image", "a", "an", "is", "are", 
+        "in", "on", "at", "to", "of", "for", "this", "that", "these", 
+        "those", "can", "see", "visible", "elements", "describe", "list"
+    }
     
     pred_normalized = normalize_text(prediction)
     pred_tokens = set(tokenize(prediction))
     pred_words = tokenize(prediction)  # List of all words for precision calculation
     
-    # Count matched keywords
+    # Count matched keywords (all)
     matched = []
     for keyword in expected_keywords:
         keyword_normalized = normalize_text(keyword)
@@ -254,30 +269,51 @@ def calculate_keyword_metrics(
         elif any(token in pred_tokens for token in tokenize(keyword)):
             matched.append(keyword)
     
+    # Count matched primary keywords
+    matched_primary = []
+    if expected_keywords_primary:
+        for keyword in expected_keywords_primary:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in pred_normalized:
+                matched_primary.append(keyword)
+            elif any(token in pred_tokens for token in tokenize(keyword)):
+                matched_primary.append(keyword)
+    
+    # Count matched secondary keywords
+    matched_secondary = []
+    if expected_keywords_secondary:
+        for keyword in expected_keywords_secondary:
+            keyword_normalized = normalize_text(keyword)
+            if keyword_normalized in pred_normalized:
+                matched_secondary.append(keyword)
+            elif any(token in pred_tokens for token in tokenize(keyword)):
+                matched_secondary.append(keyword)
+    
     # Calculate metrics
     true_positives = len(matched)
     
     # Recall: of the expected keywords, how many did we find?
     recall = true_positives / len(expected_keywords) if expected_keywords else 0.0
     
+    # Recall Primary: of the primary keywords, how many did we find?
+    recall_primary = len(matched_primary) / len(expected_keywords_primary) if expected_keywords_primary and len(expected_keywords_primary) > 0 else 0.0
+    
+    # Recall Secondary: of the secondary keywords, how many did we find?
+    recall_secondary = len(matched_secondary) / len(expected_keywords_secondary) if expected_keywords_secondary and len(expected_keywords_secondary) > 0 else 0.0
+    
     # Precision: of the words mentioned, how many are expected keywords?
-    # Precision = true_positives / (true_positives + false_positives)
-    # Where false_positives = words mentioned that are NOT in expected_keywords
-    
-    # Count unique words in prediction (excluding very short words)
-    unique_pred_words = set(w for w in pred_words if len(w) > 2)
-    
-    # For Precision: we want to know what fraction of mentioned words are relevant
-    # Since we can't perfectly identify "relevant" words, we use:
-    # Precision = matched_keywords / total_unique_words_mentioned
-    # This penalizes long responses with few keyword matches
+    # Filter out stopwords for more fair precision calculation
+    unique_pred_words = set(
+        w for w in pred_words 
+        if len(w) > 2 and w not in STOPWORDS
+    )
     
     if len(unique_pred_words) > 0:
-        # Precision: ratio of matched keywords to total unique words mentioned
-        # This measures: "of all words you said, how many were relevant?"
+        # Precision: ratio of matched keywords to total unique relevant words mentioned
+        # This measures: "of all relevant words you said, how many were expected keywords?"
         precision = true_positives / len(unique_pred_words) if unique_pred_words else 0.0
     else:
-        # If no words mentioned, precision is 0
+        # If no relevant words mentioned, precision is 0
         precision = 0.0
     
     # F1 Score
@@ -290,16 +326,26 @@ def calculate_keyword_metrics(
         "precision": precision,
         "recall": recall,
         "f1": f1,
+        "recall_primary": recall_primary,
+        "recall_secondary": recall_secondary,
         "matched_keywords": matched,
+        "matched_primary": matched_primary,
+        "matched_secondary": matched_secondary,
         "expected_keywords": expected_keywords,
         "num_matched": true_positives,
-        "num_expected": len(expected_keywords)
+        "num_expected": len(expected_keywords),
+        "num_matched_primary": len(matched_primary),
+        "num_expected_primary": len(expected_keywords_primary) if expected_keywords_primary else 0,
+        "num_matched_secondary": len(matched_secondary),
+        "num_expected_secondary": len(expected_keywords_secondary) if expected_keywords_secondary else 0
     }
 
 
 def calculate_keyword_f1_batch(
     predictions: List[str],
-    expected_keywords_list: List[List[str]]
+    expected_keywords_list: List[List[str]],
+    expected_keywords_primary_list: Optional[List[List[str]]] = None,
+    expected_keywords_secondary_list: Optional[List[List[str]]] = None
 ) -> Dict[str, float]:
     """
     Calculate keyword F1 for a batch of predictions.
@@ -307,21 +353,60 @@ def calculate_keyword_f1_batch(
     Args:
         predictions: List of model predictions
         expected_keywords_list: List of expected keyword lists
+        expected_keywords_primary_list: Optional list of primary keyword lists
+        expected_keywords_secondary_list: Optional list of secondary keyword lists
     
     Returns:
-        Dictionary with average metrics
+        Dictionary with average metrics including recall_primary and recall_secondary
     """
+    # Prepare primary and secondary lists (default to None if not provided)
+    if expected_keywords_primary_list is None:
+        expected_keywords_primary_list = [None] * len(predictions)
+    if expected_keywords_secondary_list is None:
+        expected_keywords_secondary_list = [None] * len(predictions)
+    
     all_metrics = [
-        calculate_keyword_metrics(pred, keywords)
-        for pred, keywords in zip(predictions, expected_keywords_list)
+        calculate_keyword_metrics(
+            pred, 
+            keywords,
+            primary,
+            secondary
+        )
+        for pred, keywords, primary, secondary in zip(
+            predictions, 
+            expected_keywords_list,
+            expected_keywords_primary_list,
+            expected_keywords_secondary_list
+        )
     ]
     
-    return {
+    # Calculate averages, including recall_primary and recall_secondary if available
+    avg_recall_primary = None
+    avg_recall_secondary = None
+    
+    # Only calculate if at least one item has primary keywords
+    primary_metrics = [m["recall_primary"] for m in all_metrics if m.get("num_expected_primary", 0) > 0]
+    if primary_metrics:
+        avg_recall_primary = np.mean(primary_metrics)
+    
+    # Only calculate if at least one item has secondary keywords
+    secondary_metrics = [m["recall_secondary"] for m in all_metrics if m.get("num_expected_secondary", 0) > 0]
+    if secondary_metrics:
+        avg_recall_secondary = np.mean(secondary_metrics)
+    
+    result = {
         "avg_precision": np.mean([m["precision"] for m in all_metrics]),
         "avg_recall": np.mean([m["recall"] for m in all_metrics]),
         "avg_f1": np.mean([m["f1"] for m in all_metrics]),
         "individual_metrics": all_metrics
     }
+    
+    if avg_recall_primary is not None:
+        result["avg_recall_primary"] = avg_recall_primary
+    if avg_recall_secondary is not None:
+        result["avg_recall_secondary"] = avg_recall_secondary
+    
+    return result
 
 
 # ============================================================
@@ -430,11 +515,24 @@ def calculate_all_metrics(
     # ==========================================
     predictions = [r["model_response"] for r in results]
     keywords = [r.get("expected_keywords", []) for r in results]
+    keywords_primary = [r.get("expected_keywords_primary", None) for r in results]
+    keywords_secondary = [r.get("expected_keywords_secondary", None) for r in results]
     
-    keyword_results = calculate_keyword_f1_batch(predictions, keywords)
+    keyword_results = calculate_keyword_f1_batch(
+        predictions, 
+        keywords,
+        keywords_primary,
+        keywords_secondary
+    )
     metrics["overall"]["keyword_precision"] = keyword_results["avg_precision"]
     metrics["overall"]["keyword_recall"] = keyword_results["avg_recall"]
     metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
+    
+    # Add primary and secondary recalls if available
+    if "avg_recall_primary" in keyword_results and keyword_results["avg_recall_primary"] > 0:
+        metrics["overall"]["keyword_recall_primary"] = keyword_results["avg_recall_primary"]
+    if "avg_recall_secondary" in keyword_results and keyword_results["avg_recall_secondary"] > 0:
+        metrics["overall"]["keyword_recall_secondary"] = keyword_results["avg_recall_secondary"]
     
     # ==========================================
     # BERTScore (for open questions with references)
@@ -463,14 +561,25 @@ def calculate_all_metrics(
         
         cat_predictions = [r["model_response"] for r in cat_results]
         cat_keywords = [r.get("expected_keywords", []) for r in cat_results]
+        cat_keywords_primary = [r.get("expected_keywords_primary", None) for r in cat_results]
+        cat_keywords_secondary = [r.get("expected_keywords_secondary", None) for r in cat_results]
         
-        cat_keyword_results = calculate_keyword_f1_batch(cat_predictions, cat_keywords)
+        cat_keyword_results = calculate_keyword_f1_batch(
+            cat_predictions, 
+            cat_keywords,
+            cat_keywords_primary,
+            cat_keywords_secondary
+        )
         
         metrics["by_category"][category] = {
             "keyword_f1": cat_keyword_results["avg_f1"],
             "keyword_recall": cat_keyword_results["avg_recall"],
             "count": len(cat_results)
         }
+        
+        # Add primary recall if available
+        if "avg_recall_primary" in cat_keyword_results and cat_keyword_results["avg_recall_primary"] > 0:
+            metrics["by_category"][category]["keyword_recall_primary"] = cat_keyword_results["avg_recall_primary"]
         
         # Exact match for closed questions in this category (semantic)
         cat_closed = [r for r in cat_results if r.get("question_type") == "closed"]
@@ -519,6 +628,11 @@ def print_metrics_summary(metrics: Dict) -> None:
     print(f"  Keyword F1:                     {overall.get('keyword_f1', 0):.4f}")
     print(f"  Keyword Recall:                 {overall.get('keyword_recall', 0):.4f}")
     print(f"  Keyword Precision:              {overall.get('keyword_precision', 0):.4f}")
+    
+    if "keyword_recall_primary" in overall:
+        print(f"  Keyword Recall (Primary):        {overall.get('keyword_recall_primary', 0):.4f}")
+    if "keyword_recall_secondary" in overall:
+        print(f"  Keyword Recall (Secondary):      {overall.get('keyword_recall_secondary', 0):.4f}")
     
     if "bertscore_f1" in overall:
         print(f"  BERTScore F1:                   {overall['bertscore_f1']:.4f}")
