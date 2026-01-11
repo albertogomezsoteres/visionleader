@@ -55,15 +55,17 @@ def run_single_inference(
     Returns:
         Tuple of (generated_text, inference_time_seconds)
     """
-    # Prepare inputs
+    # Prepare inputs with improved processing (based on working example)
     inputs = processor(
         text=question,
         images=image,
+        padding="longest",
+        do_convert_rgb=True,
         return_tensors="pt"
-    )
+    ).to(model.device)
     
-    # Move to device
-    inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    # Ensure inputs match model dtype (important for numerical precision)
+    inputs = inputs.to(dtype=model.dtype)
     
     # Measure inference time
     start_time = time.time()
@@ -79,10 +81,18 @@ def run_single_inference(
     
     # Decode output
     # PaliGemma returns the full sequence including the input
-    # We need to extract only the generated part
-    input_len = inputs["input_ids"].shape[-1]
-    generated_ids = outputs[0][input_len:]
-    generated_text = processor.decode(generated_ids, skip_special_tokens=True)
+    # Decode the full output first, then extract only the generated part
+    full_decoded = processor.decode(outputs[0], skip_special_tokens=True)
+    
+    # Extract only the generated part (after the input question)
+    # Remove the input text from the beginning
+    if question in full_decoded:
+        generated_text = full_decoded[len(question):].lstrip()
+    else:
+        # Fallback: extract by token length if text matching fails
+        input_len = inputs["input_ids"].shape[-1]
+        generated_ids = outputs[0][input_len:]
+        generated_text = processor.decode(generated_ids, skip_special_tokens=True)
     
     return generated_text.strip(), inference_time
 

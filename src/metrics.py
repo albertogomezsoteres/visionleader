@@ -242,6 +242,7 @@ def calculate_keyword_metrics(
     
     pred_normalized = normalize_text(prediction)
     pred_tokens = set(tokenize(prediction))
+    pred_words = tokenize(prediction)  # List of all words for precision calculation
     
     # Count matched keywords
     matched = []
@@ -256,11 +257,28 @@ def calculate_keyword_metrics(
     # Calculate metrics
     true_positives = len(matched)
     
-    # Precision: of the keywords we "found", how many were expected?
-    precision = true_positives / len(expected_keywords) if expected_keywords else 0.0
-    
     # Recall: of the expected keywords, how many did we find?
     recall = true_positives / len(expected_keywords) if expected_keywords else 0.0
+    
+    # Precision: of the words mentioned, how many are expected keywords?
+    # Precision = true_positives / (true_positives + false_positives)
+    # Where false_positives = words mentioned that are NOT in expected_keywords
+    
+    # Count unique words in prediction (excluding very short words)
+    unique_pred_words = set(w for w in pred_words if len(w) > 2)
+    
+    # For Precision: we want to know what fraction of mentioned words are relevant
+    # Since we can't perfectly identify "relevant" words, we use:
+    # Precision = matched_keywords / total_unique_words_mentioned
+    # This penalizes long responses with few keyword matches
+    
+    if len(unique_pred_words) > 0:
+        # Precision: ratio of matched keywords to total unique words mentioned
+        # This measures: "of all words you said, how many were relevant?"
+        precision = true_positives / len(unique_pred_words) if unique_pred_words else 0.0
+    else:
+        # If no words mentioned, precision is 0
+        precision = 0.0
     
     # F1 Score
     if precision + recall > 0:
