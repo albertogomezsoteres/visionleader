@@ -15,7 +15,7 @@
                 {
                     "id": "staircase_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["stairs", "steps", "handrail", "railing", "wall", "floor", "ceiling"],
                     "expected_keywords_primary": ["stairs", "steps"],
                     "expected_keywords_secondary": ["handrail", "railing", "wall", "floor", "ceiling"],
@@ -39,7 +39,7 @@
                 {
                     "id": "elevator_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["elevator", "door", "doors", "button", "buttons", "panel", "wall", "floor"],
                     "expected_keywords_primary": ["elevator"],
                     "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
@@ -63,7 +63,7 @@
                 {
                     "id": "corridor_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "ceiling", "window"],
                     "expected_keywords_primary": ["corridor", "hallway"],
                     "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
@@ -87,7 +87,7 @@
                 {
                     "id": "door_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["door", "handle", "frame", "glass", "wall", "floor", "number", "sign"],
                     "expected_keywords_primary": ["door"],
                     "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "number", "sign"],
@@ -111,7 +111,7 @@
                 {
                     "id": "bathroom_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair"],
                     "expected_keywords_primary": ["bathroom", "restroom", "door"],
                     "expected_keywords_secondary": ["sign", "symbol", "men", "women", "accessible", "wheelchair"],
@@ -135,7 +135,7 @@
                 {
                     "id": "obstacle_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What object is blocking or obstructing the walking path? Answer using one keyword.",
                     "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "floor", "barrier", "pole"],
                     "expected_keywords_primary": ["obstacle", "object"],
                     "expected_keywords_secondary": ["plant", "furniture", "chair", "table", "cart", "box", "floor", "barrier", "pole"],
@@ -159,7 +159,7 @@
                 {
                     "id": "crossing_elements",
                     "type": "element_list",
-                    "question": "List the navigation-related elements visible in the image using keywords only. Elements:",
+                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
                     "expected_keywords": ["crossing", "crosswalk", "stripes", "road", "street", "pedestrian", "traffic", "car"],
                     "expected_keywords_primary": ["crossing", "crosswalk"],
                     "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "car"],

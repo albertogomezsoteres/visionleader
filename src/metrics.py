@@ -295,8 +295,12 @@ def calculate_keyword_metrics(
     # Recall: of the expected keywords, how many did we find?
     recall = true_positives / len(expected_keywords) if expected_keywords else 0.0
     
-    # Recall Primary: of the primary keywords, how many did we find?
-    recall_primary = len(matched_primary) / len(expected_keywords_primary) if expected_keywords_primary and len(expected_keywords_primary) > 0 else 0.0
+    # Signal Recall Primary: if ANY primary keyword found, it's a success (signal detected)
+    # This measures: "Did the model capture the main navigation signal?" not "Did it list all things?"
+    if expected_keywords_primary and len(expected_keywords_primary) > 0:
+        recall_primary = 1.0 if len(matched_primary) > 0 else 0.0
+    else:
+        recall_primary = 0.0
     
     # Recall Secondary: of the secondary keywords, how many did we find?
     recall_secondary = len(matched_secondary) / len(expected_keywords_secondary) if expected_keywords_secondary and len(expected_keywords_secondary) > 0 else 0.0
@@ -525,13 +529,31 @@ def calculate_all_metrics(
         keywords_secondary
     )
     metrics["overall"]["keyword_precision"] = keyword_results["avg_precision"]
-    metrics["overall"]["keyword_recall"] = keyword_results["avg_recall"]
-    metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
     
-    # Add primary and secondary recalls if available
-    if "avg_recall_primary" in keyword_results and keyword_results["avg_recall_primary"] > 0:
+    # Keyword Recall: Use signal recall (primary keywords only)
+    # This measures the model's ability to identify the main navigation signal,
+    # not exhaustive object listing. Secondary keywords are for qualitative analysis only.
+    if "avg_recall_primary" in keyword_results:
+        metrics["overall"]["keyword_recall"] = keyword_results["avg_recall_primary"]
         metrics["overall"]["keyword_recall_primary"] = keyword_results["avg_recall_primary"]
-    if "avg_recall_secondary" in keyword_results and keyword_results["avg_recall_secondary"] > 0:
+    else:
+        # Fallback to traditional recall if no primary keywords defined
+        metrics["overall"]["keyword_recall"] = keyword_results["avg_recall"]
+    
+    # F1 based on primary keywords (signal recall)
+    if "avg_recall_primary" in keyword_results:
+        # Recalculate F1 using signal recall
+        signal_recall = keyword_results["avg_recall_primary"]
+        precision = keyword_results["avg_precision"]
+        if precision + signal_recall > 0:
+            metrics["overall"]["keyword_f1"] = 2 * (precision * signal_recall) / (precision + signal_recall)
+        else:
+            metrics["overall"]["keyword_f1"] = 0.0
+    else:
+        metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
+    
+    # Secondary keywords: for qualitative analysis only, not included in global metrics
+    if "avg_recall_secondary" in keyword_results:
         metrics["overall"]["keyword_recall_secondary"] = keyword_results["avg_recall_secondary"]
     
     # ==========================================
@@ -571,15 +593,31 @@ def calculate_all_metrics(
             cat_keywords_secondary
         )
         
-        metrics["by_category"][category] = {
-            "keyword_f1": cat_keyword_results["avg_f1"],
-            "keyword_recall": cat_keyword_results["avg_recall"],
-            "count": len(cat_results)
-        }
+        # Use signal recall (primary) for category metrics
+        if "avg_recall_primary" in cat_keyword_results:
+            signal_recall = cat_keyword_results["avg_recall_primary"]
+            precision = cat_keyword_results["avg_precision"]
+            if precision + signal_recall > 0:
+                keyword_f1 = 2 * (precision * signal_recall) / (precision + signal_recall)
+            else:
+                keyword_f1 = 0.0
+            metrics["by_category"][category] = {
+                "keyword_f1": keyword_f1,
+                "keyword_recall": signal_recall,  # Signal recall (primary only)
+                "keyword_recall_primary": signal_recall,
+                "count": len(cat_results)
+            }
+        else:
+            # Fallback if no primary keywords
+            metrics["by_category"][category] = {
+                "keyword_f1": cat_keyword_results["avg_f1"],
+                "keyword_recall": cat_keyword_results["avg_recall"],
+                "count": len(cat_results)
+            }
         
-        # Add primary recall if available
-        if "avg_recall_primary" in cat_keyword_results and cat_keyword_results["avg_recall_primary"] > 0:
-            metrics["by_category"][category]["keyword_recall_primary"] = cat_keyword_results["avg_recall_primary"]
+        # Secondary recall: for qualitative analysis only
+        if "avg_recall_secondary" in cat_keyword_results:
+            metrics["by_category"][category]["keyword_recall_secondary"] = cat_keyword_results["avg_recall_secondary"]
         
         # Exact match for closed questions in this category (semantic)
         cat_closed = [r for r in cat_results if r.get("question_type") == "closed"]
@@ -626,13 +664,11 @@ def print_metrics_summary(metrics: Dict) -> None:
         print(f"  Exact Match (closed questions): {overall['exact_match']:.4f}")
     
     print(f"  Keyword F1:                     {overall.get('keyword_f1', 0):.4f}")
-    print(f"  Keyword Recall:                 {overall.get('keyword_recall', 0):.4f}")
+    print(f"  Signal Recall (Primary):         {overall.get('keyword_recall', 0):.4f}  # Measures main navigation signal detection")
     print(f"  Keyword Precision:              {overall.get('keyword_precision', 0):.4f}")
     
-    if "keyword_recall_primary" in overall:
-        print(f"  Keyword Recall (Primary):        {overall.get('keyword_recall_primary', 0):.4f}")
     if "keyword_recall_secondary" in overall:
-        print(f"  Keyword Recall (Secondary):      {overall.get('keyword_recall_secondary', 0):.4f}")
+        print(f"  Recall Secondary (qualitative):   {overall.get('keyword_recall_secondary', 0):.4f}  # For analysis only, not in ranking")
     
     if "bertscore_f1" in overall:
         print(f"  BERTScore F1:                   {overall['bertscore_f1']:.4f}")
