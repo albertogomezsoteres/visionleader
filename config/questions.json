@@ -6,15 +6,16 @@
                 {
                     "id": "staircase_detection",
                     "type": "closed",
-                    "question": "Is there a staircase in this image?",
+                    "question": "Answer yes or no: Is there a staircase in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "staircase", "stairs", "steps"],
+                    "acceptable_answers": ["yes", "staircase", "stairs", "steps", "stairway"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "staircase_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? List them briefly.",
+                    "question": "Describe what you see: list the main elements like stairs, handrails, or steps.",
                     "expected_keywords": ["staircase", "stairs", "steps", "handrail", "railing", "banister"],
                     "reference_answer": "Staircase with steps and handrail visible.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
@@ -27,15 +28,16 @@
                 {
                     "id": "elevator_detection",
                     "type": "closed",
-                    "question": "Is there an elevator in this image?",
+                    "question": "Answer yes or no: Is there an elevator in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "elevator", "lift"],
+                    "acceptable_answers": ["yes", "elevator", "lift", "elevators"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "elevator_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? List them briefly.",
+                    "question": "Describe what you see: list the main elements like doors, buttons, or panels.",
                     "expected_keywords": ["elevator", "lift", "door", "doors", "button", "buttons", "panel"],
                     "reference_answer": "Elevator doors with control panel and buttons.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
@@ -48,16 +50,17 @@
                 {
                     "id": "corridor_detection",
                     "type": "closed",
-                    "question": "Is this a corridor or hallway?",
+                    "question": "Answer yes or no: Is there a corridor or hallway in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "corridor", "hallway", "hall", "passage"],
+                    "acceptable_answers": ["yes", "corridor", "hallway", "hall", "passage", "passageway"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "corridor_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? List any obstacles or important features.",
-                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "lighting"],
+                    "question": "Describe what you see: list the main elements like doors, floor, walls, or lighting.",
+                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "lighting", "ceiling"],
                     "reference_answer": "Corridor with doors on the sides and lighting.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
@@ -69,15 +72,16 @@
                 {
                     "id": "door_detection",
                     "type": "closed",
-                    "question": "Is there a door in this image?",
+                    "question": "Answer yes or no: Is there a door in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "door", "doors", "entrance", "exit"],
+                    "acceptable_answers": ["yes", "door", "doors", "entrance", "exit", "doorway"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "door_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? Include any text or signs you can read.",
+                    "question": "Describe what you see: list the main elements like door, handle, signs, or numbers.",
                     "expected_keywords": ["door", "entrance", "exit", "handle", "glass", "sign", "number"],
                     "reference_answer": "Door with handle, possibly with signage or room number.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
@@ -90,15 +94,16 @@
                 {
                     "id": "bathroom_detection",
                     "type": "closed",
-                    "question": "Is this a bathroom door?",
+                    "question": "Answer yes or no: Is this a bathroom or restroom door?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "bathroom", "restroom", "toilet", "wc", "washroom", "lavatory"],
+                    "acceptable_answers": ["yes", "bathroom", "restroom", "toilet", "wc", "washroom", "lavatory", "men", "women", "door"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "bathroom_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? Describe any signs or symbols.",
+                    "question": "Describe what you see: list any signs, symbols, or text on the door.",
                     "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair"],
                     "reference_answer": "Bathroom door with gender sign or accessibility symbol.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
@@ -111,16 +116,17 @@
                 {
                     "id": "sign_detection",
                     "type": "closed",
-                    "question": "Is there a sign in this image?",
+                    "question": "Answer yes or no: Is there a sign with text in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "sign", "signage", "text", "information"],
+                    "acceptable_answers": ["yes", "sign", "signage", "text", "label", "plaque", "notice", "poster"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "sign_text",
                     "type": "ocr",
-                    "question": "What text or information can you read on the sign?",
-                    "expected_keywords": ["floor", "room", "exit", "bathroom", "library", "cafeteria", "classroom", "building"],
+                    "question": "Read the text: What words or numbers can you see on the sign?",
+                    "expected_keywords": ["floor", "room", "exit", "bathroom", "library", "cafeteria", "classroom", "building", "aula", "planta"],
                     "reference_answer": "Sign showing floor information and directions to various locations.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
@@ -132,17 +138,18 @@
                 {
                     "id": "obstacle_detection",
                     "type": "closed",
-                    "question": "Are there any obstacles in this image that could impede navigation?",
+                    "question": "Answer yes or no: Is there any object blocking the walking path in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "obstacle", "obstruction", "blocking", "object"],
+                    "acceptable_answers": ["yes", "obstacle", "object", "blocked", "blocking", "obstruction", "furniture", "chair", "table", "plant", "cart", "box", "barrier"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "obstacle_elements",
                     "type": "element_list",
-                    "question": "What obstacles or hazards are visible in this image? Describe their position.",
-                    "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "left", "right", "center", "path", "floor"],
-                    "reference_answer": "Obstacle in the path that needs to be avoided.",
+                    "question": "Describe what you see: list any objects, furniture, or items that could block walking.",
+                    "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "left", "right", "center", "path", "floor", "barrier"],
+                    "reference_answer": "Object blocking the walking path that needs to be avoided.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]
                 }
             ]
@@ -153,15 +160,16 @@
                 {
                     "id": "crossing_detection",
                     "type": "closed",
-                    "question": "Is there a pedestrian crossing or zebra crossing in this image?",
+                    "question": "Answer yes or no: Is there a pedestrian crossing in this image?",
                     "expected_answer": "yes",
                     "expected_keywords": ["yes", "crossing", "crosswalk", "zebra", "pedestrian"],
+                    "acceptable_answers": ["yes", "crossing", "crosswalk", "zebra", "pedestrian", "stripes", "road"],
                     "metrics": ["exact_match", "keyword_f1"]
                 },
                 {
                     "id": "crossing_elements",
                     "type": "element_list",
-                    "question": "What navigation elements are visible in this image? Note any safety concerns.",
+                    "question": "Describe what you see: list any road markings, vehicles, or safety elements.",
                     "expected_keywords": ["crossing", "crosswalk", "zebra", "stripes", "road", "street", "cars", "vehicles", "pedestrian", "traffic"],
                     "reference_answer": "Pedestrian crossing with white stripes on the road.",
                     "metrics": ["keyword_f1", "bertscore", "meteor", "cider"]

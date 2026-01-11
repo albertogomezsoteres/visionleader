@@ -30,6 +30,7 @@ class InferenceResult:
     category: str
     dataset_source: str
     metrics_to_calculate: List[str] = field(default_factory=list)
+    acceptable_answers: List[str] = field(default_factory=list)  # For semantic matching
 
 
 def run_single_inference(
@@ -144,7 +145,8 @@ def run_inference_on_item(
         inference_time=inference_time,
         category=eval_item.image_sample.category,
         dataset_source=eval_item.image_sample.dataset_source,
-        metrics_to_calculate=eval_item.question.metrics
+        metrics_to_calculate=eval_item.question.metrics,
+        acceptable_answers=eval_item.question.acceptable_answers or []
     )
     
     return result
@@ -301,7 +303,8 @@ def results_to_dict(results: List[InferenceResult]) -> List[Dict]:
             "inference_time": r.inference_time,
             "category": r.category,
             "dataset_source": r.dataset_source,
-            "metrics_to_calculate": r.metrics_to_calculate
+            "metrics_to_calculate": r.metrics_to_calculate,
+            "acceptable_answers": r.acceptable_answers
         }
         for r in results
     ]

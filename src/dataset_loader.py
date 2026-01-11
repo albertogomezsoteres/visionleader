@@ -33,6 +33,7 @@ class Question:
     expected_keywords: List[str]
     reference_answer: Optional[str]
     metrics: List[str]
+    acceptable_answers: Optional[List[str]] = None  # For semantic matching
 
 
 @dataclass
@@ -291,7 +292,8 @@ def get_questions_for_category(category: str, questions_config: Dict) -> List[Qu
             expected_answer=q_data.get("expected_answer"),
             expected_keywords=q_data.get("expected_keywords", []),
             reference_answer=q_data.get("reference_answer"),
-            metrics=q_data.get("metrics", [])
+            metrics=q_data.get("metrics", []),
+            acceptable_answers=q_data.get("acceptable_answers", [])
         )
         questions.append(question)
     

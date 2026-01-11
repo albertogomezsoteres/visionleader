@@ -58,7 +58,7 @@ def tokenize(text: str) -> List[str]:
 
 def calculate_exact_match(prediction: str, expected: str) -> float:
     """
-    Calculate exact match score.
+    Calculate exact match score (strict).
     
     Args:
         prediction: Model prediction
@@ -85,9 +85,63 @@ def calculate_exact_match(prediction: str, expected: str) -> float:
     return 0.0
 
 
+def calculate_semantic_exact_match(
+    prediction: str, 
+    expected: str, 
+    acceptable_answers: Optional[List[str]] = None
+) -> float:
+    """
+    Calculate semantic exact match score.
+    
+    This is a more flexible version that accepts semantically equivalent answers.
+    For example, if asking "Is there a corridor?", responses like "hallway" or 
+    "corridor" are accepted as equivalent to "yes".
+    
+    Args:
+        prediction: Model prediction
+        expected: Expected answer (e.g., "yes")
+        acceptable_answers: List of acceptable alternative answers
+    
+    Returns:
+        1.0 if match (exact or semantic), 0.0 otherwise
+    """
+    pred_normalized = normalize_text(prediction)
+    expected_normalized = normalize_text(expected)
+    
+    # First, try strict exact match
+    if expected_normalized in pred_normalized:
+        return 1.0
+    
+    # Check common yes/no variations
+    if expected_normalized == "yes":
+        yes_indicators = ["yes", "there is", "there are", "i can see", "it is", "this is"]
+        if any(indicator in pred_normalized for indicator in yes_indicators):
+            return 1.0
+    elif expected_normalized == "no":
+        no_indicators = ["no", "there is no", "there are no", "i cannot see", "i don't see", "not a", "isn't", "aren't"]
+        if any(indicator in pred_normalized for indicator in no_indicators):
+            return 1.0
+    
+    # Check acceptable alternatives (semantic equivalents)
+    if acceptable_answers:
+        for acceptable in acceptable_answers:
+            acceptable_normalized = normalize_text(acceptable)
+            if acceptable_normalized in pred_normalized:
+                return 1.0
+            # Also check if any token from acceptable answer is in prediction
+            acceptable_tokens = acceptable_normalized.split()
+            pred_tokens = pred_normalized.split()
+            if any(token in pred_tokens for token in acceptable_tokens if len(token) > 2):
+                return 1.0
+    
+    return 0.0
+
+
 def calculate_exact_match_batch(
     predictions: List[str],
-    expected_answers: List[str]
+    expected_answers: List[str],
+    acceptable_answers_list: Optional[List[List[str]]] = None,
+    use_semantic: bool = True
 ) -> Dict[str, float]:
     """
     Calculate exact match for a batch of predictions.
@@ -95,14 +149,27 @@ def calculate_exact_match_batch(
     Args:
         predictions: List of model predictions
         expected_answers: List of expected answers
+        acceptable_answers_list: Optional list of acceptable answer lists for semantic matching
+        use_semantic: Whether to use semantic matching (default True)
     
     Returns:
         Dictionary with accuracy and individual scores
     """
-    scores = [
-        calculate_exact_match(pred, exp)
-        for pred, exp in zip(predictions, expected_answers)
-    ]
+    if use_semantic and acceptable_answers_list:
+        scores = [
+            calculate_semantic_exact_match(pred, exp, acc)
+            for pred, exp, acc in zip(predictions, expected_answers, acceptable_answers_list)
+        ]
+    elif use_semantic:
+        scores = [
+            calculate_semantic_exact_match(pred, exp, None)
+            for pred, exp in zip(predictions, expected_answers)
+        ]
+    else:
+        scores = [
+            calculate_exact_match(pred, exp)
+            for pred, exp in zip(predictions, expected_answers)
+        ]
     
     return {
         "accuracy": np.mean(scores),
@@ -384,13 +451,18 @@ def calculate_all_metrics(
     open_results = [r for r in results if r.get("question_type") != "closed"]
     
     # ==========================================
-    # EXACT MATCH (for closed questions)
+    # EXACT MATCH (for closed questions) - Using semantic matching
     # ==========================================
     if closed_results:
         predictions = [r["model_response"] for r in closed_results]
         expected = [r["expected_answer"] for r in closed_results]
+        # Get acceptable answers if available (for semantic matching)
+        acceptable = [r.get("acceptable_answers", []) for r in closed_results]
         
-        exact_match_results = calculate_exact_match_batch(predictions, expected)
+        # Use semantic exact match for more fair evaluation
+        exact_match_results = calculate_exact_match_batch(
+            predictions, expected, acceptable, use_semantic=True
+        )
         metrics["overall"]["exact_match"] = exact_match_results["accuracy"]
         metrics["by_question_type"]["closed"] = {
             "exact_match": exact_match_results["accuracy"],
@@ -458,12 +530,15 @@ def calculate_all_metrics(
             "count": len(cat_results)
         }
         
-        # Exact match for closed questions in this category
+        # Exact match for closed questions in this category (semantic)
         cat_closed = [r for r in cat_results if r.get("question_type") == "closed"]
         if cat_closed:
             cat_closed_preds = [r["model_response"] for r in cat_closed]
             cat_closed_expected = [r["expected_answer"] for r in cat_closed]
-            cat_em_results = calculate_exact_match_batch(cat_closed_preds, cat_closed_expected)
+            cat_acceptable = [r.get("acceptable_answers", []) for r in cat_closed]
+            cat_em_results = calculate_exact_match_batch(
+                cat_closed_preds, cat_closed_expected, cat_acceptable, use_semantic=True
+            )
             metrics["by_category"][category]["exact_match"] = cat_em_results["accuracy"]
     
     # ==========================================
