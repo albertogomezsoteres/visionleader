@@ -1,0 +1,192 @@
+{
+    "_comment": "Expected answers per image for UFV Campus dataset. Complete this file by reviewing each image.",
+    "_instructions": "For questions where the answer is always the same (e.g., detection questions), you can omit them from this file - they will use the default from questions.json",
+    
+    "ufv_staircase_01.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_02.JPEG": {
+        "staircase_direction": "down",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_03.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "no"
+    },
+    "ufv_staircase_04.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_05.JPEG": {
+        "staircase_direction": "down",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_06.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_07.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_08.JPEG": {
+        "staircase_direction": "down",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_09.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "no"
+    },
+    "ufv_staircase_10.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_11.JPEG": {
+        "staircase_direction": "down",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_12.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_13.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_14.JPEG": {
+        "staircase_direction": "down",
+        "staircase_handrails": "yes"
+    },
+    "ufv_staircase_15.JPEG": {
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
+    },
+    
+    "ufv_elevator_01.JPEG": {
+        "elevator_doors": "closed"
+    },
+    "ufv_elevator_02.JPEG": {
+        "elevator_doors": "open"
+    },
+    
+    "ufv_door_01.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_02.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_03.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_04.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_05.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_06.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_07.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_08.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_09.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_10.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_11.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_12.JPEG": {
+        "door_state": "open"
+    },
+    "ufv_door_13.JPEG": {
+        "door_state": "closed"
+    },
+    "ufv_door_14.JPEG": {
+        "door_state": "open"
+    },
+    
+    "ufv_doorSign_01.JPEG": {
+        "doorsign_bathroom": "yes",
+        "doorsign_exit": "no",
+        "doorsign_state": "closed"
+    },
+    "ufv_doorSign_02.jpg": {
+        "doorsign_bathroom": "yes",
+        "doorsign_exit": "no",
+        "doorsign_state": "closed"
+    },
+    "ufv_doorSign_03.JPEG": {
+        "doorsign_bathroom": "no",
+        "doorsign_exit": "yes",
+        "doorsign_state": "closed"
+    },
+    "ufv_doorSign_04.JPEG": {
+        "doorsign_bathroom": "yes",
+        "doorsign_exit": "no",
+        "doorsign_state": "open"
+    },
+    "ufv_doorSign_05.JPEG": {
+        "doorsign_bathroom": "no",
+        "doorsign_exit": "yes",
+        "doorsign_state": "closed"
+    },
+    "ufv_doorSign_06.JPEG": {
+        "doorsign_bathroom": "yes",
+        "doorsign_exit": "no",
+        "doorsign_state": "closed"
+    },
+    
+    "ufv_crossing_01.JPEG": {
+        "_comment": "Only detection question, no per-image answer needed"
+    },
+    
+    "ufv_corridor_01.JPEG": {
+        "corridor_clear": "yes",
+        "corridor_doors": "yes"
+    },
+    "ufv_corridor_02.JPEG": {
+        "corridor_clear": "yes",
+        "corridor_doors": "no"
+    },
+    "ufv_corridor_03.JPEG": {
+        "corridor_clear": "yes",
+        "corridor_doors": "yes"
+    },
+    "ufv_corridor_04.JPEG": {
+        "corridor_clear": "no",
+        "corridor_doors": "yes"
+    },
+    
+    "ufv_obstacle_01.JPEG": {
+        "obstacle_object": "chair",
+        "obstacle_blocking": "blocking"
+    },
+    "ufv_obstacle_02.JPEG": {
+        "obstacle_object": "stone",
+        "obstacle_blocking": "blocking"
+    },
+    "ufv_obstacle_03.JPEG": {
+        "obstacle_object": "plant",
+        "obstacle_blocking": "blocking"
+    },
+    "ufv_obstacle_04.JPEG": {
+        "obstacle_object": "chair",
+        "obstacle_blocking": "blocking"
+    },
+    "ufv_obstacle_05.JPEG": {
+        "obstacle_object": "plant",
+        "obstacle_blocking": "blocking"
+    },
+    "ufv_obstacle_06.JPEG": {
+        "obstacle_object": "stone",
+        "obstacle_blocking": "blocking"
+    }
+}

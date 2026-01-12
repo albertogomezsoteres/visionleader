@@ -73,6 +73,39 @@ def load_models_config(config_path: str) -> Dict:
         return json.load(f)
 
 
+def load_per_image_answers(config_path: str) -> Dict[str, Dict[str, str]]:
+    """
+    Load expected answers per image from JSON file.
+    
+    The JSON file should have the structure:
+    {
+        "image_filename.jpg": {
+            "question_id": "expected_answer",
+            ...
+        },
+        ...
+    }
+    
+    Args:
+        config_path: Path to the per-image answers JSON file
+    
+    Returns:
+        Dictionary mapping image filenames to question_id -> expected_answer mappings
+        Returns empty dict if file doesn't exist
+    """
+    if not os.path.exists(config_path):
+        return {}
+    
+    try:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            # Filter out comment/instruction keys
+            return {k: v for k, v in data.items() if not k.startswith('_')}
+    except Exception as e:
+        print(f"Warning: Could not load per-image answers from {config_path}: {e}")
+        return {}
+
+
 def get_category_from_folder(folder_name: str, folder_mapping: Dict) -> str:
     """
     Get the category name from folder name using mapping.
@@ -123,8 +156,10 @@ def extract_category_from_filename(filename: str) -> str:
         return "corridor"
     elif "bathroomsign" in filename_lower:
         return "sign"
+    elif "doorsign" in filename_lower:
+        return "door_sign"
     elif "bathroom" in filename_lower or "restroom" in filename_lower:
-        return "door_bathroom"
+        return "door_sign"
     elif "door" in filename_lower:
         return "door"
     elif "sign" in filename_lower:
@@ -316,7 +351,8 @@ def get_questions_for_category(category: str, questions_config: Dict) -> List[Qu
 
 def create_evaluation_items(
     samples: List[ImageSample],
-    questions_config: Dict
+    questions_config: Dict,
+    per_image_answers: Optional[Dict[str, Dict[str, str]]] = None
 ) -> List[EvaluationItem]:
     """
     Create evaluation items by pairing images with their questions.
@@ -324,19 +360,49 @@ def create_evaluation_items(
     Args:
         samples: List of ImageSample objects
         questions_config: Questions configuration dictionary
+        per_image_answers: Optional dictionary mapping image filenames to 
+                          question_id -> expected_answer mappings.
+                          If provided, will override default expected_answer
+                          from questions_config for specific image-question pairs.
     
     Returns:
         List of EvaluationItem objects
     """
     eval_items = []
     
+    if per_image_answers is None:
+        per_image_answers = {}
+    
     for sample in samples:
         questions = get_questions_for_category(sample.category, questions_config)
         
         for question in questions:
+            # Check if there's a per-image expected answer for this image-question pair
+            image_answers = per_image_answers.get(sample.image_id, {})
+            per_image_answer = image_answers.get(question.question_id)
+            
+            # Create a copy of the question with potentially overridden expected_answer
+            if per_image_answer is not None:
+                # Override expected_answer for this specific image
+                question_copy = Question(
+                    question_id=question.question_id,
+                    question_type=question.question_type,
+                    question_text=question.question_text,
+                    expected_answer=per_image_answer,  # Use per-image answer
+                    expected_keywords=question.expected_keywords,
+                    reference_answer=question.reference_answer,
+                    metrics=question.metrics,
+                    acceptable_answers=question.acceptable_answers,
+                    expected_keywords_primary=question.expected_keywords_primary,
+                    expected_keywords_secondary=question.expected_keywords_secondary
+                )
+            else:
+                # Use default question as-is
+                question_copy = question
+            
             eval_item = EvaluationItem(
                 image_sample=sample,
-                question=question
+                question=question_copy
             )
             eval_items.append(eval_item)
     

@@ -8,19 +8,44 @@
                     "type": "closed",
                     "question": "Is there a staircase visible in this image?",
                     "expected_answer": "yes",
-                    "expected_keywords": ["yes", "staircase", "stairs", "steps"],
-                    "acceptable_answers": ["yes", "staircase", "stairs", "steps", "stairway"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "staircase", "stairs", "steps"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "staircase_elements",
+                    "id": "staircase_direction",
+                    "type": "closed",
+                    "question": "Do the stairs go up or down?",
+                    "expected_answer": "up",
+                    "expected_keywords": ["up", "down"],
+                    "acceptable_answers": ["up", "down", "upward", "downward", "ascending", "descending"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "staircase_handrails",
+                    "type": "closed",
+                    "question": "Does the staircase have handrails?",
+                    "expected_answer": "yes",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "handrail", "handrails", "railing", "railings", "none"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "staircase_element",
                     "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["stairs", "steps", "handrail", "railing", "wall", "floor", "ceiling"],
-                    "expected_keywords_primary": ["stairs", "steps"],
+                    "question": "What navigation element is visible in front of me? Answer with one word.",
+                    "expected_keywords_primary": ["stairs", "staircase", "steps"],
+                    "acceptable_answers": ["stairs", "staircase", "steps"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "staircase_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible.",
+                    "expected_keywords_primary": ["stairs", "staircase", "steps"],
                     "expected_keywords_secondary": ["handrail", "railing", "wall", "floor", "ceiling"],
-                    "reference_answer": "Stairs with steps and handrail, walls, floor visible.",
-                    "metrics": ["keyword_f1", "bertscore"]
+                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         },
@@ -32,43 +57,35 @@
                     "type": "closed",
                     "question": "Is there an elevator visible in this image?",
                     "expected_answer": "yes",
-                    "expected_keywords": ["yes", "elevator", "lift"],
-                    "acceptable_answers": ["yes", "elevator", "lift", "elevators", "door", "doors"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "elevator", "lift"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "elevator_elements",
-                    "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["elevator", "door", "doors", "button", "buttons", "panel", "wall", "floor"],
-                    "expected_keywords_primary": ["elevator"],
-                    "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
-                    "reference_answer": "Elevator doors with buttons and control panel.",
-                    "metrics": ["keyword_f1", "bertscore"]
-                }
-            ]
-        },
-        "corridor": {
-            "display_name": "Pasillos",
-            "questions": [
-                {
-                    "id": "corridor_detection",
+                    "id": "elevator_doors",
                     "type": "closed",
-                    "question": "Is there a corridor or hallway in this image?",
-                    "expected_answer": "yes",
-                    "expected_keywords": ["yes", "corridor", "hallway", "hall", "passage"],
-                    "acceptable_answers": ["yes", "corridor", "hallway", "hall", "passage", "passageway", "indoor"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "question": "Are the elevator doors open or closed?",
+                    "expected_answer": "closed",
+                    "expected_keywords": ["open", "closed"],
+                    "acceptable_answers": ["open", "closed", "opened", "shut"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "corridor_elements",
+                    "id": "elevator_element",
                     "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "ceiling", "window"],
-                    "expected_keywords_primary": ["corridor", "hallway"],
-                    "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
-                    "reference_answer": "Hallway with doors, floor, walls, and ceiling with lights.",
-                    "metrics": ["keyword_f1", "bertscore"]
+                    "question": "What navigation element is visible in front of me? Answer with one word.",
+                    "expected_keywords_primary": ["elevator", "lift"],
+                    "acceptable_answers": ["elevator", "lift"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "elevator_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "An elevator with doors, control buttons and panel visible, walls and floor visible.",
+                    "expected_keywords_primary": ["elevator", "lift"],
+                    "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
+                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         },
@@ -78,69 +95,86 @@
                 {
                     "id": "door_detection",
                     "type": "closed",
-                    "question": "Is there a door visible in this image?",
+                    "question": "Is this a door?",
                     "expected_answer": "yes",
-                    "expected_keywords": ["yes", "door", "doors", "entrance", "exit"],
-                    "acceptable_answers": ["yes", "door", "doors", "entrance", "exit", "doorway", "wooden", "glass"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "door", "doors", "entrance", "exit"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "door_elements",
+                    "id": "door_state",
+                    "type": "closed",
+                    "question": "Is the door closed or open?",
+                    "expected_answer": "closed",
+                    "expected_keywords": ["open", "closed"],
+                    "acceptable_answers": ["open", "closed", "opened", "shut"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "door_element",
                     "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["door", "handle", "frame", "glass", "wall", "floor", "number", "sign"],
-                    "expected_keywords_primary": ["door"],
-                    "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "number", "sign"],
-                    "reference_answer": "Door with handle and frame, possibly with glass or signage.",
-                    "metrics": ["keyword_f1", "bertscore"]
+                    "question": "What navigation element is visible in front of me? Answer with one word.",
+                    "expected_keywords_primary": ["door", "doors", "doorway"],
+                    "acceptable_answers": ["door", "doors", "doorway"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "door_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "A door with handle and frame, possibly with glass or signage, walls and floor visible.",
+                    "expected_keywords_primary": ["door", "doors"],
+                    "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "sign"],
+                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         },
-        "door_bathroom": {
-            "display_name": "Puertas de Baño",
+        "door_sign": {
+            "display_name": "Puertas con Señalización",
             "questions": [
                 {
-                    "id": "bathroom_detection",
+                    "id": "doorsign_bathroom",
                     "type": "closed",
-                    "question": "Is this a bathroom or restroom door?",
+                    "question": "Is this a bathroom door?",
                     "expected_answer": "yes",
-                    "expected_keywords": ["yes", "bathroom", "restroom", "toilet", "wc"],
-                    "acceptable_answers": ["yes", "bathroom", "restroom", "toilet", "wc", "washroom", "men", "women", "door", "sign"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "bathroom", "restroom", "toilet", "wc"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "bathroom_elements",
-                    "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["bathroom", "restroom", "door", "sign", "symbol", "men", "women", "accessible", "wheelchair"],
-                    "expected_keywords_primary": ["bathroom", "restroom", "door"],
-                    "expected_keywords_secondary": ["sign", "symbol", "men", "women", "accessible", "wheelchair"],
-                    "reference_answer": "Bathroom door with gender sign or accessibility symbol.",
-                    "metrics": ["keyword_f1", "bertscore"]
-                }
-            ]
-        },
-        "obstacle": {
-            "display_name": "Obstáculos",
-            "questions": [
-                {
-                    "id": "obstacle_detection",
+                    "id": "doorsign_exit",
                     "type": "closed",
-                    "question": "Is there an obstacle blocking the path in this image?",
-                    "expected_answer": "yes",
-                    "expected_keywords": ["yes", "obstacle", "object", "blocking"],
-                    "acceptable_answers": ["yes", "obstacle", "object", "blocked", "blocking", "furniture", "chair", "table", "plant", "cart", "box", "barrier", "pole"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "question": "Is this an exit door?",
+                    "expected_answer": "no",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "exit", "entrance", "way out"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "obstacle_elements",
+                    "id": "doorsign_state",
+                    "type": "closed",
+                    "question": "Is the door closed or open?",
+                    "expected_answer": "closed",
+                    "expected_keywords": ["open", "closed"],
+                    "acceptable_answers": ["open", "closed", "opened", "shut"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "doorsign_element",
                     "type": "element_list",
-                    "question": "What object is blocking or obstructing the walking path? Answer using one keyword.",
-                    "expected_keywords": ["obstacle", "plant", "furniture", "chair", "table", "cart", "box", "object", "floor", "barrier", "pole"],
-                    "expected_keywords_primary": ["obstacle", "object"],
-                    "expected_keywords_secondary": ["plant", "furniture", "chair", "table", "cart", "box", "floor", "barrier", "pole"],
-                    "reference_answer": "Objects in the path that could block walking.",
-                    "metrics": ["keyword_f1", "bertscore"]
+                    "question": "What navigation-related sign or door is visible? Answer with one word.",
+                    "expected_keywords_primary": ["bathroom", "restroom", "exit", "toilet", "door"],
+                    "acceptable_answers": ["bathroom", "restroom", "exit", "toilet", "door", "sign"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "doorsign_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "A door with bathroom or exit sign, possibly with gender symbols or accessibility indicators, walls visible.",
+                    "expected_keywords_primary": ["bathroom", "restroom", "exit", "door", "sign"],
+                    "expected_keywords_secondary": ["toilet", "men", "women", "accessible", "wheelchair", "symbol"],
+                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         },
@@ -150,21 +184,109 @@
                 {
                     "id": "crossing_detection",
                     "type": "closed",
-                    "question": "Is there a pedestrian crossing in this image?",
+                    "question": "Is this a zebra crossing?",
                     "expected_answer": "yes",
-                    "expected_keywords": ["yes", "crossing", "crosswalk", "zebra", "pedestrian"],
-                    "acceptable_answers": ["yes", "crossing", "crosswalk", "zebra", "pedestrian", "stripes", "road", "street"],
-                    "metrics": ["exact_match", "keyword_f1"]
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "crossing", "crosswalk", "zebra", "pedestrian crossing"],
+                    "metrics": ["exact_match"]
                 },
                 {
-                    "id": "crossing_elements",
+                    "id": "crossing_element",
                     "type": "element_list",
-                    "question": "What is the main navigation-related element visible in this image? Answer with one or two keywords.",
-                    "expected_keywords": ["crossing", "crosswalk", "stripes", "road", "street", "pedestrian", "traffic", "car"],
-                    "expected_keywords_primary": ["crossing", "crosswalk"],
-                    "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "car"],
-                    "reference_answer": "Pedestrian crossing with white stripes on road.",
-                    "metrics": ["keyword_f1", "bertscore"]
+                    "question": "What navigation element is visible in front of me? Answer with one word.",
+                    "expected_keywords_primary": ["crossing", "crosswalk", "zebra"],
+                    "acceptable_answers": ["crossing", "crosswalk", "zebra", "pedestrian crossing"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "crossing_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "A pedestrian crossing with white stripes on the road, possibly with traffic signs or signals visible.",
+                    "expected_keywords_primary": ["crossing", "crosswalk", "zebra"],
+                    "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "sign"],
+                    "metrics": ["bertscore", "keyword_f1"]
+                }
+            ]
+        },
+        "corridor": {
+            "display_name": "Pasillos",
+            "questions": [
+                {
+                    "id": "corridor_detection",
+                    "type": "closed",
+                    "question": "Is there a corridor or hallway visible in this image?",
+                    "expected_answer": "yes",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "corridor", "hallway", "hall", "passage"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "corridor_clear",
+                    "type": "closed",
+                    "question": "Is the corridor clear to walk through?",
+                    "expected_answer": "yes",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "clear", "blocked", "obstructed", "free"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "corridor_doors",
+                    "type": "closed",
+                    "question": "Are there doors visible along the corridor?",
+                    "expected_answer": "yes",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "door", "doors", "visible"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "corridor_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "A corridor or hallway with doors along the sides, floor, walls, and ceiling with lights visible.",
+                    "expected_keywords_primary": ["corridor", "hallway"],
+                    "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
+                    "metrics": ["bertscore", "keyword_f1"]
+                }
+            ]
+        },
+        "obstacle": {
+            "display_name": "Obstáculos",
+            "questions": [
+                {
+                    "id": "obstacle_detection",
+                    "type": "closed",
+                    "question": "Is there an object visible in front of the walking path?",
+                    "expected_answer": "yes",
+                    "expected_keywords": ["yes", "no"],
+                    "acceptable_answers": ["yes", "no", "object", "obstacle", "blocking"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "obstacle_blocking",
+                    "type": "closed",
+                    "question": "Can I walk straight ahead or is there an object blocking me?",
+                    "expected_answer": "blocking",
+                    "expected_keywords": ["blocking", "clear", "straight ahead"],
+                    "acceptable_answers": ["blocking", "blocking me", "blocked", "straight ahead", "clear", "free", "can walk", "cannot walk", "obstructed", "path blocked"],
+                    "metrics": ["exact_match"]
+                },
+                {
+                    "id": "obstacle_object",
+                    "type": "element_list",
+                    "question": "What object is visible in front of the walking path? Answer with one word.",
+                    "expected_keywords_primary": ["chair", "stone", "plant", "obstacle", "object"],
+                    "acceptable_answers": ["chair", "stone", "plant", "object", "furniture", "cart", "box", "obstacle"],
+                    "metrics": ["keyword_f1"]
+                },
+                {
+                    "id": "obstacle_caption",
+                    "type": "caption",
+                    "question": "caption",
+                    "reference_answer": "Objects in the walking path that could block navigation, such as furniture, plants, or other obstacles.",
+                    "expected_keywords_primary": ["obstacle", "object", "blocking"],
+                    "expected_keywords_secondary": ["chair", "plant", "stone", "furniture", "cart", "box", "barrier", "floor"],
+                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         }
@@ -175,16 +297,17 @@
         "elevator": "elevator",
         "corridor": "corridor",
         "door": "door",
-        "door_bathroom": "door_bathroom",
+        "door_sign": "door_sign",
         "doorway": "door",
         "obstacle": "obstacle",
         "zebra crossing": "zebra_crossing",
+        "crossing": "zebra_crossing",
         "library": "corridor"
     },
     "metadata": {
         "total_categories": 7,
-        "questions_per_category": 2,
-        "question_types": ["closed", "element_list"],
+        "questions_per_category": "variable",
+        "question_types": ["closed", "element_list", "caption"],
         "metrics_used": ["exact_match", "keyword_f1", "bertscore"]
     }
 }
