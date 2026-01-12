@@ -349,6 +349,96 @@ def get_questions_for_category(category: str, questions_config: Dict) -> List[Qu
     return questions
 
 
+def generate_acceptable_answers(expected_answer: str, question_id: str) -> List[str]:
+    """
+    Generate acceptable answers (synonyms) based on expected answer and question context.
+    
+    Args:
+        expected_answer: The expected answer for this image-question pair
+        question_id: The question ID to determine context-specific synonyms
+    
+    Returns:
+        List of acceptable answers (synonyms)
+    """
+    expected_lower = expected_answer.lower()
+    
+    # Base synonyms for common answers
+    synonyms_map = {
+        "yes": ["yes", "there is", "there are", "i can see", "it is", "this is"],
+        "no": ["no", "there is no", "there are no", "i cannot see", "i don't see", "not a", "isn't", "aren't"],
+        "up": ["up", "upward", "ascending", "going up"],
+        "down": ["down", "downward", "descending", "going down"],
+        "open": ["open", "opened", "ajar"],
+        "closed": ["closed", "shut", "sealed"],
+        "blocking": ["blocking", "blocking me", "blocked", "obstructed", "path blocked", "cannot walk"],
+        "clear": ["clear", "straight ahead", "free", "can walk"],
+    }
+    
+    # Question-specific synonyms
+    question_synonyms = {
+        "staircase_detection": {
+            "yes": ["staircase", "stairs", "steps", "stairway"]
+        },
+        "elevator_detection": {
+            "yes": ["elevator", "lift"]
+        },
+        "door_detection": {
+            "yes": ["door", "doors", "entrance", "exit"]
+        },
+        "doorsign_bathroom": {
+            "yes": ["bathroom", "restroom", "toilet", "wc"]
+        },
+        "doorsign_exit": {
+            "yes": ["exit", "entrance", "way out"]
+        },
+        "corridor_detection": {
+            "yes": ["corridor", "hallway", "hall", "passage"]
+        },
+        "crossing_detection": {
+            "yes": ["crossing", "crosswalk", "zebra", "pedestrian crossing"]
+        },
+        "obstacle_detection": {
+            "yes": ["object", "obstacle", "blocking"]
+        },
+        "staircase_handrails": {
+            "yes": ["handrail", "handrails", "railing", "railings"],
+            "no": ["none", "no handrails"]
+        },
+        "corridor_clear": {
+            "yes": ["clear", "free"],
+            "no": ["blocked", "obstructed"]
+        },
+        "corridor_doors": {
+            "yes": ["door", "doors", "visible"],
+            "no": ["no doors", "none"]
+        }
+    }
+    
+    # Start with base synonyms
+    acceptable = synonyms_map.get(expected_lower, [expected_answer])
+    
+    # Add question-specific synonyms if available
+    if question_id in question_synonyms:
+        question_syns = question_synonyms[question_id]
+        if expected_lower in question_syns:
+            acceptable.extend(question_syns[expected_lower])
+    
+    # Always include the expected answer itself
+    if expected_answer not in acceptable:
+        acceptable.insert(0, expected_answer)
+    
+    # Remove duplicates while preserving order
+    seen = set()
+    result = []
+    for item in acceptable:
+        item_lower = item.lower()
+        if item_lower not in seen:
+            seen.add(item_lower)
+            result.append(item)
+    
+    return result
+
+
 def create_evaluation_items(
     samples: List[ImageSample],
     questions_config: Dict,
@@ -377,24 +467,46 @@ def create_evaluation_items(
         questions = get_questions_for_category(sample.category, questions_config)
         
         for question in questions:
-            # Check if there's a per-image expected answer for this image-question pair
+            # Get per-image data
             image_answers = per_image_answers.get(sample.image_id, {})
             per_image_answer = image_answers.get(question.question_id)
+            per_image_reference = image_answers.get(f"{question.question_id}_reference")
+            per_image_keywords = image_answers.get(f"{question.question_id}_keywords")
+            per_image_keywords_primary = image_answers.get(f"{question.question_id}_keywords_primary")
+            per_image_keywords_secondary = image_answers.get(f"{question.question_id}_keywords_secondary")
             
-            # Create a copy of the question with potentially overridden expected_answer
-            if per_image_answer is not None:
-                # Override expected_answer for this specific image
+            # Determine expected_answer (per-image takes priority, then default from questions.json)
+            final_expected_answer = per_image_answer if per_image_answer is not None else question.expected_answer
+            
+            # Determine keywords (per-image takes priority, then default from questions.json)
+            final_keywords = per_image_keywords if per_image_keywords is not None else question.expected_keywords
+            final_keywords_primary = per_image_keywords_primary if per_image_keywords_primary is not None else question.expected_keywords_primary
+            final_keywords_secondary = per_image_keywords_secondary if per_image_keywords_secondary is not None else question.expected_keywords_secondary
+            
+            # Generate acceptable_answers automatically based on expected_answer
+            # Only for closed questions and if we have an expected_answer
+            if final_expected_answer is not None and question.question_type == "closed":
+                generated_acceptable = generate_acceptable_answers(final_expected_answer, question.question_id)
+            else:
+                # For non-closed questions or if no expected_answer, use default or empty
+                generated_acceptable = question.acceptable_answers if question.acceptable_answers else []
+            
+            # Create a copy of the question if we have per-image data or generated acceptable_answers
+            if (per_image_answer is not None or per_image_reference is not None or 
+                per_image_keywords is not None or per_image_keywords_primary is not None or 
+                per_image_keywords_secondary is not None or 
+                (generated_acceptable and question.question_type == "closed")):
                 question_copy = Question(
                     question_id=question.question_id,
                     question_type=question.question_type,
                     question_text=question.question_text,
-                    expected_answer=per_image_answer,  # Use per-image answer
-                    expected_keywords=question.expected_keywords,
-                    reference_answer=question.reference_answer,
+                    expected_answer=final_expected_answer,
+                    expected_keywords=final_keywords,
+                    reference_answer=per_image_reference if per_image_reference is not None else question.reference_answer,
                     metrics=question.metrics,
-                    acceptable_answers=question.acceptable_answers,
-                    expected_keywords_primary=question.expected_keywords_primary,
-                    expected_keywords_secondary=question.expected_keywords_secondary
+                    acceptable_answers=generated_acceptable,
+                    expected_keywords_primary=final_keywords_primary,
+                    expected_keywords_secondary=final_keywords_secondary
                 )
             else:
                 # Use default question as-is
