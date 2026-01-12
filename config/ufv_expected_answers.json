@@ -99,17 +99,6 @@
         "doorsign_element_keywords": ["exit", "door"]
     },
     
-    "ufv_corridor_01.JPEG": {
-        "corridor_detection": "yes",
-        "corridor_clear": "yes",
-        "corridor_doors": "no"
-    },
-    "ufv_corridor_02.JPEG": {
-        "corridor_detection": "yes",
-        "corridor_clear": "yes",
-        "corridor_doors": "yes"
-    },
-    
     "ufv_obstacle_01.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",

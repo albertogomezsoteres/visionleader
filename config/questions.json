@@ -113,29 +113,6 @@
                 }
             ]
         },
-        "corridor": {
-            "display_name": "Pasillos",
-            "questions": [
-                {
-                    "id": "corridor_detection",
-                    "type": "closed",
-                    "question": "Is there a corridor or hallway visible in this image?",
-                    "metrics": ["exact_match"]
-                },
-                {
-                    "id": "corridor_clear",
-                    "type": "closed",
-                    "question": "Is the corridor clear to walk through?",
-                    "metrics": ["exact_match"]
-                },
-                {
-                    "id": "corridor_doors",
-                    "type": "closed",
-                    "question": "Are there doors visible along the corridor?",
-                    "metrics": ["exact_match"]
-                }
-            ]
-        },
         "obstacle": {
             "display_name": "Obstáculos",
             "questions": [
@@ -167,16 +144,14 @@
     "folder_to_category_mapping": {
         "staircase": "staircase",
         "elevator": "elevator",
-        "corridor": "corridor",
         "door": "door",
         "door_sign": "door_sign",
         "door_bathroom": "door_sign",
         "doorway": "door",
-        "obstacle": "obstacle",
-        "library": "corridor"
+        "obstacle": "obstacle"
     },
     "metadata": {
-        "total_categories": 6,
+        "total_categories": 5,
         "questions_per_category": "variable",
         "question_types": ["closed", "element_list"],
         "metrics_used": ["exact_match", "keyword_recall"]
