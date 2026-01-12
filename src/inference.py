@@ -367,30 +367,42 @@ def print_inference_summary(results: List[InferenceResult]) -> None:
 def results_to_dict(results: List[InferenceResult]) -> List[Dict]:
     """
     Convert inference results to a list of dictionaries for export.
+    Only includes relevant fields based on question type.
     
     Args:
         results: List of InferenceResult objects
     
     Returns:
-        List of dictionaries
+        List of dictionaries with only relevant fields
     """
-    return [
-        {
+    output = []
+    for r in results:
+        result_dict = {
             "image_id": r.image_id,
             "question_id": r.question_id,
             "question_text": r.question_text,
             "question_type": r.question_type,
             "model_response": r.model_response,
-            "expected_answer": r.expected_answer,
-            "expected_keywords": r.expected_keywords,
-            "reference_answer": r.reference_answer,
             "inference_time": r.inference_time,
             "category": r.category,
             "dataset_source": r.dataset_source,
-            "metrics_to_calculate": r.metrics_to_calculate,
-            "acceptable_answers": r.acceptable_answers,
-            "expected_keywords_primary": r.expected_keywords_primary,
-            "expected_keywords_secondary": r.expected_keywords_secondary
+            "metrics_to_calculate": r.metrics_to_calculate
         }
-        for r in results
-    ]
+        
+        # Add fields based on question type
+        if r.question_type == "closed":
+            # For closed questions: expected_answer and acceptable_answers
+            if r.expected_answer is not None:
+                result_dict["expected_answer"] = r.expected_answer
+            if r.acceptable_answers:
+                result_dict["acceptable_answers"] = r.acceptable_answers
+        elif r.question_type == "element_list":
+            # For element_list questions: expected_keywords and expected_keywords_primary
+            if r.expected_keywords:
+                result_dict["expected_keywords"] = r.expected_keywords
+            if r.expected_keywords_primary:
+                result_dict["expected_keywords_primary"] = r.expected_keywords_primary
+        
+        output.append(result_dict)
+    
+    return output

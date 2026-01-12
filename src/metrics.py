@@ -35,6 +35,22 @@ def normalize_text(text: str) -> str:
     return text
 
 
+def extract_first_token(text: str) -> str:
+    """
+    Extract the first significant token from text.
+    Useful for short answers like "yes", "no", "open", "closed", "up", "down".
+    
+    Args:
+        text: Input text
+    
+    Returns:
+        First token (word) from normalized text, or empty string if no tokens
+    """
+    normalized = normalize_text(text)
+    tokens = normalized.split()
+    return tokens[0] if tokens else ""
+
+
 def tokenize(text: str) -> List[str]:
     """
     Simple tokenization by whitespace.
@@ -134,12 +150,12 @@ def calculate_semantic_exact_match(
     Calculate semantic exact match score.
     
     This is a more flexible version that accepts semantically equivalent answers.
-    For example, if asking "Is there a corridor?", responses like "hallway" or 
-    "corridor" are accepted as equivalent to "yes".
+    For short answers (yes/no/open/closed/up/down), extracts the first token.
+    For longer responses, checks if expected answer is contained.
     
     Args:
         prediction: Model prediction
-        expected: Expected answer (e.g., "yes")
+        expected: Expected answer (e.g., "yes", "no", "open", "closed")
         acceptable_answers: List of acceptable alternative answers
     
     Returns:
@@ -148,7 +164,16 @@ def calculate_semantic_exact_match(
     pred_normalized = normalize_text(prediction)
     expected_normalized = normalize_text(expected)
     
-    # First, try strict exact match
+    # For short expected answers (1-2 words), extract first token from prediction
+    # This handles cases like "no ." or "yes." or "open" vs "open."
+    expected_tokens = expected_normalized.split()
+    if len(expected_tokens) <= 2:
+        # Short answer - extract first token from prediction
+        pred_first_token = extract_first_token(prediction)
+        if pred_first_token == expected_normalized:
+            return 1.0
+    
+    # First, try strict exact match (expected contained in prediction)
     if expected_normalized in pred_normalized:
         return 1.0
     
@@ -160,6 +185,11 @@ def calculate_semantic_exact_match(
     elif expected_normalized == "no":
         no_indicators = ["no", "there is no", "there are no", "i cannot see", "i don't see", "not a", "isn't", "aren't"]
         if any(indicator in pred_normalized for indicator in no_indicators):
+            return 1.0
+    elif expected_normalized in ["open", "closed", "up", "down"]:
+        # For open/closed/up/down, check if first token matches
+        pred_first_token = extract_first_token(prediction)
+        if pred_first_token == expected_normalized:
             return 1.0
     
     # Check acceptable alternatives (semantic equivalents)

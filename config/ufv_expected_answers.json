@@ -73,10 +73,6 @@
         "door_detection": "yes",
         "door_state": "closed"
     },
-    "ufv_door_05.JPEG": {
-        "door_detection": "yes",
-        "door_state": "closed"
-    },
     
     "ufv_doorSign_01.JPEG": {
         "doorsign_bathroom": "yes",
@@ -109,16 +105,6 @@
         "corridor_doors": "no"
     },
     "ufv_corridor_02.JPEG": {
-        "corridor_detection": "yes",
-        "corridor_clear": "yes",
-        "corridor_doors": "yes"
-    },
-    "ufv_corridor_03.JPEG": {
-        "corridor_detection": "yes",
-        "corridor_clear": "yes",
-        "corridor_doors": "yes"
-    },
-    "ufv_corridor_04.JPEG": {
         "corridor_detection": "yes",
         "corridor_clear": "yes",
         "corridor_doors": "yes"
