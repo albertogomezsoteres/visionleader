@@ -344,7 +344,7 @@ def calculate_keyword_f1_batch(
         expected_keywords_secondary_list: Optional list of secondary keyword lists
     
     Returns:
-        Dictionary with average metrics including recall_primary and recall_secondary
+        Dictionary with average metrics including recall_primary
     """
     # Prepare primary and secondary lists (default to None if not provided)
     if expected_keywords_primary_list is None:
