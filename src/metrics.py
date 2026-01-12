@@ -389,72 +389,20 @@ def calculate_keyword_f1_batch(
 
 
 # ============================================================
-# BERTScore
-# ============================================================
-
-def calculate_bertscore(
-    predictions: List[str],
-    references: List[str],
-    lang: str = "en",
-    model_type: str = "microsoft/deberta-xlarge-mnli"
-) -> Dict[str, float]:
-    """
-    Calculate BERTScore for semantic similarity.
-    
-    Args:
-        predictions: List of model predictions
-        references: List of reference answers
-        lang: Language code
-        model_type: BERT model to use
-    
-    Returns:
-        Dictionary with precision, recall, and F1 BERTScores
-    """
-    try:
-        from bert_score import score as bert_score
-    except ImportError:
-        print("Warning: bert_score not installed. Install with: pip install bert_score")
-        return {
-            "bertscore_precision": 0.0,
-            "bertscore_recall": 0.0,
-            "bertscore_f1": 0.0,
-            "error": "bert_score not installed"
-        }
-    
-    # Calculate BERTScore
-    P, R, F1 = bert_score(
-        predictions,
-        references,
-        lang=lang,
-        model_type=model_type,
-        verbose=False
-    )
-    
-    return {
-        "bertscore_precision": float(P.mean()),
-        "bertscore_recall": float(R.mean()),
-        "bertscore_f1": float(F1.mean()),
-        "individual_precision": [float(p) for p in P],
-        "individual_recall": [float(r) for r in R],
-        "individual_f1": [float(f) for f in F1]
-    }
-
-
-# ============================================================
 # MAIN METRICS CALCULATOR
 # ============================================================
 
 def calculate_all_metrics(
     results: List[Dict],
-    calculate_bertscore_metric: bool = True,
     vram_usage: Optional[Dict] = None
 ) -> Dict[str, Dict]:
     """
     Calculate all metrics for a set of inference results.
     
+    Only calculates Exact Match (for closed questions) and Keyword Recall (for element questions).
+    
     Args:
         results: List of inference result dictionaries
-        calculate_bertscore_metric: Whether to calculate BERTScore
         vram_usage: Optional VRAM usage dictionary to include
     
     Returns:
@@ -506,40 +454,12 @@ def calculate_all_metrics(
     metrics["overall"]["keyword_precision"] = keyword_results["avg_precision"]
     
     # Keyword Recall: Use signal recall (primary keywords only)
-    # This measures the model's ability to identify the main navigation signal,
-    # not exhaustive object listing. Secondary keywords are for qualitative analysis only.
+    # This measures the model's ability to identify the main navigation signal.
     if "avg_recall_primary" in keyword_results:
         metrics["overall"]["keyword_recall"] = keyword_results["avg_recall_primary"]
-        metrics["overall"]["keyword_recall_primary"] = keyword_results["avg_recall_primary"]
     else:
         # Fallback to traditional recall if no primary keywords defined
         metrics["overall"]["keyword_recall"] = keyword_results["avg_recall"]
-    
-    # F1 based on primary keywords (signal recall)
-    if "avg_recall_primary" in keyword_results:
-        # Recalculate F1 using signal recall
-        signal_recall = keyword_results["avg_recall_primary"]
-        precision = keyword_results["avg_precision"]
-        if precision + signal_recall > 0:
-            metrics["overall"]["keyword_f1"] = 2 * (precision * signal_recall) / (precision + signal_recall)
-        else:
-            metrics["overall"]["keyword_f1"] = 0.0
-    else:
-        metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
-    
-    # ==========================================
-    # BERTScore (for open questions with references)
-    # ==========================================
-    results_with_refs = [r for r in results if r.get("reference_answer")]
-    
-    if results_with_refs and calculate_bertscore_metric:
-        predictions = [r["model_response"] for r in results_with_refs]
-        references = [r["reference_answer"] for r in results_with_refs]
-        
-        bertscore_results = calculate_bertscore(predictions, references)
-        metrics["overall"]["bertscore_f1"] = bertscore_results.get("bertscore_f1", 0.0)
-        metrics["overall"]["bertscore_precision"] = bertscore_results.get("bertscore_precision", 0.0)
-        metrics["overall"]["bertscore_recall"] = bertscore_results.get("bertscore_recall", 0.0)
     
     # ==========================================
     # METRICS BY CATEGORY
@@ -567,21 +487,13 @@ def calculate_all_metrics(
         # Use signal recall (primary) for category metrics
         if "avg_recall_primary" in cat_keyword_results:
             signal_recall = cat_keyword_results["avg_recall_primary"]
-            precision = cat_keyword_results["avg_precision"]
-            if precision + signal_recall > 0:
-                keyword_f1 = 2 * (precision * signal_recall) / (precision + signal_recall)
-            else:
-                keyword_f1 = 0.0
             metrics["by_category"][category] = {
-                "keyword_f1": keyword_f1,
-                "keyword_recall": signal_recall,  # Signal recall (primary only)
-                "keyword_recall_primary": signal_recall,
+                "keyword_recall": signal_recall,
                 "count": len(cat_results)
             }
         else:
             # Fallback if no primary keywords
             metrics["by_category"][category] = {
-                "keyword_f1": cat_keyword_results["avg_f1"],
                 "keyword_recall": cat_keyword_results["avg_recall"],
                 "count": len(cat_results)
             }
@@ -630,12 +542,7 @@ def print_metrics_summary(metrics: Dict) -> None:
     if "exact_match" in overall:
         print(f"  Exact Match (closed questions): {overall['exact_match']:.4f}")
     
-    print(f"  Keyword F1:                     {overall.get('keyword_f1', 0):.4f}")
-    print(f"  Signal Recall (Primary):         {overall.get('keyword_recall', 0):.4f}  # Measures main navigation signal detection")
-    print(f"  Keyword Precision:              {overall.get('keyword_precision', 0):.4f}")
-    
-    if "bertscore_f1" in overall:
-        print(f"  BERTScore F1:                   {overall['bertscore_f1']:.4f}")
+    print(f"  Keyword Recall:                 {overall.get('keyword_recall', 0):.4f}  # Measures main navigation signal detection")
     
     if "avg_inference_time" in overall:
         print(f"\n⏱️  Avg Inference Time:            {overall['avg_inference_time']:.2f}s")
@@ -650,7 +557,7 @@ def print_metrics_summary(metrics: Dict) -> None:
     for category, cat_metrics in sorted(by_category.items()):
         print(f"\n  {category}:")
         print(f"    Count: {cat_metrics.get('count', 0)}")
-        print(f"    Keyword F1: {cat_metrics.get('keyword_f1', 0):.4f}")
+        print(f"    Keyword Recall: {cat_metrics.get('keyword_recall', 0):.4f}")
         if "exact_match" in cat_metrics:
             print(f"    Exact Match: {cat_metrics['exact_match']:.4f}")
     

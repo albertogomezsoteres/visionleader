@@ -27,16 +27,7 @@
                     "question": "What navigation element is visible in front of me? Answer with one word.",
                     "expected_keywords": ["stairs", "staircase", "steps"],
                     "expected_keywords_primary": ["stairs", "staircase", "steps"],
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "staircase_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the staircase and its features.",
-                    "expected_keywords": ["stairs", "staircase", "steps", "handrail", "railing", "wall", "floor", "ceiling"],
-                    "expected_keywords_primary": ["stairs", "staircase", "steps"],
-                    "expected_keywords_secondary": ["handrail", "railing", "wall", "floor", "ceiling"],
-                    "metrics": ["bertscore", "keyword_f1"]
+                    "metrics": ["keyword_recall"]
                 }
             ]
         },
@@ -61,16 +52,7 @@
                     "question": "What navigation element is visible in front of me? Answer with one word.",
                     "expected_keywords": ["elevator", "lift"],
                     "expected_keywords_primary": ["elevator", "lift"],
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "elevator_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the elevator and its features.",
-                    "expected_keywords": ["elevator", "lift", "door", "doors", "button", "buttons", "panel", "wall", "floor"],
-                    "expected_keywords_primary": ["elevator", "lift"],
-                    "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
-                    "metrics": ["bertscore", "keyword_f1"]
+                    "metrics": ["keyword_recall"]
                 }
             ]
         },
@@ -95,16 +77,7 @@
                     "question": "What navigation element is visible in front of me? Answer with one word.",
                     "expected_keywords": ["door", "doors", "doorway"],
                     "expected_keywords_primary": ["door", "doors", "doorway"],
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "door_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the door and its features.",
-                    "expected_keywords": ["door", "doors", "handle", "frame", "glass", "wall", "floor", "sign"],
-                    "expected_keywords_primary": ["door", "doors"],
-                    "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "sign"],
-                    "metrics": ["bertscore", "keyword_f1"]
+                    "metrics": ["keyword_recall"]
                 }
             ]
         },
@@ -133,41 +106,10 @@
                     "id": "doorsign_element",
                     "type": "element_list",
                     "question": "What navigation-related sign or door is visible? Answer with one word.",
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "doorsign_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the door sign and its features.",
-                    "metrics": ["bertscore", "keyword_f1"]
-                }
-            ]
-        },
-        "zebra_crossing": {
-            "display_name": "Pasos de Cebra",
-            "questions": [
-                {
-                    "id": "crossing_detection",
-                    "type": "closed",
-                    "question": "Is this a zebra crossing?",
-                    "metrics": ["exact_match"]
-                },
-                {
-                    "id": "crossing_element",
-                    "type": "element_list",
-                    "question": "What navigation element is visible in front of me? Answer with one word.",
-                    "expected_keywords": ["crossing", "crosswalk", "zebra"],
-                    "expected_keywords_primary": ["crossing", "crosswalk", "zebra"],
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "crossing_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the crossing and its features.",
-                    "expected_keywords": ["crossing", "crosswalk", "zebra", "stripes", "road", "street", "pedestrian", "traffic", "sign"],
-                    "expected_keywords_primary": ["crossing", "crosswalk", "zebra"],
-                    "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "sign"],
-                    "metrics": ["bertscore", "keyword_f1"]
+                    "_comment": "Keywords vary by image (exit vs bathroom). These are valid keywords. Specific keywords per image are defined in ufv_expected_answers.json.",
+                    "expected_keywords": ["bathroom", "restroom", "exit", "toilet", "door"],
+                    "expected_keywords_primary": ["bathroom", "restroom", "exit", "toilet", "door"],
+                    "metrics": ["keyword_recall"]
                 }
             ]
         },
@@ -191,15 +133,6 @@
                     "type": "closed",
                     "question": "Are there doors visible along the corridor?",
                     "metrics": ["exact_match"]
-                },
-                {
-                    "id": "corridor_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the corridor and its features.",
-                    "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "ceiling", "window"],
-                    "expected_keywords_primary": ["corridor", "hallway"],
-                    "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
-                    "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
         },
@@ -213,22 +146,19 @@
                     "metrics": ["exact_match"]
                 },
                 {
-                    "id": "obstacle_blocking",
+                    "id": "obstacle_safety",
                     "type": "closed",
-                    "question": "Can I walk straight ahead or is there an object blocking me?",
+                    "question": "Is it safe to walk straight ahead?",
                     "metrics": ["exact_match"]
                 },
                 {
                     "id": "obstacle_object",
                     "type": "element_list",
                     "question": "What object is visible in front of the walking path? Answer with one word.",
-                    "metrics": ["keyword_f1"]
-                },
-                {
-                    "id": "obstacle_caption",
-                    "type": "caption",
-                    "question": "Describe the image and the navigation-relevant elements visible, focusing on any obstacles or objects in the walking path.",
-                    "metrics": ["bertscore", "keyword_f1"]
+                    "_comment": "Keywords vary by image (chair, plant, stone, etc.). These are valid keywords. Specific keywords per image are defined in ufv_expected_answers.json.",
+                    "expected_keywords": ["chair", "plant", "box", "obstacle", "object"],
+                    "expected_keywords_primary": ["chair", "plant", "box", "obstacle", "object"],
+                    "metrics": ["keyword_recall"]
                 }
             ]
         }
@@ -243,14 +173,12 @@
         "door_bathroom": "door_sign",
         "doorway": "door",
         "obstacle": "obstacle",
-        "zebra crossing": "zebra_crossing",
-        "crossing": "zebra_crossing",
         "library": "corridor"
     },
     "metadata": {
-        "total_categories": 7,
+        "total_categories": 6,
         "questions_per_category": "variable",
-        "question_types": ["closed", "element_list", "caption"],
-        "metrics_used": ["exact_match", "keyword_f1", "bertscore"]
+        "question_types": ["closed", "element_list"],
+        "metrics_used": ["exact_match", "keyword_recall"]
     }
 }

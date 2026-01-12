@@ -1,300 +1,157 @@
 {
     "_comment": "Expected answers per image for UFV Campus dataset. Complete this file by reviewing each image.",
-    "_instructions": "For questions where the answer is always the same (e.g., detection questions), you can omit them from this file - they will use the default from questions.json. For captions, use the format: '{question_id}_reference' (e.g., 'staircase_caption_reference')",
+    "_instructions": "For detection questions (e.g., 'Is there a staircase?'), the answer is always 'yes' since the image is in that category folder. You can omit these or set them to 'yes'. For element questions, keywords are defined in questions.json and are the same for all images of the same category. Only include *_element_keywords here if you need to override them for a specific image (e.g., doorsign_element_keywords varies by image type).",
     
     "ufv_staircase_01.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase going upward with concrete steps and metal handrails on the sides, attached to a building"
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_02.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_03.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_04.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_05.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_06.JPEG": {
-        "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
+        "staircase_detection": "yes",
+        "staircase_direction": "up",
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_07.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_08.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     "ufv_staircase_09.JPEG": {
-        "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_10.JPEG": {
+        "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_11.JPEG": {
-        "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_12.JPEG": {
-        "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_13.JPEG": {
-        "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_14.JPEG": {
-        "staircase_direction": "up",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going upward, handrails visible on both sides, walls and floor visible."
-    },
-    "ufv_staircase_15.JPEG": {
-        "staircase_direction": "down",
-        "staircase_handrails": "yes",
-        "staircase_caption_reference": "A staircase with steps going downward, handrails visible on both sides, walls and floor visible."
+        "staircase_handrails": "yes"
     },
     
     "ufv_elevator_01.JPEG": {
-        "elevator_doors": "closed",
-        "elevator_caption_reference": "An elevator with closed doors, control buttons and panel visible, walls and floor visible."
+        "elevator_detection": "yes",
+        "elevator_doors": "closed"
     },
     "ufv_elevator_02.JPEG": {
-        "elevator_doors": "open",
-        "elevator_caption_reference": "An elevator with open doors, control buttons and panel visible, walls and floor visible."
+        "elevator_detection": "yes",
+        "elevator_doors": "closed"
     },
     
     "ufv_door_01.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
+        "door_detection": "yes",
+        "door_state": "closed"
     },
     "ufv_door_02.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
+        "door_detection": "yes",
+        "door_state": "closed"
     },
     "ufv_door_03.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
+        "door_detection": "yes",
+        "door_state": "open"
     },
     "ufv_door_04.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
+        "door_detection": "yes",
+        "door_state": "closed"
     },
     "ufv_door_05.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_06.JPEG": {
-        "door_state": "open",
-        "door_caption_reference": "An open door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_07.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_08.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_09.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_10.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_11.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_12.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_13.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
-    },
-    "ufv_door_14.JPEG": {
-        "door_state": "closed",
-        "door_caption_reference": "A closed door with handle and frame, walls and floor visible."
+        "door_detection": "yes",
+        "door_state": "closed"
     },
     
     "ufv_doorSign_01.JPEG": {
-        "doorsign_bathroom": "no",
-        "doorsign_exit": "yes",
-        "doorsign_state": "closed",
-        "doorsign_element_keywords": ["exit", "door"],
-        "doorsign_element_keywords_primary": ["exit", "door"],
-        "doorsign_caption_reference": "An exit door with exit sign, closed, walls visible.",
-        "doorsign_caption_keywords": ["exit", "door", "sign", "closed", "wall"],
-        "doorsign_caption_keywords_primary": ["exit", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["closed", "wall"]
-    },
-    "ufv_doorSign_02.jpg": {
         "doorsign_bathroom": "yes",
         "doorsign_exit": "no",
         "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_element_keywords_primary": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_caption_reference": "A bathroom door with bathroom sign, closed, walls visible.",
-        "doorsign_caption_keywords": ["bathroom", "restroom", "door", "sign", "closed", "wall"],
-        "doorsign_caption_keywords_primary": ["bathroom", "restroom", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["closed", "wall"]
+        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
+    },
+    "ufv_doorSign_02.JPEG": {
+        "doorsign_bathroom": "yes",
+        "doorsign_exit": "no",
+        "doorsign_state": "closed",
+        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
     },
     "ufv_doorSign_03.JPEG": {
         "doorsign_bathroom": "yes",
         "doorsign_exit": "no",
-        "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_element_keywords_primary": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_caption_reference": "A bathroom door with bathroom sign, closed, walls visible.",
-        "doorsign_caption_keywords": ["bathroom", "restroom", "door", "sign", "closed", "wall"],
-        "doorsign_caption_keywords_primary": ["bathroom", "restroom", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["closed", "wall"]
+        "doorsign_state": "open",
+        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
     },
     "ufv_doorSign_04.JPEG": {
-        "doorsign_bathroom": "yes",
-        "doorsign_exit": "no",
+        "doorsign_bathroom": "no",
+        "doorsign_exit": "yes",
         "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_element_keywords_primary": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_caption_reference": "A bathroom door with bathroom sign, closed, walls visible.",
-        "doorsign_caption_keywords": ["bathroom", "restroom", "door", "sign", "closed", "wall"],
-        "doorsign_caption_keywords_primary": ["bathroom", "restroom", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["closed", "wall"]
-    },
-    "ufv_doorSign_05.JPEG": {
-        "doorsign_bathroom": "yes",
-        "doorsign_exit": "no",
-        "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_element_keywords_primary": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_caption_reference": "A bathroom door with bathroom sign, closed, walls visible.",
-        "doorsign_caption_keywords": ["bathroom", "restroom", "door", "sign", "closed", "wall"],
-        "doorsign_caption_keywords_primary": ["bathroom", "restroom", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["closed", "wall"]
-    },
-    "ufv_doorSign_06.JPEG": {
-        "doorsign_bathroom": "yes",
-        "doorsign_exit": "no",
-        "doorsign_state": "open",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_element_keywords_primary": ["bathroom", "restroom", "toilet", "door"],
-        "doorsign_caption_reference": "A bathroom door with bathroom sign, open, walls visible.",
-        "doorsign_caption_keywords": ["bathroom", "restroom", "door", "sign", "open", "wall"],
-        "doorsign_caption_keywords_primary": ["bathroom", "restroom", "door", "sign"],
-        "doorsign_caption_keywords_secondary": ["open", "wall"]
-    },
-    
-    "ufv_crossing_01.JPEG": {
-        "_comment": "Only detection question, no per-image answer needed",
-        "crossing_caption_reference": "A pedestrian crossing with white stripes on the road, possibly with traffic signs or signals visible."
+        "doorsign_element_keywords": ["exit", "door"]
     },
     
     "ufv_corridor_01.JPEG": {
+        "corridor_detection": "yes",
         "corridor_clear": "yes",
-        "corridor_doors": "no",
-        "corridor_caption_reference": "A corridor or hallway with no doors visible along the sides, floor, walls, and ceiling with lights visible."
+        "corridor_doors": "no"
     },
     "ufv_corridor_02.JPEG": {
+        "corridor_detection": "yes",
         "corridor_clear": "yes",
-        "corridor_doors": "yes",
-        "corridor_caption_reference": "A corridor or hallway with doors along the sides, floor, walls, and ceiling with lights visible."
+        "corridor_doors": "yes"
     },
     "ufv_corridor_03.JPEG": {
+        "corridor_detection": "yes",
         "corridor_clear": "yes",
-        "corridor_doors": "yes",
-        "corridor_caption_reference": "A corridor or hallway with doors along the sides, floor, walls, and ceiling with lights visible."
+        "corridor_doors": "yes"
     },
     "ufv_corridor_04.JPEG": {
+        "corridor_detection": "yes",
         "corridor_clear": "yes",
-        "corridor_doors": "yes",
-        "corridor_caption_reference": "A corridor or hallway with doors along the sides, floor, walls, and ceiling with lights visible."
+        "corridor_doors": "yes"
     },
     
     "ufv_obstacle_01.JPEG": {
-        "obstacle_object": "plant",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["plant"],
-        "obstacle_object_keywords_primary": ["plant"],
-        "obstacle_caption_reference": "A plant in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "plant", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["plant", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["plant"]
     },
     "ufv_obstacle_02.JPEG": {
-        "obstacle_object": "chair",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["chair"],
-        "obstacle_object_keywords_primary": ["chair"],
-        "obstacle_caption_reference": "A chair in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "chair", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["chair", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["chair"]
     },
     "ufv_obstacle_03.JPEG": {
-        "obstacle_object": "stone",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["stone"],
-        "obstacle_object_keywords_primary": ["stone"],
-        "obstacle_caption_reference": "A stone or rock in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "stone", "rock", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["stone", "rock", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["stone", "block", "obstacle"]
     },
     "ufv_obstacle_04.JPEG": {
-        "obstacle_object": "chair",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["chair"],
-        "obstacle_object_keywords_primary": ["chair"],
-        "obstacle_caption_reference": "A chair in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "chair", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["chair", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["chair"]
     },
     "ufv_obstacle_05.JPEG": {
-        "obstacle_object": "chair",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["chair"],
-        "obstacle_object_keywords_primary": ["chair"],
-        "obstacle_caption_reference": "A chair in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "chair", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["chair", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["chair", "chairs"]
     },
     "ufv_obstacle_06.JPEG": {
-        "obstacle_object": "chair",
-        "obstacle_blocking": "blocking me",
-        "obstacle_object_keywords": ["chair"],
-        "obstacle_object_keywords_primary": ["chair"],
-        "obstacle_caption_reference": "A chair in the walking path that blocks navigation, floor visible.",
-        "obstacle_caption_keywords": ["obstacle", "object", "blocking", "chair", "floor"],
-        "obstacle_caption_keywords_primary": ["obstacle", "object", "blocking"],
-        "obstacle_caption_keywords_secondary": ["chair", "floor"]
+        "obstacle_detection": "yes",
+        "obstacle_safety": "no",
+        "obstacle_object_keywords": ["chair"]
     }
 }

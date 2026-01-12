@@ -259,7 +259,8 @@ def discover_images(data_path: str, valid_extensions: Tuple[str, ...] = ('.jpg',
 def load_dataset(
     data_path: str,
     questions_config: Dict,
-    load_images: bool = False
+    load_images: bool = False,
+    dataset_filter: Optional[str] = "UFV Campus"
 ) -> List[ImageSample]:
     """
     Load all images from the dataset directory.
@@ -268,6 +269,8 @@ def load_dataset(
         data_path: Path to the data directory
         questions_config: Questions configuration dictionary
         load_images: Whether to load images into memory (False for lazy loading)
+        dataset_filter: Optional dataset source to filter by (default: "UFV Campus")
+                        Set to None to load all datasets
     
     Returns:
         List of ImageSample objects
@@ -280,6 +283,7 @@ def load_dataset(
     
     samples = []
     excluded_count = 0
+    filtered_count = 0
     
     for img_info in raw_images:
         category = get_category_from_folder(img_info["folder_name"], folder_mapping)
@@ -289,11 +293,18 @@ def load_dataset(
             excluded_count += 1
             continue
         
+        dataset_source = get_dataset_source(img_info["image_path"])
+        
+        # Filter by dataset source if specified
+        if dataset_filter is not None and dataset_source != dataset_filter:
+            filtered_count += 1
+            continue
+        
         sample = ImageSample(
             image_id=img_info["image_id"],
             image_path=img_info["image_path"],
             category=category,
-            dataset_source=get_dataset_source(img_info["image_path"]),
+            dataset_source=dataset_source,
             image=None
         )
         
@@ -306,6 +317,10 @@ def load_dataset(
         samples.append(sample)
     
     print(f"Loaded {len(samples)} images from {data_path}")
+    if dataset_filter:
+        print(f"  (Filtered to dataset: {dataset_filter})")
+    if filtered_count > 0:
+        print(f"  (Excluded {filtered_count} images from other datasets)")
     if excluded_count > 0:
         print(f"  (Excluded {excluded_count} images from categories: {excluded_categories})")
     return samples
@@ -478,11 +493,18 @@ def create_evaluation_items(
             # Determine expected_answer (per-image takes priority, then default from questions.json)
             final_expected_answer = per_image_answer if per_image_answer is not None else question.expected_answer
             
-            # For detection questions, if no expected_answer is set, default to "yes"
-            # (since if the image is in this category, the object should be present)
+            # For closed questions without expected_answer, try to infer from question context
+            # This handles cases where images are missing from ufv_expected_answers.json
             if final_expected_answer is None and question.question_type == "closed":
                 if question.question_id.endswith("_detection"):
+                    # Detection questions: if image is in this category, object should be present
                     final_expected_answer = "yes"
+                elif question.question_id.endswith("_blocking"):
+                    # Blocking questions: if image is in obstacle category, likely blocking
+                    if sample.category == "obstacle":
+                        final_expected_answer = "blocking me"
+                # For other closed questions, we can't infer safely, so leave as None
+                # (this will be logged but won't break the evaluation)
             
             # Determine keywords (per-image takes priority, then default from questions.json)
             final_keywords = per_image_keywords if per_image_keywords is not None else question.expected_keywords
