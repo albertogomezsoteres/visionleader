@@ -73,30 +73,51 @@ def run_single_inference(
     start_time = time.time()
     
     with torch.no_grad():
+        # Use generation parameters that reduce hallucinations
+        # Based on working configuration from user's notebook
+        generation_kwargs = {
+            "max_new_tokens": max_new_tokens,
+            "do_sample": False,  # Deterministic output (greedy decoding)
+            "num_beams": 1,  # Greedy search (faster, more deterministic)
+            "temperature": 1.0,  # Not used with do_sample=False, but set for consistency
+            "repetition_penalty": 1.2,  # Penalize repetition to avoid loops
+            "length_penalty": 1.0,  # No length penalty
+            "early_stopping": False,  # Don't stop early
+        }
+        
         outputs = model.generate(
             **inputs,
-            max_new_tokens=max_new_tokens,
-            do_sample=False  # Deterministic output
+            **generation_kwargs
         )
     
     inference_time = time.time() - start_time
     
     # Decode output
     # PaliGemma returns the full sequence including the input
-    # Decode the full output first, then extract only the generated part
-    full_decoded = processor.decode(outputs[0], skip_special_tokens=True)
+    # We need to extract only the newly generated tokens
     
-    # Extract only the generated part (after the input question)
-    # Remove the input text from the beginning
-    if question in full_decoded:
-        generated_text = full_decoded[len(question):].lstrip()
-    else:
-        # Fallback: extract by token length if text matching fails
-        input_len = inputs["input_ids"].shape[-1]
-        generated_ids = outputs[0][input_len:]
-        generated_text = processor.decode(generated_ids, skip_special_tokens=True)
+    # Get the length of input tokens
+    input_len = inputs["input_ids"].shape[-1]
     
-    return generated_text.strip(), inference_time
+    # Extract only the generated tokens (after input)
+    generated_ids = outputs[0][input_len:]
+    
+    # Decode only the generated part
+    generated_text = processor.decode(generated_ids, skip_special_tokens=True)
+    
+    # Clean up the text: remove any remaining prompt artifacts
+    generated_text = generated_text.strip()
+    
+    # Remove the question text if it somehow appears in the output
+    # (this can happen if the model repeats the input)
+    if question.lower() in generated_text.lower():
+        # Try to remove the question from the beginning
+        question_lower = question.lower().strip()
+        generated_lower = generated_text.lower()
+        if generated_lower.startswith(question_lower):
+            generated_text = generated_text[len(question):].strip()
+    
+    return generated_text, inference_time
 
 
 def load_image_if_needed(sample: ImageSample) -> Image.Image:

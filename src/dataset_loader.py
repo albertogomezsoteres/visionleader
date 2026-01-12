@@ -478,6 +478,12 @@ def create_evaluation_items(
             # Determine expected_answer (per-image takes priority, then default from questions.json)
             final_expected_answer = per_image_answer if per_image_answer is not None else question.expected_answer
             
+            # For detection questions, if no expected_answer is set, default to "yes"
+            # (since if the image is in this category, the object should be present)
+            if final_expected_answer is None and question.question_type == "closed":
+                if question.question_id.endswith("_detection"):
+                    final_expected_answer = "yes"
+            
             # Determine keywords (per-image takes priority, then default from questions.json)
             final_keywords = per_image_keywords if per_image_keywords is not None else question.expected_keywords
             final_keywords_primary = per_image_keywords_primary if per_image_keywords_primary is not None else question.expected_keywords_primary
@@ -491,11 +497,19 @@ def create_evaluation_items(
                 # For non-closed questions or if no expected_answer, use default or empty
                 generated_acceptable = question.acceptable_answers if question.acceptable_answers else []
             
-            # Create a copy of the question if we have per-image data or generated acceptable_answers
-            if (per_image_answer is not None or per_image_reference is not None or 
-                per_image_keywords is not None or per_image_keywords_primary is not None or 
-                per_image_keywords_secondary is not None or 
-                (generated_acceptable and question.question_type == "closed")):
+            # Check if we need to create a modified question copy
+            # (if we have per-image data, modified expected_answer, or generated acceptable_answers)
+            needs_copy = (
+                per_image_answer is not None or 
+                per_image_reference is not None or 
+                per_image_keywords is not None or 
+                per_image_keywords_primary is not None or 
+                per_image_keywords_secondary is not None or
+                final_expected_answer != question.expected_answer or  # expected_answer was modified (e.g., detection default)
+                (generated_acceptable and question.question_type == "closed" and generated_acceptable != question.acceptable_answers)
+            )
+            
+            if needs_copy:
                 question_copy = Question(
                     question_id=question.question_id,
                     question_type=question.question_type,
