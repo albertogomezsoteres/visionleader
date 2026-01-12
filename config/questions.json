@@ -32,7 +32,7 @@
                 {
                     "id": "staircase_caption",
                     "type": "caption",
-                    "question": "Caption listing only navigation-relevant elements",
+                    "question": "caption navigation-relevant elements",
                     "metrics": ["bertscore"]
                 }
             ]
@@ -63,7 +63,7 @@
                 {
                     "id": "elevator_caption",
                     "type": "caption",
-                    "question": "Caption listing only navigation-relevant elements",
+                    "question": "caption navigation-relevant elements",
                     "metrics": ["bertscore"]
                 }
             ]
@@ -94,7 +94,7 @@
                 {
                     "id": "door_caption",
                     "type": "caption",
-                    "question": "Caption listing only navigation-relevant elements",
+                    "question": "caption navigation-relevant elements",
                     "metrics": ["bertscore"]
                 }
             ]
@@ -132,7 +132,7 @@
                 {
                     "id": "doorsign_caption",
                     "type": "caption",
-                    "question": "Caption listing only navigation-relevant elements",
+                    "question": "caption navigation-relevant elements",
                     "metrics": ["bertscore"]
                 }
             ]
@@ -164,7 +164,7 @@
                 {
                     "id": "obstacle_caption",
                     "type": "caption",
-                    "question": "Caption listing only navigation-relevant elements",
+                    "question": "caption navigation-relevant elements",
                     "metrics": ["bertscore"]
                 }
             ]

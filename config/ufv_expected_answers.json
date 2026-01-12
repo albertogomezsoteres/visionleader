@@ -5,85 +5,85 @@
         "staircase_detection": "yes",
         "staircase_direction": "up",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going up with a railing"
     },
     "ufv_staircase_02.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going up with a railing"
     },
     "ufv_staircase_03.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going down with a railing"
     },
     "ufv_staircase_04.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going up with a railing"
     },
     "ufv_staircase_05.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going down with a railing"
     },
     "ufv_staircase_06.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going up with a railing"
     },
     "ufv_staircase_07.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going down with a railing"
     },
     "ufv_staircase_08.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going up with a railing"
     },
     "ufv_staircase_09.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
         "staircase_handrails": "yes",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Stairs going down with a railing"
     },
     "ufv_elevator_01.JPEG": {
         "elevator_detection": "yes",
         "elevator_doors": "closed",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed elevator"
     },
     "ufv_elevator_02.JPEG": {
         "elevator_detection": "yes",
         "elevator_doors": "closed",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed elevator"
     },
     "ufv_door_01.JPEG": {
         "door_detection": "yes",
         "door_state": "closed",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed door"
     },
     "ufv_door_02.JPEG": {
         "door_detection": "yes",
         "door_state": "closed",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed door"
     },
     "ufv_door_03.JPEG": {
         "door_detection": "yes",
         "door_state": "open",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Open door"
     },
     "ufv_door_04.JPEG": {
         "door_detection": "yes",
         "door_state": "closed",
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed door"
     },
     "ufv_doorSign_01.JPEG": {
         "doorsign_bathroom": "yes",
@@ -95,7 +95,7 @@
             "toilet",
             "door"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Accessible bathroom door"
     },
     "ufv_doorSign_02.JPEG": {
         "doorsign_bathroom": "yes",
@@ -107,7 +107,7 @@
             "toilet",
             "door"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Accessible bathroom door"
     },
     "ufv_doorSign_03.JPEG": {
         "doorsign_bathroom": "yes",
@@ -119,7 +119,7 @@
             "toilet",
             "door"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Open bathroom door"
     },
     "ufv_doorSign_04.JPEG": {
         "doorsign_bathroom": "no",
@@ -129,7 +129,7 @@
             "exit",
             "door"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Closed glass door with exit sign above"
     },
     "ufv_obstacle_01.JPEG": {
         "obstacle_detection": "yes",
@@ -137,7 +137,7 @@
         "obstacle_object_keywords": [
             "plant"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Plant blocking the walking path"
     },
     "ufv_obstacle_02.JPEG": {
         "obstacle_detection": "yes",
@@ -145,7 +145,7 @@
         "obstacle_object_keywords": [
             "chair"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Chair blocking the walking path"
     },
     "ufv_obstacle_03.JPEG": {
         "obstacle_detection": "yes",
@@ -155,7 +155,7 @@
             "block",
             "obstacle"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Large obstacle blocking the path"
     },
     "ufv_obstacle_04.JPEG": {
         "obstacle_detection": "yes",
@@ -163,7 +163,7 @@
         "obstacle_object_keywords": [
             "chair"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Chair blocking the stairs"
     },
     "ufv_obstacle_05.JPEG": {
         "obstacle_detection": "yes",
@@ -172,7 +172,7 @@
             "chair",
             "chairs"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Two chairs blocking the stairs"
     },
     "ufv_obstacle_06.JPEG": {
         "obstacle_detection": "yes",
@@ -180,6 +180,6 @@
         "obstacle_object_keywords": [
             "chair"
         ],
-        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
+        "caption_reference": "Chair blocking the walking path"
     }
 }
