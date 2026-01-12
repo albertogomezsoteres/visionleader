@@ -485,7 +485,11 @@ def create_evaluation_items(
             # Get per-image data
             image_answers = per_image_answers.get(sample.image_id, {})
             per_image_answer = image_answers.get(question.question_id)
-            per_image_reference = image_answers.get(f"{question.question_id}_reference")
+            # For caption questions, look for "caption_reference", otherwise use question_id_reference
+            if question.question_type == "caption":
+                per_image_reference = image_answers.get("caption_reference")
+            else:
+                per_image_reference = image_answers.get(f"{question.question_id}_reference")
             per_image_keywords = image_answers.get(f"{question.question_id}_keywords")
             per_image_keywords_primary = image_answers.get(f"{question.question_id}_keywords_primary")
             per_image_keywords_secondary = image_answers.get(f"{question.question_id}_keywords_secondary")

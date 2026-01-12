@@ -1,132 +1,185 @@
 {
     "_comment": "Expected answers per image for UFV Campus dataset. Complete this file by reviewing each image.",
-    "_instructions": "For detection questions (e.g., 'Is there a staircase?'), the answer is always 'yes' since the image is in that category folder. You can omit these or set them to 'yes'. For element questions, keywords are defined in questions.json and are the same for all images of the same category. Only include *_element_keywords here if you need to override them for a specific image (e.g., doorsign_element_keywords varies by image type).",
-    
+    "_instructions": "For detection questions (e.g., 'Is there a staircase?'), the answer is always 'yes' since the image is in that category folder. You can omit these or set them to 'yes'. For element questions, keywords are defined in questions.json and are the same for all images of the same category. Only include *_element_keywords here if you need to override them for a specific image (e.g., doorsign_element_keywords varies by image type). For caption questions, add 'caption_reference' with a description listing only navigation-relevant elements.",
     "ufv_staircase_01.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_02.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_03.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_04.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_05.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_06.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_07.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_08.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "up",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_staircase_09.JPEG": {
         "staircase_detection": "yes",
         "staircase_direction": "down",
-        "staircase_handrails": "yes"
+        "staircase_handrails": "yes",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
-    
     "ufv_elevator_01.JPEG": {
         "elevator_detection": "yes",
-        "elevator_doors": "closed"
+        "elevator_doors": "closed",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_elevator_02.JPEG": {
         "elevator_detection": "yes",
-        "elevator_doors": "closed"
+        "elevator_doors": "closed",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
-    
     "ufv_door_01.JPEG": {
         "door_detection": "yes",
-        "door_state": "closed"
+        "door_state": "closed",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_door_02.JPEG": {
         "door_detection": "yes",
-        "door_state": "closed"
+        "door_state": "closed",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_door_03.JPEG": {
         "door_detection": "yes",
-        "door_state": "open"
+        "door_state": "open",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_door_04.JPEG": {
         "door_detection": "yes",
-        "door_state": "closed"
+        "door_state": "closed",
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
-    
     "ufv_doorSign_01.JPEG": {
         "doorsign_bathroom": "yes",
         "doorsign_exit": "no",
         "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
+        "doorsign_element_keywords": [
+            "bathroom",
+            "restroom",
+            "toilet",
+            "door"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_doorSign_02.JPEG": {
         "doorsign_bathroom": "yes",
         "doorsign_exit": "no",
         "doorsign_state": "closed",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
+        "doorsign_element_keywords": [
+            "bathroom",
+            "restroom",
+            "toilet",
+            "door"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_doorSign_03.JPEG": {
         "doorsign_bathroom": "yes",
         "doorsign_exit": "no",
         "doorsign_state": "open",
-        "doorsign_element_keywords": ["bathroom", "restroom", "toilet", "door"]
+        "doorsign_element_keywords": [
+            "bathroom",
+            "restroom",
+            "toilet",
+            "door"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_doorSign_04.JPEG": {
         "doorsign_bathroom": "no",
         "doorsign_exit": "yes",
         "doorsign_state": "closed",
-        "doorsign_element_keywords": ["exit", "door"]
+        "doorsign_element_keywords": [
+            "exit",
+            "door"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
-    
     "ufv_obstacle_01.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["plant"]
+        "obstacle_object_keywords": [
+            "plant"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_obstacle_02.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["chair"]
+        "obstacle_object_keywords": [
+            "chair"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_obstacle_03.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["stone", "block", "obstacle"]
+        "obstacle_object_keywords": [
+            "stone",
+            "block",
+            "obstacle"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_obstacle_04.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["chair"]
+        "obstacle_object_keywords": [
+            "chair"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_obstacle_05.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["chair", "chairs"]
+        "obstacle_object_keywords": [
+            "chair",
+            "chairs"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     },
     "ufv_obstacle_06.JPEG": {
         "obstacle_detection": "yes",
         "obstacle_safety": "no",
-        "obstacle_object_keywords": ["chair"]
+        "obstacle_object_keywords": [
+            "chair"
+        ],
+        "caption_reference": "TODO - Complete: List only navigation-relevant elements visible in this image"
     }
 }

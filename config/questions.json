@@ -28,6 +28,12 @@
                     "expected_keywords": ["stairs", "staircase", "steps"],
                     "expected_keywords_primary": ["stairs", "staircase", "steps"],
                     "metrics": ["keyword_recall"]
+                },
+                {
+                    "id": "staircase_caption",
+                    "type": "caption",
+                    "question": "Caption listing only navigation-relevant elements",
+                    "metrics": ["bertscore"]
                 }
             ]
         },
@@ -53,6 +59,12 @@
                     "expected_keywords": ["elevator", "lift"],
                     "expected_keywords_primary": ["elevator", "lift"],
                     "metrics": ["keyword_recall"]
+                },
+                {
+                    "id": "elevator_caption",
+                    "type": "caption",
+                    "question": "Caption listing only navigation-relevant elements",
+                    "metrics": ["bertscore"]
                 }
             ]
         },
@@ -78,6 +90,12 @@
                     "expected_keywords": ["door", "doors", "doorway"],
                     "expected_keywords_primary": ["door", "doors", "doorway"],
                     "metrics": ["keyword_recall"]
+                },
+                {
+                    "id": "door_caption",
+                    "type": "caption",
+                    "question": "Caption listing only navigation-relevant elements",
+                    "metrics": ["bertscore"]
                 }
             ]
         },
@@ -110,6 +128,12 @@
                     "expected_keywords": ["bathroom", "restroom", "exit", "toilet", "door"],
                     "expected_keywords_primary": ["bathroom", "restroom", "exit", "toilet", "door"],
                     "metrics": ["keyword_recall"]
+                },
+                {
+                    "id": "doorsign_caption",
+                    "type": "caption",
+                    "question": "Caption listing only navigation-relevant elements",
+                    "metrics": ["bertscore"]
                 }
             ]
         },
@@ -136,6 +160,12 @@
                     "expected_keywords": ["chair", "plant", "box", "obstacle", "object"],
                     "expected_keywords_primary": ["chair", "plant", "box", "obstacle", "object"],
                     "metrics": ["keyword_recall"]
+                },
+                {
+                    "id": "obstacle_caption",
+                    "type": "caption",
+                    "question": "Caption listing only navigation-relevant elements",
+                    "metrics": ["bertscore"]
                 }
             ]
         }
@@ -153,7 +183,7 @@
     "metadata": {
         "total_categories": 5,
         "questions_per_category": "variable",
-        "question_types": ["closed", "element_list"],
-        "metrics_used": ["exact_match", "keyword_recall"]
+        "question_types": ["closed", "element_list", "caption"],
+        "metrics_used": ["exact_match", "keyword_recall", "bertscore"]
     }
 }
