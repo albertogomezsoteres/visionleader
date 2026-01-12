@@ -419,6 +419,199 @@ def calculate_keyword_f1_batch(
 
 
 # ============================================================
+# OUTPUT LENGTH / VERBOSITY
+# ============================================================
+
+def calculate_output_length(text: str) -> int:
+    """
+    Calculate the number of words in a text.
+    
+    Args:
+        text: Input text
+    
+    Returns:
+        Number of words (tokens)
+    """
+    if not text:
+        return 0
+    normalized = normalize_text(text)
+    words = normalized.split()
+    return len(words)
+
+
+def calculate_output_length_batch(
+    texts: List[str]
+) -> Dict[str, float]:
+    """
+    Calculate output length statistics for a batch of texts.
+    
+    Args:
+        texts: List of texts (model responses)
+    
+    Returns:
+        Dictionary with avg_output_length, max_output_length, and individual_lengths
+    """
+    if not texts:
+        return {
+            "avg_output_length": 0.0,
+            "max_output_length": 0.0,
+            "individual_lengths": []
+        }
+    
+    lengths = [calculate_output_length(text) for text in texts]
+    
+    return {
+        "avg_output_length": float(np.mean(lengths)),
+        "max_output_length": float(max(lengths)) if lengths else 0.0,
+        "individual_lengths": lengths
+    }
+
+
+# ============================================================
+# BERTSCORE
+# ============================================================
+
+def calculate_bertscore(
+    prediction: str,
+    reference: str,
+    lang: str = "en"
+) -> Dict[str, float]:
+    """
+    Calculate BERTScore for a single prediction-reference pair.
+    
+    BERTScore evaluates the semantic similarity between prediction and reference
+    using contextualized embeddings.
+    
+    Args:
+        prediction: Model prediction text
+        reference: Reference text
+        lang: Language code (default: "en")
+    
+    Returns:
+        Dictionary with precision, recall, and F1 scores
+    """
+    try:
+        from bert_score import score
+    except ImportError:
+        print("Warning: bert_score not installed. Install with: pip install bert-score")
+        return {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+        }
+    
+    if not prediction or not reference:
+        return {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+        }
+    
+    try:
+        # BERTScore returns tensors, convert to Python floats
+        P, R, F1 = score([prediction], [reference], lang=lang, verbose=False)
+        return {
+            "precision": float(P.item()),
+            "recall": float(R.item()),
+            "f1": float(F1.item())
+        }
+    except Exception as e:
+        print(f"Warning: BERTScore calculation failed: {e}")
+        return {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0
+        }
+
+
+def calculate_bertscore_batch(
+    predictions: List[str],
+    references: List[str],
+    lang: str = "en"
+) -> Dict[str, float]:
+    """
+    Calculate BERTScore for a batch of predictions and references.
+    
+    Args:
+        predictions: List of model predictions
+        references: List of reference texts
+        lang: Language code (default: "en")
+    
+    Returns:
+        Dictionary with average precision, recall, F1, and individual scores
+    """
+    try:
+        from bert_score import score
+    except ImportError:
+        print("Warning: bert_score not installed. Install with: pip install bert-score")
+        return {
+            "avg_precision": 0.0,
+            "avg_recall": 0.0,
+            "avg_f1": 0.0,
+            "individual_scores": []
+        }
+    
+    if not predictions or not references:
+        return {
+            "avg_precision": 0.0,
+            "avg_recall": 0.0,
+            "avg_f1": 0.0,
+            "individual_scores": []
+        }
+    
+    if len(predictions) != len(references):
+        print(f"Warning: Mismatch in batch sizes: {len(predictions)} predictions vs {len(references)} references")
+        return {
+            "avg_precision": 0.0,
+            "avg_recall": 0.0,
+            "avg_f1": 0.0,
+            "individual_scores": []
+        }
+    
+    try:
+        # Filter out empty pairs
+        valid_pairs = [(p, r) for p, r in zip(predictions, references) if p and r]
+        if not valid_pairs:
+            return {
+                "avg_precision": 0.0,
+                "avg_recall": 0.0,
+                "avg_f1": 0.0,
+                "individual_scores": []
+            }
+        
+        valid_preds, valid_refs = zip(*valid_pairs)
+        
+        # Calculate BERTScore for all valid pairs at once (more efficient)
+        P, R, F1 = score(list(valid_preds), list(valid_refs), lang=lang, verbose=False)
+        
+        # Convert tensors to Python floats
+        precisions = [float(p.item()) for p in P]
+        recalls = [float(r.item()) for r in R]
+        f1s = [float(f.item()) for f in F1]
+        
+        # Create individual scores dict
+        individual_scores = [
+            {"precision": p, "recall": r, "f1": f}
+            for p, r, f in zip(precisions, recalls, f1s)
+        ]
+        
+        return {
+            "avg_precision": float(np.mean(precisions)),
+            "avg_recall": float(np.mean(recalls)),
+            "avg_f1": float(np.mean(f1s)),
+            "individual_scores": individual_scores
+        }
+    except Exception as e:
+        print(f"Warning: BERTScore batch calculation failed: {e}")
+        return {
+            "avg_precision": 0.0,
+            "avg_recall": 0.0,
+            "avg_f1": 0.0,
+            "individual_scores": []
+        }
+
+
+# ============================================================
 # MAIN METRICS CALCULATOR
 # ============================================================
 
@@ -446,7 +639,8 @@ def calculate_all_metrics(
     
     # Separate results by question type
     closed_results = [r for r in results if r.get("question_type") == "closed"]
-    open_results = [r for r in results if r.get("question_type") != "closed"]
+    caption_results = [r for r in results if r.get("question_type") == "caption"]
+    open_results = [r for r in results if r.get("question_type") != "closed" and r.get("question_type") != "caption"]
     
     # ==========================================
     # EXACT MATCH (for closed questions) - Using semantic matching
@@ -466,6 +660,36 @@ def calculate_all_metrics(
             "exact_match": exact_match_results["accuracy"],
             "count": len(closed_results)
         }
+    
+    # ==========================================
+    # BERTSCORE (for caption questions)
+    # ==========================================
+    if caption_results:
+        caption_predictions = [r["model_response"] for r in caption_results]
+        caption_references = [r.get("reference_answer", "") for r in caption_results]
+        
+        # Filter out pairs where reference is missing
+        valid_caption_pairs = [
+            (pred, ref) for pred, ref in zip(caption_predictions, caption_references)
+            if ref  # Only include if reference_answer exists
+        ]
+        
+        if valid_caption_pairs:
+            valid_preds, valid_refs = zip(*valid_caption_pairs)
+            bertscore_results = calculate_bertscore_batch(list(valid_preds), list(valid_refs))
+            
+            # BERTScore: Recall is the primary metric, F1 is secondary
+            metrics["overall"]["bertscore_recall"] = bertscore_results["avg_recall"]  # Primary metric
+            metrics["overall"]["bertscore_f1"] = bertscore_results["avg_f1"]  # Secondary metric
+            metrics["overall"]["bertscore_precision"] = bertscore_results["avg_precision"]  # Lower priority
+            
+            metrics["by_question_type"]["caption"] = {
+                "bertscore_recall": bertscore_results["avg_recall"],  # Primary metric
+                "bertscore_f1": bertscore_results["avg_f1"],  # Secondary metric
+                "bertscore_precision": bertscore_results["avg_precision"],  # Lower priority
+                "count": len(caption_results),
+                "valid_count": len(valid_caption_pairs)
+            }
     
     # ==========================================
     # KEYWORD F1 (for all questions)
@@ -538,6 +762,60 @@ def calculate_all_metrics(
                 cat_closed_preds, cat_closed_expected, cat_acceptable, use_semantic=True
             )
             metrics["by_category"][category]["exact_match"] = cat_em_results["accuracy"]
+        
+        # BERTScore for caption questions in this category
+        cat_caption = [r for r in cat_results if r.get("question_type") == "caption"]
+        if cat_caption:
+            cat_caption_preds = [r["model_response"] for r in cat_caption]
+            cat_caption_refs = [r.get("reference_answer", "") for r in cat_caption]
+            
+            # Filter out pairs where reference is missing
+            valid_cat_caption_pairs = [
+                (pred, ref) for pred, ref in zip(cat_caption_preds, cat_caption_refs)
+                if ref
+            ]
+            
+            if valid_cat_caption_pairs:
+                valid_preds, valid_refs = zip(*valid_cat_caption_pairs)
+                cat_bertscore_results = calculate_bertscore_batch(list(valid_preds), list(valid_refs))
+                
+                if category not in metrics["by_category"]:
+                    metrics["by_category"][category] = {}
+                # BERTScore: Recall is primary, F1 is secondary
+                metrics["by_category"][category]["bertscore_recall"] = cat_bertscore_results["avg_recall"]  # Primary
+                metrics["by_category"][category]["bertscore_f1"] = cat_bertscore_results["avg_f1"]  # Secondary
+                metrics["by_category"][category]["bertscore_precision"] = cat_bertscore_results["avg_precision"]
+    
+    # ==========================================
+    # OUTPUT LENGTH / VERBOSITY (for element_list and caption)
+    # ==========================================
+    verbosity_results = [r for r in results if r.get("question_type") in ["element_list", "caption"]]
+    if verbosity_results:
+        verbosity_texts = [r["model_response"] for r in verbosity_results]
+        verbosity_stats = calculate_output_length_batch(verbosity_texts)
+        
+        metrics["overall"]["avg_output_length"] = verbosity_stats["avg_output_length"]
+        metrics["overall"]["max_output_length"] = verbosity_stats["max_output_length"]
+        
+        # By question type
+        element_list_results = [r for r in verbosity_results if r.get("question_type") == "element_list"]
+        caption_results_verb = [r for r in verbosity_results if r.get("question_type") == "caption"]
+        
+        if element_list_results:
+            element_list_texts = [r["model_response"] for r in element_list_results]
+            element_list_stats = calculate_output_length_batch(element_list_texts)
+            if "element_list" not in metrics["by_question_type"]:
+                metrics["by_question_type"]["element_list"] = {}
+            metrics["by_question_type"]["element_list"]["avg_output_length"] = element_list_stats["avg_output_length"]
+            metrics["by_question_type"]["element_list"]["max_output_length"] = element_list_stats["max_output_length"]
+        
+        if caption_results_verb:
+            caption_texts = [r["model_response"] for r in caption_results_verb]
+            caption_stats = calculate_output_length_batch(caption_texts)
+            if "caption" not in metrics["by_question_type"]:
+                metrics["by_question_type"]["caption"] = {}
+            metrics["by_question_type"]["caption"]["avg_output_length"] = caption_stats["avg_output_length"]
+            metrics["by_question_type"]["caption"]["max_output_length"] = caption_stats["max_output_length"]
     
     # ==========================================
     # INFERENCE TIME STATS
@@ -574,6 +852,16 @@ def print_metrics_summary(metrics: Dict) -> None:
     
     print(f"  Keyword Recall:                 {overall.get('keyword_recall', 0):.4f}  # Measures main navigation signal detection")
     
+    if "bertscore_recall" in overall:
+        print(f"  BERTScore Recall:               {overall.get('bertscore_recall', 0):.4f}  # Primary metric (semantic similarity for captions)")
+        print(f"  BERTScore F1:                   {overall.get('bertscore_f1', 0):.4f}  # Secondary metric")
+        print(f"  BERTScore Precision:           {overall.get('bertscore_precision', 0):.4f}")
+    
+    if "avg_output_length" in overall:
+        print(f"\n📏 OUTPUT LENGTH (Verbosity):")
+        print(f"  Avg Output Length:              {overall.get('avg_output_length', 0):.1f} words")
+        print(f"  Max Output Length:              {overall.get('max_output_length', 0):.1f} words")
+    
     if "avg_inference_time" in overall:
         print(f"\n⏱️  Avg Inference Time:            {overall['avg_inference_time']:.2f}s")
         print(f"  Total Inference Time:           {overall['total_inference_time']:.2f}s")
@@ -590,6 +878,12 @@ def print_metrics_summary(metrics: Dict) -> None:
         print(f"    Keyword Recall: {cat_metrics.get('keyword_recall', 0):.4f}")
         if "exact_match" in cat_metrics:
             print(f"    Exact Match: {cat_metrics['exact_match']:.4f}")
+        if "bertscore_recall" in cat_metrics:
+            print(f"    BERTScore Recall: {cat_metrics.get('bertscore_recall', 0):.4f}  # Primary")
+            print(f"    BERTScore F1: {cat_metrics.get('bertscore_f1', 0):.4f}  # Secondary")
+            print(f"    BERTScore Precision: {cat_metrics.get('bertscore_precision', 0):.4f}")
+        if "avg_output_length" in cat_metrics:
+            print(f"    Avg Output Length: {cat_metrics.get('avg_output_length', 0):.1f} words")
     
     print("\n" + "=" * 60)
 

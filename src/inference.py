@@ -264,6 +264,14 @@ def run_inference_on_dataset(
                         print(f"✅ Expected Keywords: {result.expected_keywords}")
                     else:
                         print(f"⚠️  Expected Keywords: (not specified)")
+                elif result.question_type == "caption":
+                    # For caption questions, show both model response and reference clearly
+                    print(f"\n📝 CAPTION QUESTION:")
+                    print(f"   Model Response: {result.model_response}")
+                    if result.reference_answer:
+                        print(f"   Reference Answer: {result.reference_answer}")
+                    else:
+                        print(f"   ⚠️  Reference Answer: (not specified)")
                 
                 print(f"⏱️  Inference Time: {result.inference_time:.2f}s")
                 print(f"{'='*80}")
@@ -402,6 +410,10 @@ def results_to_dict(results: List[InferenceResult]) -> List[Dict]:
                 result_dict["expected_keywords"] = r.expected_keywords
             if r.expected_keywords_primary:
                 result_dict["expected_keywords_primary"] = r.expected_keywords_primary
+        elif r.question_type == "caption":
+            # For caption questions: reference_answer for BERTScore
+            if r.reference_answer is not None:
+                result_dict["reference_answer"] = r.reference_answer
         
         output.append(result_dict)
     
