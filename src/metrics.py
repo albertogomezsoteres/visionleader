@@ -244,7 +244,7 @@ def calculate_keyword_metrics(
     if not expected_keywords:
         return {
             "precision": 0.0, "recall": 0.0, "f1": 0.0, 
-            "recall_primary": 0.0, "recall_secondary": 0.0,
+            "recall_primary": 0.0,
             "matched_keywords": []
         }
     
@@ -279,16 +279,6 @@ def calculate_keyword_metrics(
             elif any(token in pred_tokens for token in tokenize(keyword)):
                 matched_primary.append(keyword)
     
-    # Count matched secondary keywords
-    matched_secondary = []
-    if expected_keywords_secondary:
-        for keyword in expected_keywords_secondary:
-            keyword_normalized = normalize_text(keyword)
-            if keyword_normalized in pred_normalized:
-                matched_secondary.append(keyword)
-            elif any(token in pred_tokens for token in tokenize(keyword)):
-                matched_secondary.append(keyword)
-    
     # Calculate metrics
     true_positives = len(matched)
     
@@ -301,9 +291,6 @@ def calculate_keyword_metrics(
         recall_primary = 1.0 if len(matched_primary) > 0 else 0.0
     else:
         recall_primary = 0.0
-    
-    # Recall Secondary: of the secondary keywords, how many did we find?
-    recall_secondary = len(matched_secondary) / len(expected_keywords_secondary) if expected_keywords_secondary and len(expected_keywords_secondary) > 0 else 0.0
     
     # Precision: of the words mentioned, how many are expected keywords?
     # Filter out stopwords for more fair precision calculation
@@ -331,17 +318,13 @@ def calculate_keyword_metrics(
         "recall": recall,
         "f1": f1,
         "recall_primary": recall_primary,
-        "recall_secondary": recall_secondary,
         "matched_keywords": matched,
         "matched_primary": matched_primary,
-        "matched_secondary": matched_secondary,
         "expected_keywords": expected_keywords,
         "num_matched": true_positives,
         "num_expected": len(expected_keywords),
         "num_matched_primary": len(matched_primary),
-        "num_expected_primary": len(expected_keywords_primary) if expected_keywords_primary else 0,
-        "num_matched_secondary": len(matched_secondary),
-        "num_expected_secondary": len(expected_keywords_secondary) if expected_keywords_secondary else 0
+        "num_expected_primary": len(expected_keywords_primary) if expected_keywords_primary else 0
     }
 
 
@@ -384,19 +367,13 @@ def calculate_keyword_f1_batch(
         )
     ]
     
-    # Calculate averages, including recall_primary and recall_secondary if available
+    # Calculate averages, including recall_primary if available
     avg_recall_primary = None
-    avg_recall_secondary = None
     
     # Only calculate if at least one item has primary keywords
     primary_metrics = [m["recall_primary"] for m in all_metrics if m.get("num_expected_primary", 0) > 0]
     if primary_metrics:
         avg_recall_primary = np.mean(primary_metrics)
-    
-    # Only calculate if at least one item has secondary keywords
-    secondary_metrics = [m["recall_secondary"] for m in all_metrics if m.get("num_expected_secondary", 0) > 0]
-    if secondary_metrics:
-        avg_recall_secondary = np.mean(secondary_metrics)
     
     result = {
         "avg_precision": np.mean([m["precision"] for m in all_metrics]),
@@ -407,8 +384,6 @@ def calculate_keyword_f1_batch(
     
     if avg_recall_primary is not None:
         result["avg_recall_primary"] = avg_recall_primary
-    if avg_recall_secondary is not None:
-        result["avg_recall_secondary"] = avg_recall_secondary
     
     return result
 
@@ -552,10 +527,6 @@ def calculate_all_metrics(
     else:
         metrics["overall"]["keyword_f1"] = keyword_results["avg_f1"]
     
-    # Secondary keywords: for qualitative analysis only, not included in global metrics
-    if "avg_recall_secondary" in keyword_results:
-        metrics["overall"]["keyword_recall_secondary"] = keyword_results["avg_recall_secondary"]
-    
     # ==========================================
     # BERTScore (for open questions with references)
     # ==========================================
@@ -615,10 +586,6 @@ def calculate_all_metrics(
                 "count": len(cat_results)
             }
         
-        # Secondary recall: for qualitative analysis only
-        if "avg_recall_secondary" in cat_keyword_results:
-            metrics["by_category"][category]["keyword_recall_secondary"] = cat_keyword_results["avg_recall_secondary"]
-        
         # Exact match for closed questions in this category (semantic)
         cat_closed = [r for r in cat_results if r.get("question_type") == "closed"]
         if cat_closed:
@@ -666,9 +633,6 @@ def print_metrics_summary(metrics: Dict) -> None:
     print(f"  Keyword F1:                     {overall.get('keyword_f1', 0):.4f}")
     print(f"  Signal Recall (Primary):         {overall.get('keyword_recall', 0):.4f}  # Measures main navigation signal detection")
     print(f"  Keyword Precision:              {overall.get('keyword_precision', 0):.4f}")
-    
-    if "keyword_recall_secondary" in overall:
-        print(f"  Recall Secondary (qualitative):   {overall.get('keyword_recall_secondary', 0):.4f}  # For analysis only, not in ranking")
     
     if "bertscore_f1" in overall:
         print(f"  BERTScore F1:                   {overall['bertscore_f1']:.4f}")
