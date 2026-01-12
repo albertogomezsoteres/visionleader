@@ -73,29 +73,16 @@ def run_single_inference(
     start_time = time.time()
     
     with torch.no_grad():
-        # Get input length to calculate max_length
-        input_len = inputs["input_ids"].shape[-1]
-        # Use max_length instead of max_new_tokens (as in working notebook)
-        # max_length = input_length + max_new_tokens
-        max_length = input_len + max_new_tokens
-        
-        # Get tokenizer special tokens
-        pad_token_id = processor.tokenizer.pad_token_id
-        if pad_token_id is None:
-            pad_token_id = processor.tokenizer.eos_token_id
-        eos_token_id = processor.tokenizer.eos_token_id
-        
-        # Use generation parameters that reduce hallucinations
-        # Based on working configuration from user's notebook
+        # Use max_new_tokens for simpler, more direct control
+        # This is more reliable than max_length calculation
         generation_kwargs = {
-            "max_length": max_length,  # Use max_length instead of max_new_tokens
+            "max_new_tokens": max_new_tokens,
             "do_sample": False,  # Deterministic output (greedy decoding)
-            "num_beams": 1,  # Greedy search
-            "repetition_penalty": 1.3,  # Increased to reduce repetition and hallucinations
-            "length_penalty": 1.0,  # No length penalty
-            "early_stopping": False,  # Don't stop early
-            "pad_token_id": pad_token_id,
-            "eos_token_id": eos_token_id,
+            "num_beams": 1,  # Greedy search (faster, more deterministic)
+            # Note: repetition_penalty doesn't work well with do_sample=False
+            # It can cause premature stopping, so we remove it
+            "pad_token_id": processor.tokenizer.pad_token_id or processor.tokenizer.eos_token_id,
+            "eos_token_id": processor.tokenizer.eos_token_id,
         }
         
         outputs = model.generate(
@@ -116,6 +103,7 @@ def run_single_inference(
     generated_ids = outputs[0][input_len:]
     
     # Decode only the generated part
+    # Use skip_special_tokens=True to remove special tokens like <pad>, <eos>
     generated_text = processor.decode(generated_ids, skip_special_tokens=True)
     
     # Clean up the text: remove any remaining prompt artifacts
@@ -129,6 +117,16 @@ def run_single_inference(
         generated_lower = generated_text.lower()
         if generated_lower.startswith(question_lower):
             generated_text = generated_text[len(question):].strip()
+    
+    # Handle edge case: if generated text is empty or just whitespace/punctuation
+    # This can happen if the model generates only special tokens
+    if not generated_text or generated_text in ["None", "none", ".", ",", "?", "!"]:
+        # Try decoding without skip_special_tokens to see what was actually generated
+        generated_text_fallback = processor.decode(generated_ids, skip_special_tokens=False)
+        # Remove special tokens manually
+        generated_text_fallback = generated_text_fallback.replace("<pad>", "").replace("<eos>", "").strip()
+        if generated_text_fallback and generated_text_fallback != generated_text:
+            generated_text = generated_text_fallback
     
     return generated_text, inference_time
 
@@ -161,11 +159,20 @@ def run_inference_on_item(
         model: The PaliGemma model
         processor: The model processor
         eval_item: EvaluationItem containing image and question
-        max_new_tokens: Maximum tokens to generate
+        max_new_tokens: Maximum tokens to generate (base value, adjusted by question type)
     
     Returns:
         InferenceResult object
     """
+    # Adjust max_new_tokens based on question type
+    # Captions need longer responses
+    if eval_item.question.question_type == "caption":
+        adjusted_max_tokens = max(max_new_tokens, 300)  # At least 300 for captions
+    elif eval_item.question.question_type == "element_list":
+        adjusted_max_tokens = max(max_new_tokens, 50)  # At least 50 for element lists
+    else:
+        adjusted_max_tokens = max_new_tokens  # Use provided value for closed questions
+    
     # Load image
     image = load_image_if_needed(eval_item.image_sample)
     
@@ -175,7 +182,7 @@ def run_inference_on_item(
         processor=processor,
         image=image,
         question=eval_item.question.question_text,
-        max_new_tokens=max_new_tokens
+        max_new_tokens=adjusted_max_tokens
     )
     
     # Create result
@@ -205,7 +212,8 @@ def run_inference_on_dataset(
     processor,
     eval_items: List[EvaluationItem],
     max_new_tokens: int = 100,
-    show_progress: bool = True
+    show_progress: bool = True,
+    verbose: bool = False
 ) -> List[InferenceResult]:
     """
     Run inference on all evaluation items.
@@ -216,6 +224,7 @@ def run_inference_on_dataset(
         eval_items: List of EvaluationItem objects
         max_new_tokens: Maximum tokens to generate
         show_progress: Whether to show progress bar
+        verbose: Whether to print question, model response, and expected answer for each item
     
     Returns:
         List of InferenceResult objects
@@ -233,6 +242,31 @@ def run_inference_on_dataset(
                 max_new_tokens=max_new_tokens
             )
             results.append(result)
+            
+            # Print details if verbose mode is enabled
+            if verbose:
+                print(f"\n{'='*80}")
+                print(f"📷 Image: {result.image_id}")
+                print(f"📁 Category: {result.category}")
+                print(f"❓ Question: {result.question_text}")
+                print(f"🤖 Model Response: {result.model_response}")
+                
+                # Show expected answer based on question type
+                if result.question_type == "closed":
+                    if result.expected_answer:
+                        print(f"✅ Expected Answer: {result.expected_answer}")
+                    else:
+                        print(f"⚠️  Expected Answer: (not specified)")
+                elif result.question_type == "element_list":
+                    if result.expected_keywords_primary:
+                        print(f"✅ Expected Keywords (primary): {result.expected_keywords_primary}")
+                    elif result.expected_keywords:
+                        print(f"✅ Expected Keywords: {result.expected_keywords}")
+                    else:
+                        print(f"⚠️  Expected Keywords: (not specified)")
+                
+                print(f"⏱️  Inference Time: {result.inference_time:.2f}s")
+                print(f"{'='*80}")
             
             if show_progress:
                 iterator.set_postfix({
