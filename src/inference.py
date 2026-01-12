@@ -73,16 +73,29 @@ def run_single_inference(
     start_time = time.time()
     
     with torch.no_grad():
+        # Get input length to calculate max_length
+        input_len = inputs["input_ids"].shape[-1]
+        # Use max_length instead of max_new_tokens (as in working notebook)
+        # max_length = input_length + max_new_tokens
+        max_length = input_len + max_new_tokens
+        
+        # Get tokenizer special tokens
+        pad_token_id = processor.tokenizer.pad_token_id
+        if pad_token_id is None:
+            pad_token_id = processor.tokenizer.eos_token_id
+        eos_token_id = processor.tokenizer.eos_token_id
+        
         # Use generation parameters that reduce hallucinations
         # Based on working configuration from user's notebook
         generation_kwargs = {
-            "max_new_tokens": max_new_tokens,
+            "max_length": max_length,  # Use max_length instead of max_new_tokens
             "do_sample": False,  # Deterministic output (greedy decoding)
-            "num_beams": 1,  # Greedy search (faster, more deterministic)
-            "temperature": 1.0,  # Not used with do_sample=False, but set for consistency
-            "repetition_penalty": 1.2,  # Penalize repetition to avoid loops
+            "num_beams": 1,  # Greedy search
+            "repetition_penalty": 1.3,  # Increased to reduce repetition and hallucinations
             "length_penalty": 1.0,  # No length penalty
             "early_stopping": False,  # Don't stop early
+            "pad_token_id": pad_token_id,
+            "eos_token_id": eos_token_id,
         }
         
         outputs = model.generate(

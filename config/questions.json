@@ -32,7 +32,7 @@
                 {
                     "id": "staircase_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the staircase and its features.",
                     "expected_keywords": ["stairs", "staircase", "steps", "handrail", "railing", "wall", "floor", "ceiling"],
                     "expected_keywords_primary": ["stairs", "staircase", "steps"],
                     "expected_keywords_secondary": ["handrail", "railing", "wall", "floor", "ceiling"],
@@ -66,7 +66,7 @@
                 {
                     "id": "elevator_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the elevator and its features.",
                     "expected_keywords": ["elevator", "lift", "door", "doors", "button", "buttons", "panel", "wall", "floor"],
                     "expected_keywords_primary": ["elevator", "lift"],
                     "expected_keywords_secondary": ["door", "doors", "button", "buttons", "panel", "wall", "floor"],
@@ -100,7 +100,7 @@
                 {
                     "id": "door_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the door and its features.",
                     "expected_keywords": ["door", "doors", "handle", "frame", "glass", "wall", "floor", "sign"],
                     "expected_keywords_primary": ["door", "doors"],
                     "expected_keywords_secondary": ["handle", "frame", "glass", "wall", "floor", "sign"],
@@ -138,7 +138,7 @@
                 {
                     "id": "doorsign_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the door sign and its features.",
                     "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
@@ -163,7 +163,7 @@
                 {
                     "id": "crossing_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the crossing and its features.",
                     "expected_keywords": ["crossing", "crosswalk", "zebra", "stripes", "road", "street", "pedestrian", "traffic", "sign"],
                     "expected_keywords_primary": ["crossing", "crosswalk", "zebra"],
                     "expected_keywords_secondary": ["stripes", "road", "street", "pedestrian", "traffic", "sign"],
@@ -195,7 +195,7 @@
                 {
                     "id": "corridor_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on the corridor and its features.",
                     "expected_keywords": ["corridor", "hallway", "door", "doors", "floor", "wall", "light", "ceiling", "window"],
                     "expected_keywords_primary": ["corridor", "hallway"],
                     "expected_keywords_secondary": ["door", "doors", "floor", "wall", "light", "ceiling", "window"],
@@ -227,7 +227,7 @@
                 {
                     "id": "obstacle_caption",
                     "type": "caption",
-                    "question": "caption",
+                    "question": "Describe the image and the navigation-relevant elements visible, focusing on any obstacles or objects in the walking path.",
                     "metrics": ["bertscore", "keyword_f1"]
                 }
             ]
@@ -240,6 +240,7 @@
         "corridor": "corridor",
         "door": "door",
         "door_sign": "door_sign",
+        "door_bathroom": "door_sign",
         "doorway": "door",
         "obstacle": "obstacle",
         "zebra crossing": "zebra_crossing",
