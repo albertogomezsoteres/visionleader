@@ -616,6 +616,344 @@ def calculate_bertscore_batch(
 
 
 # ============================================================
+# CONFUSION MATRICES
+# ============================================================
+
+def calculate_confusion_matrix_binary(
+    predictions: List[str],
+    ground_truth: List[str],
+    positive_label: str = "yes",
+    negative_label: str = "no"
+) -> Dict:
+    """
+    Calculate confusion matrix for binary classification (YES/NO).
+    
+    Args:
+        predictions: List of model predictions
+        ground_truth: List of ground truth labels
+        positive_label: Label for positive class (default: "yes")
+        negative_label: Label for negative class (default: "no")
+    
+    Returns:
+        Dictionary with confusion matrix and metrics
+    """
+    tp = fp = tn = fn = 0
+    
+    for pred, gt in zip(predictions, ground_truth):
+        pred_normalized = extract_first_token(pred).lower()
+        gt_normalized = normalize_text(gt).lower()
+        
+        # Normalize to positive/negative
+        pred_is_positive = pred_normalized == positive_label.lower()
+        gt_is_positive = gt_normalized == positive_label.lower()
+        
+        if gt_is_positive:
+            if pred_is_positive:
+                tp += 1
+            else:
+                fn += 1
+        else:
+            if pred_is_positive:
+                fp += 1
+            else:
+                tn += 1
+    
+    total = tp + fp + tn + fn
+    accuracy = (tp + tn) / total if total > 0 else 0.0
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    f1 = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+    
+    return {
+        "confusion_matrix": {
+            "TP": tp,
+            "FP": fp,
+            "TN": tn,
+            "FN": fn
+        },
+        "metrics": {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1
+        },
+        "total": total
+    }
+
+
+def calculate_confusion_matrix_state(
+    predictions: List[str],
+    ground_truth: List[str],
+    class_labels: List[str]
+) -> Dict:
+    """
+    Calculate confusion matrix for state classification (OPEN/CLOSED, UP/DOWN).
+    
+    Args:
+        predictions: List of model predictions
+        ground_truth: List of ground truth labels
+        class_labels: List of possible class labels (e.g., ["open", "closed"] or ["up", "down"])
+    
+    Returns:
+        Dictionary with confusion matrix and metrics
+    """
+    # Normalize class labels
+    class_labels_normalized = [normalize_text(label).lower() for label in class_labels]
+    
+    # Initialize confusion matrix
+    n_classes = len(class_labels)
+    cm = np.zeros((n_classes, n_classes), dtype=int)
+    
+    # Map labels to indices
+    label_to_idx = {label: idx for idx, label in enumerate(class_labels_normalized)}
+    
+    for pred, gt in zip(predictions, ground_truth):
+        pred_normalized = extract_first_token(pred).lower()
+        gt_normalized = normalize_text(gt).lower()
+        
+        # Find closest matching class for prediction
+        pred_idx = None
+        for label, idx in label_to_idx.items():
+            if label in pred_normalized or pred_normalized in label:
+                pred_idx = idx
+                break
+        
+        # Find ground truth class
+        gt_idx = None
+        for label, idx in label_to_idx.items():
+            if label in gt_normalized or gt_normalized in label:
+                gt_idx = idx
+                break
+        
+        if pred_idx is not None and gt_idx is not None:
+            cm[gt_idx][pred_idx] += 1
+    
+    # Calculate metrics
+    total = int(np.sum(cm))
+    correct = int(np.trace(cm))
+    accuracy = correct / total if total > 0 else 0.0
+    
+    return {
+        "confusion_matrix": cm.tolist(),
+        "class_labels": class_labels,
+        "metrics": {
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total
+        }
+    }
+
+
+def calculate_confusion_matrix_elements(
+    predictions: List[str],
+    ground_truth: List[str],
+    possible_elements: List[str]
+) -> Dict:
+    """
+    Calculate confusion matrix for navigation element classification (multiclass).
+    
+    Args:
+        predictions: List of model predictions
+        ground_truth: List of ground truth element keywords (from expected_keywords_primary)
+        possible_elements: List of all possible element types (e.g., ["stairs", "elevator", "door"])
+    
+    Returns:
+        Dictionary with confusion matrix and metrics
+    """
+    # Normalize possible elements
+    possible_elements_normalized = [normalize_text(elem).lower() for elem in possible_elements]
+    
+    # Initialize confusion matrix
+    n_classes = len(possible_elements)
+    cm = np.zeros((n_classes, n_classes), dtype=int)
+    
+    # Map elements to indices
+    element_to_idx = {elem: idx for idx, elem in enumerate(possible_elements_normalized)}
+    
+    for pred, gt_keywords in zip(predictions, ground_truth):
+        pred_normalized = normalize_text(pred).lower()
+        
+        # Find predicted element
+        pred_idx = None
+        for elem, idx in element_to_idx.items():
+            if elem in pred_normalized:
+                pred_idx = idx
+                break
+        
+        # Find ground truth element from keywords
+        gt_idx = None
+        if isinstance(gt_keywords, list):
+            gt_keywords_normalized = [normalize_text(kw).lower() for kw in gt_keywords]
+            for elem, idx in element_to_idx.items():
+                if elem in gt_keywords_normalized:
+                    gt_idx = idx
+                    break
+        elif isinstance(gt_keywords, str):
+            gt_normalized = normalize_text(gt_keywords).lower()
+            for elem, idx in element_to_idx.items():
+                if elem in gt_normalized:
+                    gt_idx = idx
+                    break
+        
+        if pred_idx is not None and gt_idx is not None:
+            cm[gt_idx][pred_idx] += 1
+    
+    # Calculate metrics
+    total = int(np.sum(cm))
+    correct = int(np.trace(cm))
+    accuracy = correct / total if total > 0 else 0.0
+    
+    return {
+        "confusion_matrix": cm.tolist(),
+        "element_labels": possible_elements,
+        "metrics": {
+            "accuracy": accuracy,
+            "correct": correct,
+            "total": total
+        }
+    }
+
+
+def build_confusion_matrices(results: List[Dict]) -> Dict:
+    """
+    Build all confusion matrices from evaluation results.
+    
+    Groups questions by type and builds appropriate confusion matrices:
+    - Binary YES/NO: All detection and safety questions
+    - State OPEN/CLOSED: Door and elevator state questions
+    - State UP/DOWN: Staircase direction questions
+    - Navigation Elements: Element identification questions
+    
+    Args:
+        results: List of inference result dictionaries
+    
+    Returns:
+        Dictionary with all confusion matrices organized by type
+    """
+    confusion_matrices = {
+        "binary_yes_no": {"global": None, "by_category": {}},
+        "state_open_closed": {"global": None},
+        "state_up_down": {"global": None},
+        "navigation_elements": {"global": None, "by_category": {}}
+    }
+    
+    # ==========================================
+    # BINARY YES/NO QUESTIONS
+    # ==========================================
+    yes_no_question_ids = [
+        "staircase_detection", "elevator_detection", "door_detection",
+        "obstacle_detection", "obstacle_safety", "doorsign_bathroom", "doorsign_exit"
+    ]
+    
+    yes_no_results = [
+        r for r in results 
+        if r.get("question_type") == "closed" 
+        and r.get("question_id") in yes_no_question_ids
+        and r.get("expected_answer") is not None
+    ]
+    
+    if yes_no_results:
+        # Global YES/NO matrix
+        predictions = [r["model_response"] for r in yes_no_results]
+        ground_truth = [r["expected_answer"] for r in yes_no_results]
+        confusion_matrices["binary_yes_no"]["global"] = calculate_confusion_matrix_binary(
+            predictions, ground_truth
+        )
+        
+        # YES/NO by category
+        categories = set(r.get("category", "") for r in yes_no_results)
+        for category in categories:
+            cat_results = [r for r in yes_no_results if r.get("category") == category]
+            if cat_results:
+                cat_predictions = [r["model_response"] for r in cat_results]
+                cat_ground_truth = [r["expected_answer"] for r in cat_results]
+                confusion_matrices["binary_yes_no"]["by_category"][category] = calculate_confusion_matrix_binary(
+                    cat_predictions, cat_ground_truth
+                )
+    
+    # ==========================================
+    # STATE: OPEN/CLOSED
+    # ==========================================
+    open_closed_question_ids = ["door_state", "doorsign_state", "elevator_doors"]
+    
+    open_closed_results = [
+        r for r in results
+        if r.get("question_type") == "closed"
+        and r.get("question_id") in open_closed_question_ids
+        and r.get("expected_answer") is not None
+    ]
+    
+    if open_closed_results:
+        predictions = [r["model_response"] for r in open_closed_results]
+        ground_truth = [r["expected_answer"] for r in open_closed_results]
+        confusion_matrices["state_open_closed"]["global"] = calculate_confusion_matrix_state(
+            predictions, ground_truth, ["open", "closed"]
+        )
+    
+    # ==========================================
+    # STATE: UP/DOWN
+    # ==========================================
+    up_down_results = [
+        r for r in results
+        if r.get("question_type") == "closed"
+        and r.get("question_id") == "staircase_direction"
+        and r.get("expected_answer") is not None
+    ]
+    
+    if up_down_results:
+        predictions = [r["model_response"] for r in up_down_results]
+        ground_truth = [r["expected_answer"] for r in up_down_results]
+        confusion_matrices["state_up_down"]["global"] = calculate_confusion_matrix_state(
+            predictions, ground_truth, ["up", "down"]
+        )
+    
+    # ==========================================
+    # NAVIGATION ELEMENTS
+    # ==========================================
+    element_question_ids = ["staircase_element", "elevator_element", "door_element"]
+    
+    element_results = [
+        r for r in results
+        if r.get("question_type") == "element_list"
+        and r.get("question_id") in element_question_ids
+        and r.get("expected_keywords_primary") is not None
+    ]
+    
+    if element_results:
+        # Global elements matrix
+        predictions = [r["model_response"] for r in element_results]
+        ground_truth = [r.get("expected_keywords_primary", []) for r in element_results]
+        possible_elements = ["stairs", "staircase", "steps", "elevator", "lift", "door", "doors", "doorway"]
+        confusion_matrices["navigation_elements"]["global"] = calculate_confusion_matrix_elements(
+            predictions, ground_truth, possible_elements
+        )
+        
+        # Elements by category
+        categories = set(r.get("category", "") for r in element_results)
+        for category in categories:
+            cat_results = [r for r in element_results if r.get("category") == category]
+            if cat_results:
+                cat_predictions = [r["model_response"] for r in cat_results]
+                cat_ground_truth = [r.get("expected_keywords_primary", []) for r in cat_results]
+                
+                # Category-specific possible elements
+                if category == "staircase":
+                    cat_elements = ["stairs", "staircase", "steps"]
+                elif category == "elevator":
+                    cat_elements = ["elevator", "lift"]
+                elif category == "door":
+                    cat_elements = ["door", "doors", "doorway"]
+                else:
+                    cat_elements = ["stairs", "staircase", "steps", "elevator", "lift", "door", "doors", "doorway"]
+                
+                confusion_matrices["navigation_elements"]["by_category"][category] = calculate_confusion_matrix_elements(
+                    cat_predictions, cat_ground_truth, cat_elements
+                )
+    
+    return confusion_matrices
+
+
+# ============================================================
 # MAIN METRICS CALCULATOR
 # ============================================================
 
@@ -830,6 +1168,16 @@ def calculate_all_metrics(
         metrics["overall"]["total_inference_time"] = float(sum(inference_times))
         metrics["overall"]["min_inference_time"] = float(min(inference_times))
         metrics["overall"]["max_inference_time"] = float(max(inference_times))
+        
+        # ==========================================
+        # THROUGHPUT (images per second)
+        # ==========================================
+        num_unique_images = len(set(r.get("image_id", "") for r in results if r.get("image_id")))
+        total_time = metrics["overall"]["total_inference_time"]
+        if total_time > 0:
+            metrics["overall"]["throughput"] = num_unique_images / total_time  # images/second
+        else:
+            metrics["overall"]["throughput"] = 0.0
     
     # ==========================================
     # VRAM USAGE
@@ -837,6 +1185,11 @@ def calculate_all_metrics(
     if vram_usage:
         metrics["overall"]["vram_allocated_gb"] = vram_usage.get("allocated_gb", 0.0)
         metrics["overall"]["vram_max_allocated_gb"] = vram_usage.get("max_allocated_gb", 0.0)
+    
+    # ==========================================
+    # CONFUSION MATRICES
+    # ==========================================
+    metrics["confusion_matrices"] = build_confusion_matrices(results)
     
     return metrics
 
@@ -869,6 +1222,9 @@ def print_metrics_summary(metrics: Dict) -> None:
     if "avg_inference_time" in overall:
         print(f"\n⏱️  Avg Inference Time:            {overall['avg_inference_time']:.2f}s")
         print(f"  Total Inference Time:           {overall['total_inference_time']:.2f}s")
+    
+    if "throughput" in overall:
+        print(f"🚀 Throughput:                     {overall['throughput']:.2f} images/sec")
     
     if "vram_max_allocated_gb" in overall:
         print(f"\n💾 VRAM Max Allocated:            {overall['vram_max_allocated_gb']:.2f} GB")
