@@ -57,9 +57,12 @@ def run_single_inference(
     Returns:
         Tuple of (generated_text, inference_time_seconds)
     """
+    # Prepare question with <image> token at the beginning (required by PaliGemma)
+    formatted_question = f"<image>{question}" if not question.startswith("<image>") else question
+    
     # Prepare inputs with improved processing (based on working example)
     inputs = processor(
-        text=question,
+        text=formatted_question,
         images=image,
         padding="longest",
         do_convert_rgb=True,

@@ -468,6 +468,48 @@ def calculate_output_length_batch(
 
 
 # ============================================================
+# CAPTION CLEANING
+# ============================================================
+
+def clean_caption_response(text: str) -> str:
+    """
+    Clean caption responses by removing common introductory phrases.
+    
+    Removes phrases like "In this image we can see a...", "In this image...", etc.
+    that models often add at the beginning of caption responses.
+    
+    Args:
+        text: Caption text to clean
+    
+    Returns:
+        Cleaned caption text
+    """
+    if not text:
+        return text
+    
+    text = text.strip()
+    
+    # Patterns to remove (case-insensitive)
+    patterns_to_remove = [
+        r"^in this image we can see a\s+",
+        r"^in this image we can see\s+",
+        r"^in this image\s+",
+        r"^this image shows\s+",
+        r"^this image contains\s+",
+        r"^this image has\s+",
+        r"^we can see\s+",
+        r"^there is\s+",
+        r"^there are\s+",
+    ]
+    
+    import re
+    for pattern in patterns_to_remove:
+        text = re.sub(pattern, "", text, flags=re.IGNORECASE)
+    
+    return text.strip()
+
+
+# ============================================================
 # BERTSCORE
 # ============================================================
 
@@ -957,6 +999,72 @@ def build_confusion_matrices(results: List[Dict]) -> Dict:
 # CONFUSION MATRIX VISUALIZATION
 # ============================================================
 
+def filter_multiclass_matrix_for_display(
+    confusion_matrix_data: Dict,
+    main_classes: List[str] = None
+) -> Dict:
+    """
+    Filter multiclass confusion matrix to show only classes with data.
+    Only filters for visualization, doesn't change the original calculation.
+    
+    Args:
+        confusion_matrix_data: Dictionary with confusion matrix data
+        main_classes: List of main classes to prioritize (e.g., ["stairs", "elevator", "door"])
+    
+    Returns:
+        Filtered confusion matrix data with only classes that have data
+    """
+    cm_dict = confusion_matrix_data.get("confusion_matrix", [])
+    if isinstance(cm_dict, dict):
+        # Binary matrix, return as is
+        return confusion_matrix_data
+    
+    cm_array = np.array(cm_dict)
+    labels = confusion_matrix_data.get("class_labels") or confusion_matrix_data.get("element_labels", [])
+    
+    if len(labels) == 0 or cm_array.size == 0:
+        return confusion_matrix_data
+    
+    # Find classes with data (sum of row > 0 OR sum of column > 0)
+    row_sums = np.sum(cm_array, axis=1)
+    col_sums = np.sum(cm_array, axis=0)
+    classes_with_data = []
+    class_indices = []
+    
+    # If main_classes provided, prioritize them
+    if main_classes:
+        for main_class in main_classes:
+            if main_class.lower() in [l.lower() for l in labels]:
+                idx = next((i for i, l in enumerate(labels) if l.lower() == main_class.lower()), None)
+                if idx is not None and (row_sums[idx] > 0 or col_sums[idx] > 0):
+                    if idx not in class_indices:
+                        classes_with_data.append(labels[idx])
+                        class_indices.append(idx)
+    
+    # Add other classes with data that weren't in main_classes
+    for i, label in enumerate(labels):
+        if i not in class_indices and (row_sums[i] > 0 or col_sums[i] > 0):
+            classes_with_data.append(label)
+            class_indices.append(i)
+    
+    # If no classes with data found, return original
+    if len(class_indices) == 0:
+        return confusion_matrix_data
+    
+    # Create filtered matrix
+    filtered_cm = cm_array[np.ix_(class_indices, class_indices)]
+    
+    # Create filtered data dict
+    filtered_data = confusion_matrix_data.copy()
+    filtered_data["confusion_matrix"] = filtered_cm.tolist()
+    if "class_labels" in confusion_matrix_data:
+        filtered_data["class_labels"] = classes_with_data
+    if "element_labels" in confusion_matrix_data:
+        filtered_data["element_labels"] = classes_with_data
+    
+    return filtered_data
+
+
 def plot_confusion_matrix(
     confusion_matrix_data: Dict,
     title: str = "Confusion Matrix",
@@ -964,7 +1072,7 @@ def plot_confusion_matrix(
     figsize: Tuple[int, int] = (8, 6)
 ) -> None:
     """
-    Plot a confusion matrix as a visual heatmap.
+    Plot a confusion matrix as a visual heatmap with blue color scheme.
     
     Args:
         confusion_matrix_data: Dictionary with confusion matrix data
@@ -977,11 +1085,17 @@ def plot_confusion_matrix(
     try:
         import matplotlib.pyplot as plt
         import seaborn as sns
+        from matplotlib.colors import LinearSegmentedColormap
     except ImportError:
         print("Warning: matplotlib/seaborn not installed. Cannot plot confusion matrix.")
         return
     
     plt.figure(figsize=figsize)
+    
+    # Create custom blue colormap (dark blue for high values, light blue for low values)
+    colors = ['#b4c7e7', '#8faadc', '#5b9bd5', '#4472c4', '#1f4e79']  # Light to dark blue
+    n_bins = 256
+    cmap = LinearSegmentedColormap.from_list('custom_blues', colors, N=n_bins)
     
     # Check if it's binary or multiclass
     cm_dict = confusion_matrix_data.get("confusion_matrix", {})
@@ -993,28 +1107,24 @@ def plot_confusion_matrix(
         tn = cm_dict.get("TN", 0)
         fn = cm_dict.get("FN", 0)
         
-        # Create 2x2 matrix
+        # Create 2x2 matrix: [[TP, FP], [FN, TN]]
         cm_array = np.array([[tp, fp], [fn, tn]])
         labels = ["Positive (1)", "Negative (0)"]
         
-        # Create heatmap
+        # Create heatmap with blue colormap
         sns.heatmap(
             cm_array,
             annot=True,
             fmt="d",
-            cmap="RdYlGn",
+            cmap=cmap,
             xticklabels=["Positive (1)", "Negative (0)"],
             yticklabels=["Positive (1)", "Negative (0)"],
             cbar_kws={"label": "Count"},
             linewidths=2,
-            linecolor="black"
+            linecolor="black",
+            vmin=0,
+            vmax=max(tp, fp, tn, fn) if max(tp, fp, tn, fn) > 0 else 1
         )
-        
-        # Add TP, FP, FN, TN labels
-        plt.text(0.5, 0.5, "TP", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if tp < (tp+fp+tn+fn)/4 else "black")
-        plt.text(1.5, 0.5, "FP", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if fp < (tp+fp+tn+fn)/4 else "black")
-        plt.text(0.5, 1.5, "FN", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if fn < (tp+fp+tn+fn)/4 else "black")
-        plt.text(1.5, 1.5, "TN", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if tn < (tp+fp+tn+fn)/4 else "black")
         
     else:
         # Multiclass confusion matrix
@@ -1024,17 +1134,20 @@ def plot_confusion_matrix(
         if len(labels) == 0:
             labels = [f"Class {i}" for i in range(len(cm_array))]
         
-        # Create heatmap
+        # Create heatmap with blue colormap
+        max_val = np.max(cm_array) if cm_array.size > 0 else 1
         sns.heatmap(
             cm_array,
             annot=True,
             fmt="d",
-            cmap="RdYlGn",
+            cmap=cmap,
             xticklabels=labels,
             yticklabels=labels,
             cbar_kws={"label": "Count"},
             linewidths=1,
-            linecolor="gray"
+            linecolor="black",
+            vmin=0,
+            vmax=max_val if max_val > 0 else 1
         )
     
     plt.title(title, fontsize=16, fontweight="bold", pad=20)
@@ -1169,7 +1282,12 @@ def print_confusion_matrices(metrics: Dict, show_plots: bool = True) -> None:
         print(f"  Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
         
         if show_plots:
-            plot_confusion_matrix(cm_data, title="Navigation Elements - Global Confusion Matrix")
+            # Filter to show only classes with data (stairs, elevator, door)
+            filtered_cm_data = filter_multiclass_matrix_for_display(
+                cm_data,
+                main_classes=["stairs", "elevator", "door"]
+            )
+            plot_confusion_matrix(filtered_cm_data, title="Navigation Elements - Global Confusion Matrix")
     
     # Navigation Elements by category
     if nav_elements.get("by_category"):
@@ -1186,7 +1304,12 @@ def print_confusion_matrices(metrics: Dict, show_plots: bool = True) -> None:
             print(f"    Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
             
             if show_plots:
-                plot_confusion_matrix(cm_data, title=f"Navigation Elements - {category.upper()} Confusion Matrix")
+                # Filter to show only classes with data
+                filtered_cm_data = filter_multiclass_matrix_for_display(
+                    cm_data,
+                    main_classes=["stairs", "elevator", "door"]
+                )
+                plot_confusion_matrix(filtered_cm_data, title=f"Navigation Elements - {category.upper()} Confusion Matrix")
     
     print("\n" + "=" * 60)
 
@@ -1248,9 +1371,12 @@ def calculate_all_metrics(
         caption_predictions = [r["model_response"] for r in caption_results]
         caption_references = [r.get("reference_answer", "") for r in caption_results]
         
+        # Clean caption predictions (remove introductory phrases)
+        cleaned_predictions = [clean_caption_response(pred) for pred in caption_predictions]
+        
         # Filter out pairs where reference is missing
         valid_caption_pairs = [
-            (pred, ref) for pred, ref in zip(caption_predictions, caption_references)
+            (pred, ref) for pred, ref in zip(cleaned_predictions, caption_references)
             if ref  # Only include if reference_answer exists
         ]
         
@@ -1349,9 +1475,12 @@ def calculate_all_metrics(
             cat_caption_preds = [r["model_response"] for r in cat_caption]
             cat_caption_refs = [r.get("reference_answer", "") for r in cat_caption]
             
+            # Clean caption predictions (remove introductory phrases)
+            cleaned_cat_preds = [clean_caption_response(pred) for pred in cat_caption_preds]
+            
             # Filter out pairs where reference is missing
             valid_cat_caption_pairs = [
-                (pred, ref) for pred, ref in zip(cat_caption_preds, cat_caption_refs)
+                (pred, ref) for pred, ref in zip(cleaned_cat_preds, cat_caption_refs)
                 if ref
             ]
             
