@@ -954,6 +954,244 @@ def build_confusion_matrices(results: List[Dict]) -> Dict:
 
 
 # ============================================================
+# CONFUSION MATRIX VISUALIZATION
+# ============================================================
+
+def plot_confusion_matrix(
+    confusion_matrix_data: Dict,
+    title: str = "Confusion Matrix",
+    save_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (8, 6)
+) -> None:
+    """
+    Plot a confusion matrix as a visual heatmap.
+    
+    Args:
+        confusion_matrix_data: Dictionary with confusion matrix data
+            - For binary: {"confusion_matrix": {"TP": int, "FP": int, "TN": int, "FN": int}, ...}
+            - For multiclass: {"confusion_matrix": [[...]], "class_labels": [...], ...}
+        title: Title for the plot
+        save_path: Optional path to save the figure
+        figsize: Figure size (width, height)
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+    except ImportError:
+        print("Warning: matplotlib/seaborn not installed. Cannot plot confusion matrix.")
+        return
+    
+    plt.figure(figsize=figsize)
+    
+    # Check if it's binary or multiclass
+    cm_dict = confusion_matrix_data.get("confusion_matrix", {})
+    
+    if isinstance(cm_dict, dict):
+        # Binary confusion matrix (TP, FP, TN, FN)
+        tp = cm_dict.get("TP", 0)
+        fp = cm_dict.get("FP", 0)
+        tn = cm_dict.get("TN", 0)
+        fn = cm_dict.get("FN", 0)
+        
+        # Create 2x2 matrix
+        cm_array = np.array([[tp, fp], [fn, tn]])
+        labels = ["Positive (1)", "Negative (0)"]
+        
+        # Create heatmap
+        sns.heatmap(
+            cm_array,
+            annot=True,
+            fmt="d",
+            cmap="RdYlGn",
+            xticklabels=["Positive (1)", "Negative (0)"],
+            yticklabels=["Positive (1)", "Negative (0)"],
+            cbar_kws={"label": "Count"},
+            linewidths=2,
+            linecolor="black"
+        )
+        
+        # Add TP, FP, FN, TN labels
+        plt.text(0.5, 0.5, "TP", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if tp < (tp+fp+tn+fn)/4 else "black")
+        plt.text(1.5, 0.5, "FP", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if fp < (tp+fp+tn+fn)/4 else "black")
+        plt.text(0.5, 1.5, "FN", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if fn < (tp+fp+tn+fn)/4 else "black")
+        plt.text(1.5, 1.5, "TN", ha="center", va="center", fontsize=14, fontweight="bold", color="white" if tn < (tp+fp+tn+fn)/4 else "black")
+        
+    else:
+        # Multiclass confusion matrix
+        cm_array = np.array(cm_dict)
+        labels = confusion_matrix_data.get("class_labels") or confusion_matrix_data.get("element_labels", [])
+        
+        if len(labels) == 0:
+            labels = [f"Class {i}" for i in range(len(cm_array))]
+        
+        # Create heatmap
+        sns.heatmap(
+            cm_array,
+            annot=True,
+            fmt="d",
+            cmap="RdYlGn",
+            xticklabels=labels,
+            yticklabels=labels,
+            cbar_kws={"label": "Count"},
+            linewidths=1,
+            linecolor="gray"
+        )
+    
+    plt.title(title, fontsize=16, fontweight="bold", pad=20)
+    plt.ylabel("Actual Values", fontsize=12, fontweight="bold")
+    plt.xlabel("Predicted Values", fontsize=12, fontweight="bold")
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
+        print(f"Confusion matrix saved to: {save_path}")
+    
+    plt.show()
+
+
+def print_confusion_matrices(metrics: Dict, show_plots: bool = True) -> None:
+    """
+    Print and visualize all confusion matrices from metrics.
+    
+    Args:
+        metrics: Metrics dictionary containing confusion_matrices
+        show_plots: Whether to display visual plots (default: True)
+    """
+    confusion_matrices = metrics.get("confusion_matrices", {})
+    
+    if not confusion_matrices:
+        print("No confusion matrices found in metrics.")
+        return
+    
+    print("\n" + "=" * 60)
+    print("CONFUSION MATRICES")
+    print("=" * 60)
+    
+    # ==========================================
+    # BINARY YES/NO
+    # ==========================================
+    binary_yes_no = confusion_matrices.get("binary_yes_no", {})
+    
+    if binary_yes_no.get("global"):
+        print("\n📊 Binary YES/NO - Global")
+        print("-" * 60)
+        cm_data = binary_yes_no["global"]
+        cm_dict = cm_data.get("confusion_matrix", {})
+        metrics_dict = cm_data.get("metrics", {})
+        
+        print(f"Confusion Matrix:")
+        print(f"  TP (True Positive):  {cm_dict.get('TP', 0)}")
+        print(f"  FP (False Positive): {cm_dict.get('FP', 0)}")
+        print(f"  FN (False Negative): {cm_dict.get('FN', 0)}")
+        print(f"  TN (True Negative):  {cm_dict.get('TN', 0)}")
+        print(f"\nMetrics:")
+        print(f"  Accuracy:  {metrics_dict.get('accuracy', 0):.4f}")
+        print(f"  Precision: {metrics_dict.get('precision', 0):.4f}")
+        print(f"  Recall:    {metrics_dict.get('recall', 0):.4f}")
+        print(f"  F1:        {metrics_dict.get('f1', 0):.4f}")
+        
+        if show_plots:
+            plot_confusion_matrix(cm_data, title="Binary YES/NO - Global Confusion Matrix")
+    
+    # Binary YES/NO by category
+    if binary_yes_no.get("by_category"):
+        print("\n📊 Binary YES/NO - By Category")
+        print("-" * 60)
+        for category, cm_data in binary_yes_no["by_category"].items():
+            print(f"\n  Category: {category.upper()}")
+            cm_dict = cm_data.get("confusion_matrix", {})
+            metrics_dict = cm_data.get("metrics", {})
+            
+            print(f"    TP: {cm_dict.get('TP', 0)}, FP: {cm_dict.get('FP', 0)}, "
+                  f"FN: {cm_dict.get('FN', 0)}, TN: {cm_dict.get('TN', 0)}")
+            print(f"    Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
+            
+            if show_plots:
+                plot_confusion_matrix(cm_data, title=f"Binary YES/NO - {category.upper()} Confusion Matrix")
+    
+    # ==========================================
+    # STATE: OPEN/CLOSED
+    # ==========================================
+    state_open_closed = confusion_matrices.get("state_open_closed", {}).get("global")
+    if state_open_closed:
+        print("\n📊 State OPEN/CLOSED - Global")
+        print("-" * 60)
+        cm_array = np.array(state_open_closed.get("confusion_matrix", []))
+        metrics_dict = state_open_closed.get("metrics", {})
+        labels = state_open_closed.get("class_labels", ["open", "closed"])
+        
+        print(f"Confusion Matrix:")
+        print(f"  Labels: {labels}")
+        print(f"  Matrix:\n{cm_array}")
+        print(f"\nMetrics:")
+        print(f"  Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
+        
+        if show_plots:
+            plot_confusion_matrix(state_open_closed, title="State OPEN/CLOSED - Global Confusion Matrix")
+    
+    # ==========================================
+    # STATE: UP/DOWN
+    # ==========================================
+    state_up_down = confusion_matrices.get("state_up_down", {}).get("global")
+    if state_up_down:
+        print("\n📊 State UP/DOWN - Global")
+        print("-" * 60)
+        cm_array = np.array(state_up_down.get("confusion_matrix", []))
+        metrics_dict = state_up_down.get("metrics", {})
+        labels = state_up_down.get("class_labels", ["up", "down"])
+        
+        print(f"Confusion Matrix:")
+        print(f"  Labels: {labels}")
+        print(f"  Matrix:\n{cm_array}")
+        print(f"\nMetrics:")
+        print(f"  Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
+        
+        if show_plots:
+            plot_confusion_matrix(state_up_down, title="State UP/DOWN - Global Confusion Matrix")
+    
+    # ==========================================
+    # NAVIGATION ELEMENTS
+    # ==========================================
+    nav_elements = confusion_matrices.get("navigation_elements", {})
+    
+    if nav_elements.get("global"):
+        print("\n📊 Navigation Elements - Global")
+        print("-" * 60)
+        cm_data = nav_elements["global"]
+        cm_array = np.array(cm_data.get("confusion_matrix", []))
+        metrics_dict = cm_data.get("metrics", {})
+        labels = cm_data.get("element_labels", [])
+        
+        print(f"Confusion Matrix:")
+        print(f"  Labels: {labels}")
+        print(f"  Matrix:\n{cm_array}")
+        print(f"\nMetrics:")
+        print(f"  Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
+        
+        if show_plots:
+            plot_confusion_matrix(cm_data, title="Navigation Elements - Global Confusion Matrix")
+    
+    # Navigation Elements by category
+    if nav_elements.get("by_category"):
+        print("\n📊 Navigation Elements - By Category")
+        print("-" * 60)
+        for category, cm_data in nav_elements["by_category"].items():
+            print(f"\n  Category: {category.upper()}")
+            cm_array = np.array(cm_data.get("confusion_matrix", []))
+            metrics_dict = cm_data.get("metrics", {})
+            labels = cm_data.get("element_labels", [])
+            
+            print(f"    Labels: {labels}")
+            print(f"    Matrix:\n{cm_array}")
+            print(f"    Accuracy: {metrics_dict.get('accuracy', 0):.4f}")
+            
+            if show_plots:
+                plot_confusion_matrix(cm_data, title=f"Navigation Elements - {category.upper()} Confusion Matrix")
+    
+    print("\n" + "=" * 60)
+
+
+# ============================================================
 # MAIN METRICS CALCULATOR
 # ============================================================
 

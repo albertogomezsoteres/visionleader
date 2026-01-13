@@ -46,15 +46,6 @@
             "description": "PaliGemma 1 - 3B fine-tuned mix - 448px"
         },
         {
-            "id": 6,
-            "model_id": "google/paligemma-3b-mix-896",
-            "version": "v1",
-            "size": "3B",
-            "type": "mix",
-            "resolution": 896,
-            "description": "PaliGemma 1 - 3B fine-tuned mix - 896px"
-        },
-        {
             "id": 7,
             "model_id": "google/paligemma2-3b-pt-224",
             "version": "v2",
@@ -120,7 +111,7 @@
     ],
     "test_model": "google/paligemma2-3b-pt-448",
     "metadata": {
-        "total_models": 13,
+        "total_models": 12,
         "versions": ["v1", "v2"],
         "sizes": ["3B", "10B"],
         "types": ["pt", "mix", "docci"],
