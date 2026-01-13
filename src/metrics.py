@@ -1157,9 +1157,9 @@ def plot_confusion_matrix(
     
     if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
-        print(f"Confusion matrix saved to: {save_path}")
-    
-    plt.show()
+        plt.close()  # Close figure to free memory
+    else:
+        plt.show()
 
 
 def print_confusion_matrices(metrics: Dict, show_plots: bool = True) -> None:
