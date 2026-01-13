@@ -509,7 +509,8 @@ def calculate_bertscore(
     
     try:
         # BERTScore returns tensors, convert to Python floats
-        P, R, F1 = score([prediction], [reference], lang=lang, verbose=False)
+        # rescale_with_baseline=True normalizes scores using a baseline, making them more sensitive to semantic differences
+        P, R, F1 = score([prediction], [reference], lang=lang, verbose=False, rescale_with_baseline=True)
         return {
             "precision": float(P.item()),
             "recall": float(R.item()),
@@ -582,7 +583,8 @@ def calculate_bertscore_batch(
         valid_preds, valid_refs = zip(*valid_pairs)
         
         # Calculate BERTScore for all valid pairs at once (more efficient)
-        P, R, F1 = score(list(valid_preds), list(valid_refs), lang=lang, verbose=False)
+        # rescale_with_baseline=True normalizes scores using a baseline, making them more sensitive to semantic differences
+        P, R, F1 = score(list(valid_preds), list(valid_refs), lang=lang, verbose=False, rescale_with_baseline=True)
         
         # Convert tensors to Python floats
         precisions = [float(p.item()) for p in P]
