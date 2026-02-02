@@ -71,7 +71,7 @@ _campus_graph_data = None
 # Si tienes el notebook de Colab corriendo, pon aquí la URL de ngrok
 # Ejemplo: COLAB_API_URL = "https://abc123.ngrok.io"
 # Si es None, intentará cargar el modelo localmente
-COLAB_API_URL = None  # <-- PON AQUÍ LA URL DE NGROK DE COLAB
+COLAB_API_URL = "https://your-subdomain.ngrok-free.app"  # <-- URL de Colab
 # ============================================================
 
 
@@ -501,8 +501,16 @@ async def analyze_image(file: UploadFile = File(...)):
                 else:
                     raise Exception(f"Error en Colab: {response.status_code}")
             
+            except requests.exceptions.RequestException as e:
+                error_msg = f"Error de conexión con Colab: {str(e)}"
+                print(f"⚠️ {error_msg}")
+                print(f"   URL intentada: {COLAB_API_URL}/analyze")
+                print("   Intentando cargar modelo localmente...")
+                # Fallback a local
+                return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)
             except Exception as e:
-                print(f"⚠️ Error llamando a Colab: {e}")
+                error_msg = f"Error inesperado con Colab: {str(e)}"
+                print(f"⚠️ {error_msg}")
                 print("   Intentando cargar modelo localmente...")
                 # Fallback a local
                 return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)

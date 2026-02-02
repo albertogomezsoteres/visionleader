@@ -1108,6 +1108,12 @@
                 resultDiv.innerHTML = `
                     <p><strong>✗ Error de conexión</strong></p>
                     <p>${error.message}</p>
+                    <p style="font-size: 12px; margin-top: 10px;">
+                        Verifica que:<br>
+                        - La API local esté corriendo (python run_api.py)<br>
+                        - El notebook de Colab esté activo y el servidor corriendo<br>
+                        - La URL de ngrok sea correcta en planning_api.py
+                    </p>
                 `;
                 resultDiv.style.display = 'block';
             } finally {
