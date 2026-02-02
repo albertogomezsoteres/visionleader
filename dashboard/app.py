@@ -40,7 +40,7 @@ from utils import (
 # ============================================================
 st.set_page_config(
     page_title="PaliGemma Evaluation Dashboard",
-    page_icon="🔬",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -1536,17 +1536,6 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Promo Card
-    st.markdown("""
-        <div class="sidebar-promo">
-            <div class="sidebar-promo-icon">🚀</div>
-            <div class="sidebar-promo-text">
-                <strong>TFG Project</strong><br>
-                <span style="font-size: 0.8rem; color: #6B7280;">VisionLeaderUFV</span>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
 
 # ============================================================
 # HELPER FUNCTIONS

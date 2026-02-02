@@ -35,7 +35,8 @@ def load_paligemma(
     model_id: str,
     device: Optional[str] = None,
     use_flash_attention: bool = False,  # Disabled by default - requires flash_attn package
-    max_memory: Optional[dict] = None
+    max_memory: Optional[dict] = None,
+    token: Optional[str] = None
 ) -> Tuple[PaliGemmaForConditionalGeneration, AutoProcessor]:
     """
     Load a PaliGemma model and processor from HuggingFace.
@@ -61,7 +62,7 @@ def load_paligemma(
     print(f"Device: {device}, dtype: {torch_dtype}")
     
     # Load processor
-    processor = AutoProcessor.from_pretrained(model_id)
+    processor = AutoProcessor.from_pretrained(model_id, token=token)
     
     # Configure model loading arguments
     model_kwargs = {
@@ -94,6 +95,7 @@ def load_paligemma(
     # Load model
     model = PaliGemmaForConditionalGeneration.from_pretrained(
         model_id,
+        token=token,
         **model_kwargs
     )
     

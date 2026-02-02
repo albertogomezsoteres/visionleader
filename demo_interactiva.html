@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo: Sistema de Planificación con Fast Downward</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.online {
+            background: #10b981;
+        }
+
+        .status-indicator.offline {
+            background: #ef4444;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #60a5fa;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        select:hover {
+            border-color: #60a5fa;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+
+        .goal-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option:hover {
+            border-color: #60a5fa;
+            background: #f9fafb;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .functional-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-functional {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-functional.cafeteria {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-functional.gimnasio {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-functional:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-functional:active {
+            transform: translateY(0);
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(96, 165, 250, 0.4);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-info {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .result-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .result-info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-info-label {
+            font-weight: 600;
+            color: #4b5563;
+            min-width: 100px;
+        }
+
+        .result-info-value {
+            color: #1f2937;
+        }
+
+        .plan-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .plan-steps {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .plan-step {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f9fafb;
+            border-left: 4px solid #60a5fa;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .plan-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .plan-step-number {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background: #60a5fa;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: 600;
+            margin-right: 10px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .image-upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f9fafb;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .image-upload-zone:hover {
+            border-color: #60a5fa;
+            background: #f0f9ff;
+        }
+
+        .image-upload-zone.dragover {
+            border-color: #60a5fa;
+            background: #dbeafe;
+            transform: scale(1.02);
+        }
+
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload-content svg {
+            color: #60a5fa;
+            margin-bottom: 10px;
+        }
+
+        .upload-content p {
+            margin: 0;
+            color: #4b5563;
+        }
+
+        .upload-hint {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .image-preview {
+            position: relative;
+            max-width: 100%;
+            max-height: 300px;
+            margin: 0 auto;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        .btn-remove-image {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-remove-image:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .btn-analyze {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .btn-analyze:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(96, 165, 250, 0.3);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .analysis-result {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .analysis-result.success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+
+        .analysis-result.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .analysis-result p {
+            margin: 5px 0;
+        }
+
+        .analysis-result .raw-response {
+            font-size: 12px;
+            font-style: italic;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+
+            .goal-options {
+                flex-direction: column;
+            }
+
+            .functional-buttons {
+                flex-direction: column;
+            }
+
+            .plan-stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Prueba Sistema de Planificación con Fast Downward</h1>
+            <p>
+                <span class="status-indicator offline" id="apiStatus"></span>
+                <span id="apiStatusText">Verificando conexión...</span>
+            </p>
+        </div>
+
+        <div class="content">
+            <!-- Análisis de Imagen con Paligemma -->
+            <div class="section">
+                <div class="section-title">Detectar Ubicación desde Imagen (Paligemma)</div>
+                <div class="image-upload-zone" id="imageUploadZone">
+                    <input type="file" id="imageInput" accept="image/jpeg,image/jpg,image/png" style="display: none;">
+                    <div class="upload-content" id="uploadContent">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                        <p class="upload-hint">Sube una foto del cartel de señalización del campus</p>
+                    </div>
+                    <div class="image-preview" id="imagePreview" style="display: none;">
+                        <img id="previewImage" src="" alt="Preview">
+                        <button class="btn-remove-image" onclick="removeImage()">✕</button>
+                    </div>
+                </div>
+                <button class="btn-analyze" id="analyzeBtn" onclick="analyzeImageWithPaligemma()" disabled>
+                    Analizar Imagen con Paligemma
+                </button>
+                <div class="analysis-result" id="analysisResult" style="display: none;"></div>
+            </div>
+
+            <!-- Estado Inicial -->
+            <div class="section">
+                <div class="section-title">Estado Inicial</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="initialBuilding">Edificio</label>
+                        <select id="initialBuilding" onchange="updateInitialFloors()">
+                            <option value="">Selecciona un edificio...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="initialFloor">Planta</label>
+                        <select id="initialFloor">
+                            <option value="">Selecciona una planta...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Objetivo -->
+            <div class="section">
+                <div class="section-title">Objetivo</div>
+                
+                <div class="goal-options">
+                    <div class="radio-group">
+                        <div class="radio-option" onclick="selectGoalType('specific')">
+                            <input type="radio" name="goalType" id="goalSpecific" value="specific" checked>
+                            <label for="goalSpecific">Objetivo Específico</label>
+                        </div>
+                        <div class="radio-option" onclick="selectGoalType('functional')">
+                            <input type="radio" name="goalType" id="goalFunctional" value="functional">
+                            <label for="goalFunctional">Objetivo Funcional</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Objetivo Específico -->
+                <div id="specificGoal" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="goalBuilding">Edificio</label>
+                        <select id="goalBuilding" onchange="updateGoalFloors()">
+                            <option value="">Selecciona un edificio...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="goalFloor">Planta</label>
+                        <select id="goalFloor">
+                            <option value="">Selecciona una planta...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Objetivos Funcionales -->
+                <div id="functionalGoal" class="hidden" style="margin-top: 15px;">
+                    <div class="functional-buttons">
+                        <button class="btn-functional cafeteria" onclick="selectFunctionalGoal('cafeteria')">
+                            Ir a la Cafetería
+                        </button>
+                        <button class="btn-functional gimnasio" onclick="selectFunctionalGoal('gimnasio')">
+                            Ir al Gimnasio
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Generar -->
+            <button class="btn-generate" id="generateBtn" onclick="generatePlan()">
+                Generar Plan con Fast Downward
+            </button>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Ejecutando Fast Downward en Docker...</p>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 10px;">
+                    El contenedor 'fast-downward-planner' debería aparecer en Docker Desktop
+                </p>
+            </div>
+
+            <!-- Error -->
+            <div class="error-message" id="errorMessage"></div>
+
+            <!-- Resultado -->
+            <div class="result-section" id="resultSection">
+                <div class="section-title">Resultado del Plan</div>
+                
+                <div class="result-info">
+                    <div class="result-info-item">
+                        <span class="result-info-label">Origen:</span>
+                        <span class="result-info-value" id="resultOrigin"></span>
+                    </div>
+                    <div class="result-info-item">
+                        <span class="result-info-label">Destino:</span>
+                        <span class="result-info-value" id="resultDestination"></span>
+                    </div>
+                </div>
+
+                <div class="plan-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statSteps">0</div>
+                        <div class="stat-label">Pasos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statCost">0</div>
+                        <div class="stat-label">Costo</div>
+                    </div>
+                </div>
+
+                <div class="plan-steps" id="planSteps"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        // Edificios del campus (hardcodeados desde campus_graph.json)
+        const buildings = [
+            {id: 1, name: 'EPS', full_name: 'Escuela Politécnica Superior', floors: [-1, 0, 1, 2]},
+            {id: 2, name: 'CD', full_name: 'Centro Deportivo', floors: [-1, 0, 1, 2]},
+            {id: 3, name: 'H', full_name: 'Edificio H', floors: [-1, 0, 1, 2]},
+            {id: 4, name: 'B', full_name: 'Biblioteca', floors: [-1, 0, 1, 2]},
+            {id: 5, name: 'R', full_name: 'Rectorado', floors: [-1, 0, 1, 2]},
+            {id: 7, name: 'C1', full_name: 'Edificio C1', floors: [-1, 0, 1, 2]},
+            {id: 8, name: 'C2', full_name: 'Edificio C2', floors: [-1, 0, 1, 2]},
+            {id: 9, name: 'C3', full_name: 'Edificio C3', floors: [-1, 0, 1, 2]},
+            {id: 10, name: 'C4', full_name: 'Edificio C4', floors: [-1, 0, 1, 2]},
+            {id: 11, name: 'C5', full_name: 'Edificio C5', floors: [-1, 0, 1, 2]},
+            {id: 12, name: 'E', full_name: 'Edificio E', floors: [-1, 0, 1, 2]},
+            {id: 13, name: 'M', full_name: 'Edificio M', floors: [-1, 0, 1, 2]},
+            {id: 14, name: 'CB', full_name: 'Edificio CB', floors: [-1, 0, 1, 2]},
+            {id: 15, name: 'O', full_name: 'Edificio O', floors: [-1, 0, 1, 2]},
+            {id: 16, name: 'P', full_name: 'Edificio P', floors: [-1, 0, 1, 2]},
+            {id: 17, name: 'PS', full_name: 'Edificio PS', floors: [-1, 0, 1, 2]},
+            {id: 18, name: 'MS', full_name: 'Edificio MS', floors: [-1, 0, 1, 2]},
+            {id: 19, name: 'BA', full_name: 'Edificio BA', floors: [-1, 0, 1, 2]},
+            {id: 20, name: 'CSQ', full_name: 'Edificio CSQ', floors: [-1, 0, 1, 2]},
+            {id: 21, name: 'CC', full_name: 'Edificio CC', floors: [-1, 0, 1, 2]}
+        ];
+
+        let selectedFunctionalGoal = null;
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            populateBuildings();
+            checkAPIStatus();
+            setInterval(checkAPIStatus, 5000); // Verificar cada 5 segundos
+        });
+
+        function populateBuildings() {
+            const initialSelect = document.getElementById('initialBuilding');
+            const goalSelect = document.getElementById('goalBuilding');
+            
+            buildings.forEach(building => {
+                const option1 = document.createElement('option');
+                option1.value = building.id;
+                option1.textContent = `${building.name} - ${building.full_name}`;
+                initialSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = building.id;
+                option2.textContent = `${building.name} - ${building.full_name}`;
+                goalSelect.appendChild(option2);
+            });
+        }
+
+        function updateInitialFloors() {
+            const buildingId = parseInt(document.getElementById('initialBuilding').value);
+            const floorSelect = document.getElementById('initialFloor');
+            floorSelect.innerHTML = '<option value="">Selecciona una planta...</option>';
+            
+            if (buildingId) {
+                const building = buildings.find(b => b.id === buildingId);
+                if (building) {
+                    building.floors.forEach(floor => {
+                        const option = document.createElement('option');
+                        option.value = floor;
+                        option.textContent = `Planta ${floor < 0 ? floor : `+${floor}`}`;
+                        floorSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        function updateGoalFloors() {
+            const buildingId = parseInt(document.getElementById('goalBuilding').value);
+            const floorSelect = document.getElementById('goalFloor');
+            floorSelect.innerHTML = '<option value="">Selecciona una planta...</option>';
+            
+            if (buildingId) {
+                const building = buildings.find(b => b.id === buildingId);
+                if (building) {
+                    building.floors.forEach(floor => {
+                        const option = document.createElement('option');
+                        option.value = floor;
+                        option.textContent = `Planta ${floor < 0 ? floor : `+${floor}`}`;
+                        floorSelect.appendChild(option);
+                    });
+                }
+            }
+        }
+
+        function selectGoalType(type) {
+            const specificDiv = document.getElementById('specificGoal');
+            const functionalDiv = document.getElementById('functionalGoal');
+            
+            if (type === 'specific') {
+                specificDiv.classList.remove('hidden');
+                functionalDiv.classList.add('hidden');
+                selectedFunctionalGoal = null;
+            } else {
+                specificDiv.classList.add('hidden');
+                functionalDiv.classList.remove('hidden');
+                selectedFunctionalGoal = null;
+            }
+        }
+
+        function selectFunctionalGoal(goal) {
+            selectedFunctionalGoal = goal;
+            // Resaltar botón seleccionado
+            document.querySelectorAll('.btn-functional').forEach(btn => {
+                btn.style.opacity = '1';
+                btn.style.transform = 'scale(1)';
+            });
+            event.target.style.opacity = '0.8';
+            event.target.style.transform = 'scale(0.95)';
+        }
+
+        async function checkAPIStatus() {
+            try {
+                const response = await fetch(`${API_URL}/`, { method: 'GET', timeout: 2000 });
+                if (response.ok) {
+                    document.getElementById('apiStatus').classList.remove('offline');
+                    document.getElementById('apiStatus').classList.add('online');
+                    document.getElementById('apiStatusText').textContent = 'API conectada - Fast Downward listo';
+                } else {
+                    throw new Error('API no disponible');
+                }
+            } catch (error) {
+                document.getElementById('apiStatus').classList.remove('online');
+                document.getElementById('apiStatus').classList.add('offline');
+                document.getElementById('apiStatusText').textContent = 'API desconectada - Inicia el servidor con: python run_api.py';
+            }
+        }
+
+        async function generatePlan() {
+            // Validar estado inicial
+            const initialBuilding = document.getElementById('initialBuilding').value;
+            const initialFloor = document.getElementById('initialFloor').value;
+            
+            if (!initialBuilding || initialFloor === '') {
+                showError('Por favor, selecciona el estado inicial (edificio y planta)');
+                return;
+            }
+
+            // Preparar request
+            const request = {
+                initial_state: {
+                    building: parseInt(initialBuilding),
+                    floor: parseInt(initialFloor)
+                },
+                humano_disponible: true
+            };
+
+            // Determinar objetivo
+            const goalType = document.querySelector('input[name="goalType"]:checked').value;
+            
+            if (goalType === 'functional') {
+                if (!selectedFunctionalGoal) {
+                    showError('Por favor, selecciona un objetivo funcional (Cafetería o Gimnasio)');
+                    return;
+                }
+                request.goal_functional = selectedFunctionalGoal;
+            } else {
+                const goalBuilding = document.getElementById('goalBuilding').value;
+                const goalFloor = document.getElementById('goalFloor').value;
+                
+                if (!goalBuilding || goalFloor === '') {
+                    showError('Por favor, selecciona el objetivo (edificio y planta)');
+                    return;
+                }
+                
+                request.goal_state = {
+                    building: parseInt(goalBuilding),
+                    floor: parseInt(goalFloor)
+                };
+            }
+
+            // Mostrar loading y ocultar resultados
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('resultSection').classList.remove('show');
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_URL}/api/plan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error al generar el plan');
+                }
+
+                if (data.success) {
+                    displayResult(data, request);
+                } else {
+                    throw new Error(data.error || 'No se pudo generar el plan');
+                }
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        function displayResult(data, request) {
+            // Obtener nombres de edificios
+            const initialBuilding = buildings.find(b => b.id === request.initial_state.building);
+            const initialFloor = request.initial_state.floor;
+            
+            let destinationText = '';
+            if (request.goal_functional) {
+                if (request.goal_functional === 'cafeteria') {
+                    destinationText = 'Cafetería (CD, Planta 0)';
+                } else {
+                    destinationText = 'Gimnasio (CD, Planta -1)';
+                }
+            } else {
+                const goalBuilding = buildings.find(b => b.id === request.goal_state.building);
+                const goalFloor = request.goal_state.floor;
+                destinationText = `${goalBuilding.name} - ${goalBuilding.full_name}, Planta ${goalFloor < 0 ? goalFloor : `+${goalFloor}`}`;
+            }
+
+            // Mostrar información
+            document.getElementById('resultOrigin').textContent = 
+                `${initialBuilding.name} - ${initialBuilding.full_name}, Planta ${initialFloor < 0 ? initialFloor : `+${initialFloor}`}`;
+            document.getElementById('resultDestination').textContent = destinationText;
+
+            // Mostrar estadísticas
+            document.getElementById('statSteps').textContent = data.steps || 0;
+            document.getElementById('statCost').textContent = data.cost || 0;
+
+            // Mostrar plan
+            const planStepsDiv = document.getElementById('planSteps');
+            planStepsDiv.innerHTML = '';
+            
+            if (data.plan && data.plan.length > 0) {
+                data.plan.forEach((action, index) => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'plan-step';
+                    stepDiv.innerHTML = `
+                        <span class="plan-step-number">${index + 1}</span>
+                        ${formatAction(action)}
+                    `;
+                    planStepsDiv.appendChild(stepDiv);
+                });
+            } else {
+                planStepsDiv.innerHTML = '<p style="text-align: center; color: #6b7280;">No se generaron acciones en el plan</p>';
+            }
+
+            // Mostrar sección de resultados
+            document.getElementById('resultSection').classList.add('show');
+        }
+
+        function formatAction(action) {
+            // Formatear acción para que sea más legible
+            return action
+                .replace(/robot1/g, 'Robot')
+                .replace(/edificio_/g, 'Edificio ')
+                .replace(/planta_/g, 'Planta ')
+                .replace(/planta_m/g, 'Planta -')
+                .replace(/elevator/g, 'Ascensor')
+                .replace(/stairs_up/g, 'Subir Escaleras')
+                .replace(/stairs_down/g, 'Bajar Escaleras')
+                .replace(/hallway/g, 'Pasillo Exterior')
+                .replace(/mover_edificio/g, 'Mover entre Edificios');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        // Funcionalidad de imagen con Paligemma
+        let selectedImageFile = null;
+
+        // Inicializar drag & drop
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadZone = document.getElementById('imageUploadZone');
+            const imageInput = document.getElementById('imageInput');
+
+            // Click en la zona
+            uploadZone.addEventListener('click', () => {
+                imageInput.click();
+            });
+
+            // Seleccionar archivo
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleImageFile(e.target.files[0]);
+                }
+            });
+
+            // Drag & drop
+            uploadZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadZone.classList.add('dragover');
+            });
+
+            uploadZone.addEventListener('dragleave', () => {
+                uploadZone.classList.remove('dragover');
+            });
+
+            uploadZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadZone.classList.remove('dragover');
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleImageFile(e.dataTransfer.files[0]);
+                }
+            });
+        });
+
+        function handleImageFile(file) {
+            // Validar tipo
+            if (!file.type.match('image.*')) {
+                showError('Por favor, selecciona un archivo de imagen válido');
+                return;
+            }
+
+            // Validar tamaño (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('La imagen es demasiado grande. Máximo 10MB');
+                return;
+            }
+
+            selectedImageFile = file;
+
+            // Mostrar preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById('imagePreview');
+                const uploadContent = document.getElementById('uploadContent');
+                const previewImage = document.getElementById('previewImage');
+                
+                previewImage.src = e.target.result;
+                uploadContent.style.display = 'none';
+                preview.style.display = 'block';
+                document.getElementById('analyzeBtn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            selectedImageFile = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('uploadContent').style.display = 'flex';
+            document.getElementById('analyzeBtn').disabled = true;
+            document.getElementById('analysisResult').style.display = 'none';
+        }
+
+        async function analyzeImageWithPaligemma() {
+            if (!selectedImageFile) {
+                showError('Por favor, selecciona una imagen primero');
+                return;
+            }
+
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const resultDiv = document.getElementById('analysisResult');
+            
+            // Mostrar loading
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analizando con Paligemma...';
+            resultDiv.style.display = 'none';
+
+            try {
+                // Preparar FormData
+                const formData = new FormData();
+                formData.append('file', selectedImageFile);
+
+                // Llamar a la API
+                const response = await fetch(`${API_URL}/api/analyze-image`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Auto-completar formulario
+                    autoFillLocation(data.building, data.floor);
+                    
+                    // Mostrar resultado exitoso
+                    resultDiv.className = 'analysis-result success';
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ Ubicación detectada:</strong></p>
+                        <p>Edificio: ${buildings.find(b => b.id === data.building)?.full_name || data.building}</p>
+                        <p>Planta: ${data.floor < 0 ? data.floor : `+${data.floor}`}</p>
+                        <div class="raw-response">
+                            <strong>Respuesta de Paligemma:</strong><br>
+                            "${data.raw_response}"
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                } else {
+                    // Mostrar error
+                    resultDiv.className = 'analysis-result error';
+                    resultDiv.innerHTML = `
+                        <p><strong>✗ Error al analizar la imagen</strong></p>
+                        <p>${data.error || 'No se pudo identificar la ubicación'}</p>
+                        <div class="raw-response">
+                            <strong>Respuesta de Paligemma:</strong><br>
+                            "${data.raw_response || 'Sin respuesta'}"
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                }
+
+            } catch (error) {
+                resultDiv.className = 'analysis-result error';
+                resultDiv.innerHTML = `
+                    <p><strong>✗ Error de conexión</strong></p>
+                    <p>${error.message}</p>
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analizar Imagen con Paligemma';
+            }
+        }
+
+        function autoFillLocation(buildingId, floor) {
+            // Auto-completar edificio
+            const buildingSelect = document.getElementById('initialBuilding');
+            buildingSelect.value = buildingId;
+            updateInitialFloors();
+
+            // Auto-completar planta (con un pequeño delay para que se actualicen las opciones)
+            setTimeout(() => {
+                const floorSelect = document.getElementById('initialFloor');
+                floorSelect.value = floor;
+            }, 100);
+        }
+    </script>
+</body>
+</html>
