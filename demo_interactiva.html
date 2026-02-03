@@ -1104,15 +1104,24 @@
                 }
 
             } catch (error) {
+                console.error('Error completo:', error);
                 resultDiv.className = 'analysis-result error';
+                let errorDetails = error.message || 'Error desconocido';
+                
+                // Si es un error de red, dar más detalles
+                if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+                    errorDetails = 'No se pudo conectar con la API local. Verifica que esté corriendo.';
+                }
+                
                 resultDiv.innerHTML = `
                     <p><strong>✗ Error de conexión</strong></p>
-                    <p>${error.message}</p>
+                    <p>${errorDetails}</p>
                     <p style="font-size: 12px; margin-top: 10px;">
                         Verifica que:<br>
-                        - La API local esté corriendo (python run_api.py)<br>
+                        - La API local esté corriendo: <code>python run_api.py</code><br>
+                        - El servidor esté escuchando en: <code>http://localhost:8000</code><br>
                         - El notebook de Colab esté activo y el servidor corriendo<br>
-                        - La URL de ngrok sea correcta en planning_api.py
+                        - Abre la consola del navegador (F12) para más detalles
                     </p>
                 `;
                 resultDiv.style.display = 'block';
