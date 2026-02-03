@@ -358,11 +358,6 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     result = {"building": None, "floor": None, "error": None}
     response_lower = response.lower()
     
-    # Detectar respuestas "unanswerable" o similares
-    if "unanswerable" in response_lower or "no puedo" in response_lower or "no se puede" in response_lower:
-        result["error"] = "Paligemma no pudo identificar la ubicación en esta imagen. Por favor, sube una foto del cartel de señalización del campus donde se vea claramente el nombre del edificio (EPS, CD, etc.) y el número de planta."
-        return result
-    
     # Crear mapeo de nombres de edificios a IDs
     building_map = {}
     name_to_id = {}
@@ -564,9 +559,7 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
         model, processor = load_paligemma_model()
         
         # Prompt para Paligemma
-        # Prompt anterior (por si necesitamos volver):
-        # prompt = "Lee el cartel de señalización en esta imagen del campus. Identifica el nombre del edificio y el número de planta que aparecen en el cartel. Busca las palabras 'EDIFICIO' o 'PLANTA' y el texto asociado."
-        prompt = "En esta imagen hay un cartel de señalización. Lee el texto que aparece junto a las palabras 'EDIFICIO' y 'PLANTA'. Responde solo con el nombre del edificio y el número de planta, por ejemplo: 'EPS 0' o 'CD 2'."
+        prompt = "Lee el cartel de señalización en esta imagen del campus. Identifica el nombre del edificio y el número de planta que aparecen en el cartel. Busca las palabras 'EDIFICIO' o 'PLANTA' y el texto asociado."
         
         # Procesar imagen con Paligemma
         from inference import run_single_inference
