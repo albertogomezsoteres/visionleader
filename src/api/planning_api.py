@@ -61,19 +61,15 @@ planner = FastDownwardPlanner()
 converter = CampusGraphToPDDL(str(CAMPUS_JSON))
 
 # Variables globales para Paligemma (singleton)
+# Mantenemos el modelo y procesador en memoria para no cargarlos cada vez
 _paligemma_model = None
 _paligemma_processor = None
 _campus_graph_data = None
 
-# ============================================================
-# CONFIGURACIÓN - URL DE COLAB (opcional)
-# ============================================================
-# Si tienes el notebook de Colab corriendo, pon aquí la URL de ngrok
-# Ejemplo: COLAB_API_URL = "https://abc123.ngrok.io"
-# Si es None, intentará cargar el modelo localmente
-COLAB_API_URL = "https://your-subdomain.ngrok-free.app"  # <-- URL de Colab
-# ============================================================
-
+# URL del servidor de Colab con Paligemma
+# Si tienes el notebook corriendo, aquí va la URL que te da ngrok
+# Si no está configurada, usará el modelo local (más lento pero funciona sin Colab)
+COLAB_API_URL = "https://your-subdomain.ngrok-free.app"
 
 @app.get("/")
 async def root():
@@ -303,6 +299,7 @@ async def validate_plan(request: ValidationRequest):
 def load_campus_graph():
     """Carga el campus graph una vez y lo mantiene en memoria."""
     global _campus_graph_data
+    # Solo cargamos el JSON una vez, luego lo reutilizamos
     if _campus_graph_data is None:
         with open(CAMPUS_JSON, 'r', encoding='utf-8') as f:
             _campus_graph_data = json.load(f)
@@ -312,21 +309,21 @@ def load_campus_graph():
 def load_paligemma_model():
     """Carga el modelo Paligemma una vez y lo mantiene en memoria (singleton)."""
     global _paligemma_model, _paligemma_processor
+    # Solo cargamos el modelo la primera vez que se necesita
+    # Esto ahorra tiempo y memoria en peticiones posteriores
     if _paligemma_model is None or _paligemma_processor is None:
         from model_loader import load_paligemma
         from huggingface_hub import login
         import os
         
-        # ============================================
-        # CONFIGURAR TU TOKEN DE HUGGINGFACE AQUÍ
-        # ============================================
-        # Opción 1: Token hardcodeado (reemplaza con tu token)
-        HF_TOKEN_HARDCODED = "***REMOVED***"  # <-- PON TU TOKEN AQUÍ: "hf_tu_token_aqui"
+        # Necesitamos un token de HuggingFace para descargar el modelo
+        # Puedes ponerlo aquí directamente o usar una variable de entorno
+        HF_TOKEN_HARDCODED = "***REMOVED***"
         
-        # Opción 2: Token desde variable de entorno (si prefieres)
+        # Intentamos usar el token hardcodeado, si no está, buscamos en variables de entorno
         hf_token = HF_TOKEN_HARDCODED or os.getenv("HF_TOKEN")
-        # ============================================
         
+        # Autenticarnos en HuggingFace para poder descargar el modelo
         if hf_token:
             try:
                 login(token=hf_token)
@@ -335,8 +332,8 @@ def load_paligemma_model():
                 print(f"⚠️ Error al autenticar en HuggingFace: {e}")
         else:
             print("⚠️ No se encontró HF_TOKEN. El modelo puede requerir autenticación.")
-            print("   Configura HF_TOKEN_HARDCODED en este archivo o la variable de entorno: $env:HF_TOKEN='tu_token'")
         
+        # Cargar el modelo Paligemma (puede tardar un poco la primera vez)
         model_id = "google/paligemma2-3b-mix-224"
         print(f"Cargando modelo Paligemma: {model_id}")
         _paligemma_model, _paligemma_processor = load_paligemma(model_id, token=hf_token)
@@ -348,6 +345,9 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     """
     Parsea la respuesta de Paligemma para extraer edificio y planta.
     
+    Paligemma puede responder de muchas formas diferentes, así que intentamos
+    varios patrones para encontrar el edificio y la planta en su respuesta.
+    
     Args:
         response: Respuesta de texto de Paligemma
         campus_graph: Diccionario con la estructura del campus
@@ -358,7 +358,8 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     result = {"building": None, "floor": None, "error": None}
     response_lower = response.lower()
     
-    # Crear mapeo de nombres de edificios a IDs
+    # Primero creamos un mapeo de todos los edificios para buscarlos fácilmente
+    # Mapeamos tanto códigos (EPS, CD) como nombres completos
     building_map = {}
     name_to_id = {}
     for building in campus_graph.get("buildings", []):
@@ -370,30 +371,30 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
         name_to_id[name.lower()] = building_id
         name_to_id[full_name] = building_id
         
-        # También mapear variaciones comunes
+        # También mapear variaciones comunes que puede usar Paligemma
         if "politécnica" in full_name or "politecnica" in full_name:
             name_to_id["escuela politecnica"] = building_id
             name_to_id["escuela politécnica"] = building_id
         if "deportivo" in full_name:
             name_to_id["centro deportivo"] = building_id
     
-    # Buscar edificio
+    # Buscar el código del edificio en la respuesta
     building_found = None
     building_codes = ["EPS", "CD", "H", "B", "R", "C1", "C2", "C3", "C4", "C5", "E", "M", "CB", "O", "P", "PS", "MS", "BA", "CSQ", "CC"]
     
-    # Buscar códigos directamente (case-insensitive)
+    # Primero intentamos buscar códigos directamente (ej: "EPS", "CD")
+    # Usamos regex para buscar como palabra completa, no como parte de otra palabra
     for code in building_codes:
-        # Buscar el código como palabra completa
         pattern = r'\b' + re.escape(code) + r'\b'
         if re.search(pattern, response, re.IGNORECASE):
             building_found = code.upper()
             break
     
-    # Si no se encontró código, buscar nombres completos
+    # Si no encontramos código, buscamos nombres completos
     if not building_found:
         for name, building_id in name_to_id.items():
             if name in response_lower:
-                # Encontrar el código correspondiente
+                # Encontrar el código correspondiente al nombre
                 for b in campus_graph.get("buildings", []):
                     if b.get("id") == building_id:
                         building_found = b.get("name", "").upper()
@@ -404,23 +405,25 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     if building_found:
         result["building"] = building_map.get(building_found)
     
-    # Buscar planta
+    # Ahora buscamos el número de planta
     floor_found = None
     
-    # Buscar patrones como "PLANTA 2", "planta 2", "PLANTA -1", etc.
+    # Intentamos varios patrones: "PLANTA 2", "planta 2", "PLANTA -1", etc.
+    # También buscamos números sueltos que puedan ser plantas válidas
     patterns = [
-        r'(?:planta|piso|floor|nivel)\s*[:\-]?\s*(-?\d+)',
-        r'(-?\d+)\s*(?:planta|piso|floor|nivel)',
-        r'\b(-?\d+)\b',  # Cualquier número
+        r'(?:planta|piso|floor|nivel)\s*[:\-]?\s*(-?\d+)',  # "planta 2", "planta: 1"
+        r'(-?\d+)\s*(?:planta|piso|floor|nivel)',  # "2 planta"
+        r'\b(-?\d+)\b',  # Cualquier número (como último recurso)
     ]
     
     for pattern in patterns:
         matches = re.findall(pattern, response, re.IGNORECASE)
         if matches:
-            # Tomar el primer número encontrado que esté en el rango válido
+            # Tomar el primer número que encontremos que sea una planta válida
             for match in matches:
                 try:
                     num = int(match)
+                    # Solo aceptamos plantas válidas del campus (-1, 0, 1, 2)
                     if num in [-1, 0, 1, 2]:
                         floor_found = num
                         break
@@ -429,7 +432,7 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
             if floor_found is not None:
                 break
     
-    # Si no se encontró número, buscar palabras como "segunda", "tercera"
+    # Si no encontramos número, intentamos buscar palabras como "segunda", "tercera"
     if floor_found is None:
         word_to_num = {
             "primera": 1, "segunda": 2, "tercera": 3,
@@ -444,7 +447,8 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     if floor_found is not None:
         result["floor"] = floor_found
     
-    # Validar que se encontró al menos uno
+    # Validar que encontramos al menos edificio o planta
+    # Si no encontramos nada, devolvemos un error descriptivo
     if result["building"] is None and result["floor"] is None:
         result["error"] = "No se pudo identificar ni el edificio ni la planta en la respuesta de Paligemma"
     elif result["building"] is None:
@@ -468,23 +472,23 @@ async def analyze_image(file: UploadFile = File(...)):
         ImageAnalysisResponse con building, floor y raw_response
     """
     try:
-        # Validar tipo de archivo
+        # Validar que la imagen sea del formato correcto
         if file.content_type not in ["image/jpeg", "image/jpg", "image/png"]:
             raise HTTPException(
                 status_code=400,
                 detail="Formato de imagen no soportado. Use JPEG o PNG."
             )
         
-        # Leer imagen
+        # Leer los bytes de la imagen
         image_data = await file.read()
         
-        # Cargar campus graph
+        # Necesitamos el campus graph para mapear nombres a IDs
         campus_graph = load_campus_graph()
         
-        # Intentar usar Colab si está configurado
+        # Intentar usar Colab primero (más rápido con GPU)
         if COLAB_API_URL:
             try:
-                # Enviar imagen a Colab
+                # Enviar la imagen al servidor de Colab
                 files = {"file": (file.filename, image_data, file.content_type)}
                 response = requests.post(
                     f"{COLAB_API_URL}/analyze",
@@ -496,10 +500,10 @@ async def analyze_image(file: UploadFile = File(...)):
                     data = response.json()
                     if data.get("success"):
                         raw_response = data.get("response", "")
-                        # Parsear respuesta de Paligemma
+                        # Parsear la respuesta de Paligemma para extraer edificio y planta
                         parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
                         
-                        # Preparar respuesta
+                        # Si hay error en el parsing, lo devolvemos
                         if parsed["error"]:
                             return ImageAnalysisResponse(
                                 success=False,
@@ -509,6 +513,7 @@ async def analyze_image(file: UploadFile = File(...)):
                                 error=parsed["error"]
                             )
                         else:
+                            # Todo bien, devolvemos el resultado
                             return ImageAnalysisResponse(
                                 success=True,
                                 building=parsed["building"],
@@ -522,6 +527,7 @@ async def analyze_image(file: UploadFile = File(...)):
                     raise Exception(f"Error en Colab: {response.status_code}")
             
             except requests.exceptions.RequestException as e:
+                # Si falla la conexión con Colab, intentamos localmente
                 error_msg = f"Error de conexión con Colab: {str(e)}"
                 print(f"⚠️ {error_msg}")
                 print(f"   URL intentada: {COLAB_API_URL}/analyze")
@@ -529,18 +535,20 @@ async def analyze_image(file: UploadFile = File(...)):
                 # Fallback a local
                 return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)
             except Exception as e:
+                # Cualquier otro error con Colab, también intentamos local
                 error_msg = f"Error inesperado con Colab: {str(e)}"
                 print(f"⚠️ {error_msg}")
                 print("   Intentando cargar modelo localmente...")
                 # Fallback a local
                 return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)
         else:
-            # Usar modelo local
+            # Si no hay URL de Colab configurada, usamos el modelo local directamente
             return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)
     
     except HTTPException:
         raise
     except Exception as e:
+        # Cualquier error inesperado, lo devolvemos en la respuesta
         return ImageAnalysisResponse(
             success=False,
             building=None,
@@ -551,17 +559,23 @@ async def analyze_image(file: UploadFile = File(...)):
 
 
 async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: str, content_type: str) -> ImageAnalysisResponse:
-    """Función auxiliar para analizar imagen localmente."""
+    """
+    Función auxiliar para analizar imagen localmente.
+    
+    Esta función se usa cuando Colab no está disponible o falla.
+    Carga el modelo Paligemma localmente (más lento pero funciona sin internet).
+    """
     try:
+        # Convertir los bytes a una imagen PIL
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
         
-        # Cargar modelo Paligemma
+        # Cargar el modelo Paligemma (solo la primera vez, luego se reutiliza)
         model, processor = load_paligemma_model()
         
-        # Prompt para Paligemma
+        # Prompt que le damos a Paligemma para que sepa qué buscar
         prompt = "Lee el cartel de señalización en esta imagen del campus. Identifica el nombre del edificio y el número de planta que aparecen en el cartel. Busca las palabras 'EDIFICIO' o 'PLANTA' y el texto asociado."
         
-        # Procesar imagen con Paligemma
+        # Procesar la imagen con Paligemma
         from inference import run_single_inference
         raw_response, inference_time = run_single_inference(
             model=model,
@@ -571,10 +585,10 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
             max_new_tokens=100
         )
         
-        # Parsear respuesta
+        # Parsear la respuesta de Paligemma para extraer edificio y planta
         parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
         
-        # Preparar respuesta
+        # Preparar la respuesta según si hubo error o no
         if parsed["error"]:
             return ImageAnalysisResponse(
                 success=False,
@@ -593,6 +607,7 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
             )
     
     except Exception as e:
+        # Si algo falla en el procesamiento local, devolvemos el error
         return ImageAnalysisResponse(
             success=False,
             building=None,
