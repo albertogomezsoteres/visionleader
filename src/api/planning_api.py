@@ -341,6 +341,29 @@ def load_paligemma_model():
     return _paligemma_model, _paligemma_processor
 
 
+def get_paligemma_prompts() -> list[str]:
+    """
+    Retorna una lista de prompts en inglés para usar con Paligemma.
+    Se intentan en orden: si uno falla (respuesta "unanswerable"), se prueba el siguiente.
+    
+    Returns:
+        Lista de prompts en inglés, ordenados de más específico a más general
+    """
+    return [
+        # Prompt 1: Leer directamente el cartel de señalización (más específico para carteles como el ejemplo)
+        "Read the signage board in this campus image. Look for the words 'EDIFICIO', 'BUILDING', 'PLANTA', or 'FLOOR' on the sign. Identify the building name (like EPS, CD, H) and the floor number displayed next to these words.",
+        
+        # Prompt 2: Buscar y leer cualquier cartel visible con información de edificio y planta
+        "Find any visible signs or boards in this image that show building and floor information. Read the text on those signs, looking for building names and floor numbers next to words like 'BUILDING' or 'FLOOR'.",
+        
+        # Prompt 3: Identificar ubicación desde carteles o señales visibles
+        "Look for any signage boards, labels, or signs in this campus image. Read the text to identify the building name and floor number. Pay attention to signs that display 'EDIFICIO', 'BUILDING', 'PLANTA', or 'FLOOR'.",
+        
+        # Prompt 4: Fallback - análisis general de carteles y señales
+        "Analyze this campus image and look for any signs, boards, or labels that might indicate the building name and floor number. Read any visible text, numbers, or identifiers that show where this photo was taken."
+    ]
+
+
 def parse_location_from_paligemma_response(response: str, campus_graph: dict) -> dict:
     """
     Parsea la respuesta de Paligemma para extraer edificio y planta.
@@ -485,47 +508,84 @@ async def analyze_image(file: UploadFile = File(...)):
         # Necesitamos el campus graph para mapear nombres a IDs
         campus_graph = load_campus_graph()
         
+        # Obtener lista de prompts para intentar secuencialmente
+        prompts = get_paligemma_prompts()
+        
         # Intentar usar Colab primero (más rápido con GPU)
         if COLAB_API_URL:
             try:
-                # Enviar la imagen al servidor de Colab
-                files = {"file": (file.filename, image_data, file.content_type)}
-                response = requests.post(
-                    f"{COLAB_API_URL}/analyze",
-                    files=files,
-                    timeout=30
-                )
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    if data.get("success"):
-                        raw_response = data.get("response", "")
-                        # Parsear la respuesta de Paligemma para extraer edificio y planta
-                        parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
+                # Intentar cada prompt secuencialmente hasta que uno funcione
+                for prompt_idx, prompt in enumerate(prompts):
+                    try:
+                        # Enviar la imagen al servidor de Colab con el prompt actual
+                        files = {"file": (file.filename, image_data, file.content_type)}
+                        data_form = {"prompt": prompt}
+                        response = requests.post(
+                            f"{COLAB_API_URL}/analyze",
+                            files=files,
+                            data=data_form,
+                            timeout=30
+                        )
                         
-                        # Si hay error en el parsing, lo devolvemos
-                        if parsed["error"]:
-                            return ImageAnalysisResponse(
-                                success=False,
-                                building=parsed.get("building"),
-                                floor=parsed.get("floor"),
-                                raw_response=raw_response,
-                                error=parsed["error"]
-                            )
+                        if response.status_code == 200:
+                            data = response.json()
+                            if data.get("success"):
+                                raw_response = data.get("response", "").strip().lower()
+                                
+                                # Si la respuesta es "unanswerable", intentar siguiente prompt
+                                if "unanswerable" in raw_response:
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: 'unanswerable', intentando siguiente...")
+                                    continue
+                                
+                                # Parsear la respuesta de Paligemma para extraer edificio y planta
+                                parsed = parse_location_from_paligemma_response(data.get("response", ""), campus_graph)
+                                
+                                # Si el parsing fue exitoso, devolver el resultado
+                                if not parsed["error"]:
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito")
+                                    return ImageAnalysisResponse(
+                                        success=True,
+                                        building=parsed["building"],
+                                        floor=parsed["floor"],
+                                        raw_response=data.get("response", ""),
+                                        error=None
+                                    )
+                                else:
+                                    # Si el parsing falló pero no es "unanswerable", intentar siguiente prompt
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Error en parsing, intentando siguiente...")
+                                    if prompt_idx < len(prompts) - 1:
+                                        continue
+                                    else:
+                                        # Último prompt, devolver el error
+                                        return ImageAnalysisResponse(
+                                            success=False,
+                                            building=parsed.get("building"),
+                                            floor=parsed.get("floor"),
+                                            raw_response=data.get("response", ""),
+                                            error=parsed["error"]
+                                        )
+                            else:
+                                # Si Colab devuelve error, intentar siguiente prompt
+                                if prompt_idx < len(prompts) - 1:
+                                    continue
+                                else:
+                                    raise Exception(data.get("error", "Error en Colab"))
                         else:
-                            # Todo bien, devolvemos el resultado
-                            return ImageAnalysisResponse(
-                                success=True,
-                                building=parsed["building"],
-                                floor=parsed["floor"],
-                                raw_response=raw_response,
-                                error=None
-                            )
-                    else:
-                        raise Exception(data.get("error", "Error en Colab"))
-                else:
-                    raise Exception(f"Error en Colab: {response.status_code}")
-            
+                            # Error HTTP, intentar siguiente prompt
+                            if prompt_idx < len(prompts) - 1:
+                                continue
+                            else:
+                                raise Exception(f"Error en Colab: {response.status_code}")
+                    except requests.exceptions.RequestException:
+                        # Error de conexión, intentar siguiente prompt
+                        if prompt_idx < len(prompts) - 1:
+                            continue
+                        else:
+                            raise
+                
+                # Si llegamos aquí, todos los prompts fallaron
+                raise Exception("Todos los prompts fallaron al analizar la imagen")
+                
             except requests.exceptions.RequestException as e:
                 # Si falla la conexión con Colab, intentamos localmente
                 error_msg = f"Error de conexión con Colab: {str(e)}"
@@ -572,39 +632,72 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
         # Cargar el modelo Paligemma (solo la primera vez, luego se reutiliza)
         model, processor = load_paligemma_model()
         
-        # Prompt que le damos a Paligemma para que sepa qué buscar
-        prompt = "Lee el cartel de señalización en esta imagen del campus. Identifica el nombre del edificio y el número de planta que aparecen en el cartel. Busca las palabras 'EDIFICIO' o 'PLANTA' y el texto asociado."
+        # Obtener lista de prompts para intentar secuencialmente
+        prompts = get_paligemma_prompts()
         
-        # Procesar la imagen con Paligemma
+        # Intentar cada prompt secuencialmente hasta que uno funcione
         from inference import run_single_inference
-        raw_response, inference_time = run_single_inference(
-            model=model,
-            processor=processor,
-            image=image,
-            question=prompt,
-            max_new_tokens=100
+        
+        for prompt_idx, prompt in enumerate(prompts):
+            try:
+                # Procesar la imagen con Paligemma usando el prompt actual
+                raw_response, inference_time = run_single_inference(
+                    model=model,
+                    processor=processor,
+                    image=image,
+                    question=prompt,
+                    max_new_tokens=100
+                )
+                
+                # Si la respuesta es "unanswerable", intentar siguiente prompt
+                if "unanswerable" in raw_response.strip().lower():
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: 'unanswerable', intentando siguiente...")
+                    continue
+                
+                # Parsear la respuesta de Paligemma para extraer edificio y planta
+                parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
+                
+                # Si el parsing fue exitoso, devolver el resultado
+                if not parsed["error"]:
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito")
+                    return ImageAnalysisResponse(
+                        success=True,
+                        building=parsed["building"],
+                        floor=parsed["floor"],
+                        raw_response=raw_response,
+                        error=None
+                    )
+                else:
+                    # Si el parsing falló pero no es "unanswerable", intentar siguiente prompt
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Error en parsing, intentando siguiente...")
+                    if prompt_idx < len(prompts) - 1:
+                        continue
+                    else:
+                        # Último prompt, devolver el error
+                        return ImageAnalysisResponse(
+                            success=False,
+                            building=parsed.get("building"),
+                            floor=parsed.get("floor"),
+                            raw_response=raw_response,
+                            error=parsed["error"]
+                        )
+            except Exception as e:
+                # Si hay error con este prompt, intentar siguiente
+                print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Error: {str(e)}, intentando siguiente...")
+                if prompt_idx < len(prompts) - 1:
+                    continue
+                else:
+                    # Último prompt, lanzar el error
+                    raise
+        
+        # Si llegamos aquí, todos los prompts fallaron
+        return ImageAnalysisResponse(
+            success=False,
+            building=None,
+            floor=None,
+            raw_response="",
+            error="Todos los prompts fallaron al analizar la imagen"
         )
-        
-        # Parsear la respuesta de Paligemma para extraer edificio y planta
-        parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
-        
-        # Preparar la respuesta según si hubo error o no
-        if parsed["error"]:
-            return ImageAnalysisResponse(
-                success=False,
-                building=parsed.get("building"),
-                floor=parsed.get("floor"),
-                raw_response=raw_response,
-                error=parsed["error"]
-            )
-        else:
-            return ImageAnalysisResponse(
-                success=True,
-                building=parsed["building"],
-                floor=parsed["floor"],
-                raw_response=raw_response,
-                error=None
-            )
     
     except Exception as e:
         # Si algo falla en el procesamiento local, devolvemos el error
