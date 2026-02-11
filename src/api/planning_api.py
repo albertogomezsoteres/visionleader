@@ -9,6 +9,7 @@ Endpoints:
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
 import sys
 import tempfile
@@ -19,6 +20,7 @@ import io
 import requests
 from PIL import Image
 from typing import Optional, Tuple
+from pydantic import BaseModel
 
 # Añadir src al path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -29,7 +31,13 @@ from api.models import (
     ValidationRequest,
     ValidationResponse,
     DomainResponse,
-    ImageAnalysisResponse
+    ImageAnalysisResponse,
+    ClarificationRequest,
+    ClarificationResponse,
+    TranscribeRequest,
+    TranscribeResponse,
+    GPSRouteRequest,
+    GPSRouteResponse,
 )
 from navigation.fast_downward_client import FastDownwardPlanner
 from navigation.pddl_converter import CampusGraphToPDDL
@@ -82,9 +90,31 @@ async def root():
             "domain": "GET /api/domain",
             "validate": "POST /api/validate",
             "analyze-image": "POST /api/analyze-image",
+            "clarify-location": "POST /api/clarify-location",
+            "transcribe-audio": "POST /api/transcribe-audio",
+            "demo": "GET /demo - Interfaz web interactiva",
             "docs": "GET /docs"
         }
     }
+
+@app.get("/demo")
+async def demo():
+    """Sirve la interfaz web interactiva."""
+    # Buscar el archivo HTML en el directorio raíz del proyecto
+    base_path = Path(__file__).parent.parent.parent
+    html_file = base_path / "demo_interactiva.html"
+    
+    if not html_file.exists():
+        raise HTTPException(status_code=404, detail="demo_interactiva.html no encontrado")
+    
+    # Leer el contenido del archivo y devolverlo como HTML
+    with open(html_file, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+    
+    return HTMLResponse(
+        content=html_content,
+        headers={"Content-Type": "text/html; charset=utf-8"}
+    )
 
 
 @app.post("/api/plan", response_model=PlanningResponse)
@@ -350,17 +380,17 @@ def get_paligemma_prompts() -> list[str]:
         Lista de prompts en inglés, ordenados de más específico a más general
     """
     return [
-        # Prompt 1: Leer directamente el cartel de señalización (más específico para carteles como el ejemplo)
-        "Read the signage board in this campus image. Look for the words 'EDIFICIO', 'BUILDING', 'PLANTA', or 'FLOOR' on the sign. Identify the building name (like EPS, CD, H) and the floor number displayed next to these words.",
+        # Prompt 1: Instrucciones muy directas y específicas
+        "Look at the signage board in this image. At the very top, you will see text that says 'EDIFICIO' followed by a letter, or a letter followed by 'BUILDING'. For example: 'EDIFICIO H' or 'H BUILDING' or 'EDIFICIO H / H BUILDING'. Read the LETTER that appears with 'EDIFICIO' or 'BUILDING'. That letter (H, B, R, E, M, O, P) is the building code. Do NOT read numbers. Only read the letter. Also check if there is floor information (PLANTA or FLOOR with a number).",
         
-        # Prompt 2: Buscar y leer cualquier cartel visible con información de edificio y planta
-        "Find any visible signs or boards in this image that show building and floor information. Read the text on those signs, looking for building names and floor numbers next to words like 'BUILDING' or 'FLOOR'.",
+        # Prompt 2: Enfoque en leer el texto exacto
+        "Read the text on the signage board. Find where it says 'EDIFICIO' - the letter immediately after 'EDIFICIO' is the building code. Or find where it says 'BUILDING' - the letter immediately before 'BUILDING' is the building code. Read that single letter (H, B, R, E, M, O, P, etc.). Do not read any numbers. The building code is a LETTER, not a number. Also look for floor numbers after 'PLANTA' or 'FLOOR'.",
         
-        # Prompt 3: Identificar ubicación desde carteles o señales visibles
-        "Look for any signage boards, labels, or signs in this campus image. Read the text to identify the building name and floor number. Pay attention to signs that display 'EDIFICIO', 'BUILDING', 'PLANTA', or 'FLOOR'.",
+        # Prompt 3: Instrucciones paso a paso
+        "Step 1: Find the signage board in the image. Step 2: Look at the top of the sign. Step 3: Find the text 'EDIFICIO' or 'BUILDING'. Step 4: Read the LETTER that appears next to these words. For example, if you see 'EDIFICIO H', the building code is 'H'. If you see 'H BUILDING', the building code is 'H'. Read only the letter, not numbers. Step 5: Check for floor information (PLANTA or FLOOR with a number).",
         
-        # Prompt 4: Fallback - análisis general de carteles y señales
-        "Analyze this campus image and look for any signs, boards, or labels that might indicate the building name and floor number. Read any visible text, numbers, or identifiers that show where this photo was taken."
+        # Prompt 4: Formato muy específico con ejemplos
+        "The signage board shows building information at the top. The format is: 'EDIFICIO [LETTER]' or '[LETTER] BUILDING' where [LETTER] is a single letter like H, B, R, E, M, O, or P. Read that letter. Examples: 'EDIFICIO H' means building code is H. 'H BUILDING' means building code is H. 'EDIFICIO B' means building code is B. Read the letter, not numbers. Also identify floor if shown (PLANTA or FLOOR with number)."
     ]
 
 
@@ -405,13 +435,97 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     building_found = None
     building_codes = ["EPS", "CD", "H", "B", "R", "C1", "C2", "C3", "C4", "C5", "E", "M", "CB", "O", "P", "PS", "MS", "BA", "CSQ", "CC"]
     
-    # Primero intentamos buscar códigos directamente (ej: "EPS", "CD")
-    # Usamos regex para buscar como palabra completa, no como parte de otra palabra
-    for code in building_codes:
-        pattern = r'\b' + re.escape(code) + r'\b'
-        if re.search(pattern, response, re.IGNORECASE):
-            building_found = code.upper()
-            break
+    # Si la respuesta es muy corta (1-3 caracteres), puede ser solo el código del edificio
+    # Ej: "H", "EPS", "CD"
+    response_stripped = response.strip()
+    if len(response_stripped) <= 3:
+        # Buscar si coincide exactamente con algún código (case-insensitive)
+        for code in building_codes:
+            if response_stripped.upper() == code.upper():
+                building_found = code.upper()
+                print(f"   ✅ Código detectado directamente: {building_found}")
+                break
+    
+    # Si no encontramos código directo, buscamos con patrones
+    if not building_found:
+        # Primero intentamos buscar códigos directamente (ej: "EPS", "CD", "H")
+        # Para códigos de una letra como "H", necesitamos patrones más específicos
+        for code in building_codes:
+            # Patrón 1: Palabra completa (ej: "building H" o "H building" o "edificio H")
+            # Para "H", también buscamos después de "edificio" o "building"
+            if len(code) == 1:
+                # Para letras simples como "H", buscamos en contextos específicos
+                # Patrón mejorado: "building H", "in the building H", "at building H", "I am in the building H", etc.
+                # También maneja: "EDIFICIO H / H BUILDING", "The sign shows EDIFICIO H", etc.
+                pattern1 = r'(?:in\s+(?:the\s+)?)?(?:edificio|building)\s+' + re.escape(code) + r'\b'
+                pattern1b = r'\b' + re.escape(code) + r'\s+(?:building|edificio)'
+                # Pattern para manejar "/" en respuestas como "EDIFICIO H / H BUILDING"
+                pattern1d = r'(?:edificio|building)\s+' + re.escape(code) + r'\s*/\s*' + re.escape(code) + r'\s+(?:building|edificio)'
+                # Pattern para texto descriptivo: "shows EDIFICIO H", "says H BUILDING", etc.
+                pattern1f = r'(?:shows?|says?|displays?|indicates?)\s+(?:edificio|building)\s+' + re.escape(code) + r'\b'
+                # Pattern1c: buscar "H" como palabra suelta, PERO solo si NO está dentro de otra palabra
+                # Usar lookahead/lookbehind negativos para evitar detectar dentro de números o palabras
+                # Ej: NO detectar "B" en "11 building" o "building", "H" en "the", etc.
+                pattern1c = r'(?<![a-zA-Z0-9])' + re.escape(code) + r'(?![a-zA-Z0-9])'
+            else:
+                # Para códigos de múltiples letras
+                pattern1 = r'\b' + re.escape(code) + r'\b'
+                pattern1b = None
+                pattern1c = None
+                pattern1d = None
+                pattern1f = None
+            
+            # Patrón 2: Sin espacio después de "building" (ej: "onbuilding H", "inbuilding H")
+            # IMPORTANTE: Para códigos de una letra, asegurarse de que no sea parte de otra palabra
+            if len(code) == 1:
+                # Para una letra, necesitamos asegurarnos de que no sea parte de "building" o un número
+                pattern2 = r'(?:on|in|at)?building\s+(?<![a-zA-Z0-9])' + re.escape(code) + r'(?![a-zA-Z0-9])'
+            else:
+                pattern2 = r'(?:on|in|at)?building\s*' + re.escape(code) + r'\b'
+            # Patrón 3: Código seguido de "building" sin espacio (ej: "Hbuilding")
+            # IMPORTANTE: Para códigos de una letra, evitar detectar dentro de palabras
+            if len(code) == 1:
+                pattern3 = r'(?<![a-zA-Z0-9])' + re.escape(code) + r'(?![a-zA-Z0-9])\s*building'
+            else:
+                pattern3 = r'\b' + re.escape(code) + r'\s*building'
+            # Patrón 4: "edificio" seguido del código (ej: "edificio h")
+            # IMPORTANTE: Para códigos de una letra, evitar detectar dentro de palabras
+            if len(code) == 1:
+                pattern4 = r'edificio\s+(?<![a-zA-Z0-9])' + re.escape(code) + r'(?![a-zA-Z0-9])'
+            else:
+                pattern4 = r'edificio\s+' + re.escape(code) + r'\b'
+            
+            patterns_to_check = [pattern1, pattern2, pattern3, pattern4]
+            if pattern1b:
+                patterns_to_check.append(pattern1b)
+            # Añadir patrones adicionales para códigos de una letra
+            if len(code) == 1:
+                if pattern1d:
+                    patterns_to_check.append(pattern1d)
+                if pattern1f:
+                    patterns_to_check.append(pattern1f)
+            if pattern1c:
+                patterns_to_check.append(pattern1c)
+            
+            # Probar cada patrón y loggear cuál coincide
+            for pattern_idx, pattern in enumerate(patterns_to_check):
+                if pattern:
+                    match = re.search(pattern, response, re.IGNORECASE)
+                    if match:
+                        building_found = code.upper()
+                        print(f"   ⚠️ PROBLEMA: Patrón #{pattern_idx+1} coincidió para '{code}'")
+                        print(f"   📋 Patrón: {pattern}")
+                        print(f"   📋 Match encontrado: '{match.group()}' en posición {match.start()}-{match.end()}")
+                        print(f"   📋 Respuesta completa: '{response}'")
+                        # Si detectamos algo sospechoso, no confiar en este resultado
+                        if code.upper() == 'B' and '11' in response.lower():
+                            print(f"   ❌ FALSO POSITIVO DETECTADO: 'B' en '11 building' - IGNORANDO")
+                            building_found = None
+                            continue
+                        break
+            
+            if building_found:
+                break
     
     # Si no encontramos código, buscamos nombres completos
     if not building_found:
@@ -426,7 +540,25 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
                     break
     
     if building_found:
-        result["building"] = building_map.get(building_found)
+        # Validación adicional: rechazar falsos positivos obvios
+        # Si la respuesta contiene números seguidos de "building" (ej: "11 building"), 
+        # y detectamos una letra de una sola letra, es probablemente un falso positivo
+        if len(building_found) == 1:
+            # Buscar patrones sospechosos como "11 building", "2 building", etc.
+            suspicious_pattern = r'\d+\s+building'
+            if re.search(suspicious_pattern, response, re.IGNORECASE):
+                print(f"   ❌ FALSO POSITIVO DETECTADO: '{building_found}' en respuesta sospechosa '{response}'")
+                print(f"   ❌ La respuesta parece ser un número seguido de 'building', no un código de edificio")
+                building_found = None
+                result["building"] = None
+            else:
+                building_id = building_map.get(building_found)
+                result["building"] = building_id
+                print(f"   🏢 Edificio encontrado: código='{building_found}' -> ID={building_id}")
+        else:
+            building_id = building_map.get(building_found)
+            result["building"] = building_id
+            print(f"   🏢 Edificio encontrado: código='{building_found}' -> ID={building_id}")
     
     # Ahora buscamos el número de planta
     floor_found = None
@@ -482,6 +614,46 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     return result
 
 
+def generate_clarification_question(building: Optional[int], floor: Optional[int], campus_graph: dict) -> str:
+    """
+    Genera una pregunta de clarificación basada en qué información falta.
+    Las preguntas son en inglés y más naturales, adaptadas a lo que ya se detectó.
+    
+    Args:
+        building: ID del edificio identificado (None si no se identificó)
+        floor: Número de planta identificada (None si no se identificó)
+        campus_graph: Diccionario con la estructura del campus
+        
+    Returns:
+        Pregunta de clarificación en inglés (más natural y específica)
+    """
+    # Obtener nombre del edificio si lo tenemos
+    building_name = None
+    if building:
+        for b in campus_graph.get("buildings", []):
+            if b.get("id") == building:
+                building_name = b.get("name", f"Building {building}")
+                # Si el nombre tiene "Edificio" o similar, extraer solo el nombre
+                if "Edificio" in building_name:
+                    building_name = building_name.replace("Edificio", "").strip()
+                break
+    
+    # Generar pregunta según qué falta (en inglés, más natural)
+    if building and not floor:
+        # Tenemos edificio pero no planta - pregunta específica y natural
+        if building_name:
+            return f"I can see you're in {building_name}. Could you tell me which floor you're on?"
+        else:
+            return f"I can see you're in a building, but I couldn't identify the floor. Which floor are you on?"
+    elif floor is not None and not building:
+        # Tenemos planta pero no edificio
+        floor_text = "ground floor" if floor == 0 else f"floor {floor}"
+        return f"I can see you're on the {floor_text}, but I couldn't identify the building. Which building are you in?"
+    else:
+        # No tenemos nada - pregunta general pero más específica
+        return "I couldn't identify the location in the image. Could you tell me which building you see on the sign or signage?"
+
+
 @app.post("/api/analyze-image", response_model=ImageAnalysisResponse)
 async def analyze_image(file: UploadFile = File(...)):
     """
@@ -530,39 +702,68 @@ async def analyze_image(file: UploadFile = File(...)):
                         if response.status_code == 200:
                             data = response.json()
                             if data.get("success"):
-                                raw_response = data.get("response", "").strip().lower()
+                                raw_response_original = data.get("response", "").strip()
+                                raw_response_lower = raw_response_original.lower()
+                                
+                                # Logging para debugging
+                                print(f"   📝 Prompt {prompt_idx + 1}/{len(prompts)} - Respuesta de Paligemma: '{raw_response_original}'")
                                 
                                 # Si la respuesta es "unanswerable", intentar siguiente prompt
-                                if "unanswerable" in raw_response:
+                                if "unanswerable" in raw_response_lower:
                                     print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: 'unanswerable', intentando siguiente...")
                                     continue
                                 
                                 # Parsear la respuesta de Paligemma para extraer edificio y planta
-                                parsed = parse_location_from_paligemma_response(data.get("response", ""), campus_graph)
+                                # Usar la respuesta original (sin convertir a minúsculas) para mejor parsing
+                                parsed = parse_location_from_paligemma_response(raw_response_original, campus_graph)
                                 
-                                # Si el parsing fue exitoso, devolver el resultado
-                                if not parsed["error"]:
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito")
+                                # Verificar si tenemos información parcial o completa
+                                building_id = parsed.get("building")
+                                floor_num = parsed.get("floor")
+                                
+                                # Si tenemos ambos, éxito completo
+                                if building_id is not None and floor_num is not None:
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito completo")
                                     return ImageAnalysisResponse(
                                         success=True,
-                                        building=parsed["building"],
-                                        floor=parsed["floor"],
+                                        building=building_id,
+                                        floor=floor_num,
                                         raw_response=data.get("response", ""),
-                                        error=None
+                                        error=None,
+                                        needs_clarification=False,
+                                        clarification_question=None
                                     )
+                                
+                                # Si tenemos información parcial, necesitamos clarificación
+                                elif building_id is not None or floor_num is not None:
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Información parcial detectada")
+                                    question = generate_clarification_question(building_id, floor_num, campus_graph)
+                                    return ImageAnalysisResponse(
+                                        success=False,
+                                        building=building_id,
+                                        floor=floor_num,
+                                        raw_response=data.get("response", ""),
+                                        error=None,
+                                        needs_clarification=True,
+                                        clarification_question=question
+                                    )
+                                
+                                # Si no tenemos nada, intentar siguiente prompt
                                 else:
-                                    # Si el parsing falló pero no es "unanswerable", intentar siguiente prompt
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Error en parsing, intentando siguiente...")
+                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Sin información, intentando siguiente...")
                                     if prompt_idx < len(prompts) - 1:
                                         continue
                                     else:
-                                        # Último prompt, devolver el error
+                                        # Último prompt, necesitamos clarificación completa
+                                        question = generate_clarification_question(None, None, campus_graph)
                                         return ImageAnalysisResponse(
                                             success=False,
-                                            building=parsed.get("building"),
-                                            floor=parsed.get("floor"),
+                                            building=None,
+                                            floor=None,
                                             raw_response=data.get("response", ""),
-                                            error=parsed["error"]
+                                            error=None,
+                                            needs_clarification=True,
+                                            clarification_question=question
                                         )
                             else:
                                 # Si Colab devuelve error, intentar siguiente prompt
@@ -614,7 +815,9 @@ async def analyze_image(file: UploadFile = File(...)):
             building=None,
             floor=None,
             raw_response="",
-            error=f"Error procesando imagen: {str(e)}"
+            error=f"Error procesando imagen: {str(e)}",
+            needs_clarification=False,
+            clarification_question=None
         )
 
 
@@ -657,29 +860,53 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
                 # Parsear la respuesta de Paligemma para extraer edificio y planta
                 parsed = parse_location_from_paligemma_response(raw_response, campus_graph)
                 
-                # Si el parsing fue exitoso, devolver el resultado
-                if not parsed["error"]:
-                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito")
+                # Verificar si tenemos información parcial o completa
+                building_id = parsed.get("building")
+                floor_num = parsed.get("floor")
+                
+                # Si tenemos ambos, éxito completo
+                if building_id is not None and floor_num is not None:
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito completo")
                     return ImageAnalysisResponse(
                         success=True,
-                        building=parsed["building"],
-                        floor=parsed["floor"],
+                        building=building_id,
+                        floor=floor_num,
                         raw_response=raw_response,
-                        error=None
+                        error=None,
+                        needs_clarification=False,
+                        clarification_question=None
                     )
+                
+                # Si tenemos información parcial, necesitamos clarificación
+                elif building_id is not None or floor_num is not None:
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Información parcial detectada")
+                    question = generate_clarification_question(building_id, floor_num, campus_graph)
+                    return ImageAnalysisResponse(
+                        success=False,
+                        building=building_id,
+                        floor=floor_num,
+                        raw_response=raw_response,
+                        error=None,
+                        needs_clarification=True,
+                        clarification_question=question
+                    )
+                
+                # Si no tenemos nada, intentar siguiente prompt
                 else:
-                    # Si el parsing falló pero no es "unanswerable", intentar siguiente prompt
-                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Error en parsing, intentando siguiente...")
+                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Sin información, intentando siguiente...")
                     if prompt_idx < len(prompts) - 1:
                         continue
                     else:
-                        # Último prompt, devolver el error
+                        # Último prompt, necesitamos clarificación completa
+                        question = generate_clarification_question(None, None, campus_graph)
                         return ImageAnalysisResponse(
                             success=False,
-                            building=parsed.get("building"),
-                            floor=parsed.get("floor"),
+                            building=None,
+                            floor=None,
                             raw_response=raw_response,
-                            error=parsed["error"]
+                            error=None,
+                            needs_clarification=True,
+                            clarification_question=question
                         )
             except Exception as e:
                 # Si hay error con este prompt, intentar siguiente
@@ -691,12 +918,15 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
                     raise
         
         # Si llegamos aquí, todos los prompts fallaron
+        question = generate_clarification_question(None, None, campus_graph)
         return ImageAnalysisResponse(
             success=False,
             building=None,
             floor=None,
             raw_response="",
-            error="Todos los prompts fallaron al analizar la imagen"
+            error=None,
+            needs_clarification=True,
+            clarification_question=question
         )
     
     except Exception as e:
@@ -706,7 +936,281 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
             building=None,
             floor=None,
             raw_response="",
-            error=f"Error procesando imagen localmente: {str(e)}"
+            error=f"Error procesando imagen localmente: {str(e)}",
+            needs_clarification=False,
+            clarification_question=None
+        )
+
+
+def validate_user_response(user_response: str, campus_graph: dict) -> Tuple[bool, Optional[str]]:
+    """
+    Valida si la respuesta del usuario es clara y parseable.
+    
+    Args:
+        user_response: Respuesta del usuario
+        campus_graph: Diccionario con la estructura del campus
+        
+    Returns:
+        Tuple (is_valid, error_message)
+        - is_valid: True si la respuesta parece válida, False si es ambigua
+        - error_message: Mensaje de error si no es válida, None si es válida
+    """
+    response_lower = user_response.lower().strip()
+    
+    # Si la respuesta es muy corta o vacía, no es válida
+    if len(response_lower) < 2:
+        return False, "Sorry, I couldn't understand. Could you please repeat that?"
+    
+    # Lista de palabras que indican que la respuesta puede ser ambigua o incorrecta
+    # Casos como "building age" (debería ser "building H") o "onbuilding" (sin espacio)
+    ambiguous_patterns = [
+        r'\bbuilding\s+age\b',  # "building age" (probablemente "building H" mal transcrito)
+        r'\bonbuilding\b',      # "onbuilding" (sin espacio)
+        r'\binbuilding\b',       # "inbuilding" (sin espacio)
+    ]
+    
+    # Verificar patrones ambiguos
+    for pattern in ambiguous_patterns:
+        if re.search(pattern, response_lower):
+            return False, "Sorry, I couldn't understand clearly. Could you please repeat that more slowly?"
+    
+    # Intentar parsear para ver si obtenemos algo útil
+    parsed = parse_location_from_paligemma_response(user_response, campus_graph)
+    
+    # Si no se pudo extraer nada y la respuesta es larga, puede ser que no sea relevante
+    if parsed.get("building") is None and parsed.get("floor") is None:
+        # Verificar si contiene palabras relacionadas con edificios o plantas
+        building_keywords = ["building", "edificio", "floor", "planta", "ground", "first", "second", "third", "h", "eps", "cd"]
+        has_keywords = any(keyword in response_lower for keyword in building_keywords)
+        
+        # Si tiene palabras clave pero no se pudo parsear, puede ser ambigua
+        if has_keywords:
+            return False, "Sorry, I couldn't identify the building or floor clearly. Could you please repeat it?"
+        
+        # Si no tiene palabras clave y es larga, no es relevante
+        if len(response_lower) > 10:
+            return False, "Sorry, I couldn't identify the building or floor in your response. Could you please repeat it?"
+    
+    # Si llegamos aquí, la respuesta parece válida
+    return True, None
+
+
+@app.post("/api/clarify-location", response_model=ClarificationResponse)
+async def clarify_location(request: ClarificationRequest):
+    """
+    Procesa la respuesta del usuario para completar la información de ubicación.
+    
+    Args:
+        request: ClarificationRequest con la respuesta del usuario y contexto previo
+        
+    Returns:
+        ClarificationResponse con la ubicación completa o nueva pregunta
+    """
+    try:
+        campus_graph = load_campus_graph()
+        user_response = request.user_response
+        previous_context = request.previous_context
+        
+        # Validar que la respuesta del usuario sea clara
+        is_valid, validation_error = validate_user_response(user_response, campus_graph)
+        if not is_valid:
+            # Si la respuesta no es clara, volver a preguntar
+            building_id = previous_context.get("building")
+            floor_num = previous_context.get("floor")
+            question = generate_clarification_question(building_id, floor_num, campus_graph)
+            # Modificar la pregunta para pedir que repita
+            if validation_error:
+                question = f"{validation_error} {question}"
+            
+            return ClarificationResponse(
+                success=False,
+                building=building_id,
+                floor=floor_num,
+                needs_clarification=True,
+                clarification_question=question,
+                error=None
+            )
+        
+        # Obtener información previa
+        building_id = previous_context.get("building")
+        floor_num = previous_context.get("floor")
+        
+        # Parsear la respuesta del usuario para extraer edificio y/o planta
+        parsed = parse_location_from_paligemma_response(user_response, campus_graph)
+        print(f"📝 Respuesta del usuario parseada: {parsed}")
+        print(f"📝 Contexto previo: building={building_id}, floor={floor_num}")
+        
+        # Combinar información previa con la nueva
+        final_building = building_id if building_id is not None else parsed.get("building")
+        final_floor = floor_num if floor_num is not None else parsed.get("floor")
+        
+        print(f"📝 Información combinada: building={final_building}, floor={final_floor}")
+        
+        # Si ahora tenemos ambos, éxito
+        if final_building is not None and final_floor is not None:
+            print(f"✅ Ubicación completa: building={final_building}, floor={final_floor}")
+            print(f"✅ Devolviendo success=True con building={final_building}, floor={final_floor}")
+            return ClarificationResponse(
+                success=True,
+                building=final_building,
+                floor=final_floor,
+                needs_clarification=False,
+                clarification_question=None,
+                error=None
+            )
+        
+        # Si aún falta información, hacer otra pregunta
+        question = generate_clarification_question(final_building, final_floor, campus_graph)
+        return ClarificationResponse(
+            success=False,
+            building=final_building,
+            floor=final_floor,
+            needs_clarification=True,
+            clarification_question=question,
+            error=None
+        )
+    
+    except Exception as e:
+        return ClarificationResponse(
+            success=False,
+            building=None,
+            floor=None,
+            needs_clarification=False,
+            clarification_question=None,
+            error=f"Error procesando clarificación: {str(e)}"
+        )
+
+
+@app.post("/api/gps-route", response_model=GPSRouteResponse)
+async def get_gps_route(request: GPSRouteRequest):
+    """
+    Obtiene una ruta GPS entre dos edificios usando Google Maps Directions API.
+    Este endpoint evita problemas de CORS al hacer la llamada desde el servidor.
+    """
+    try:
+        # Coordenadas GPS de los edificios (deben coincidir con las del frontend)
+        building_gps = {
+            1: {"lat": 40.44162251912561, "lng": -3.8336784343565533, "name": "EPS"},
+            2: {"lat": 40.44139393985062, "lng": -3.833504032472637, "name": "CD"},
+            3: {"lat": 40.44188587337159, "lng": -3.83444151925449, "name": "Edificio H"}
+        }
+        
+        origin_gps = building_gps.get(request.from_building)
+        goal_gps = building_gps.get(request.to_building)
+        
+        if not origin_gps or not goal_gps:
+            return GPSRouteResponse(
+                success=False,
+                error=f"No GPS coordinates available for buildings: {request.from_building} -> {request.to_building}"
+            )
+        
+        # API Key de Google Maps (debe estar configurada)
+        # IMPORTANTE: Esta API Key NO debe tener restricciones de referer (sitios web)
+        # porque se llama desde el servidor, no desde el navegador
+        # Opción 1: Usar la misma API Key pero sin restricciones de referer
+        # Opción 2: Crear una API Key separada sin restricciones para el backend
+        GOOGLE_MAPS_API_KEY = "***REMOVED***"
+        
+        origin = f"{origin_gps['lat']},{origin_gps['lng']}"
+        destination = f"{goal_gps['lat']},{goal_gps['lng']}"
+        
+        directions_url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&key={GOOGLE_MAPS_API_KEY}&mode=walking&language=en"
+        
+        response = requests.get(directions_url, timeout=10)
+        data = response.json()
+        
+        if data.get("status") == "OK" and data.get("routes") and len(data["routes"]) > 0:
+            route = data["routes"][0]
+            leg = route["legs"][0]
+            
+            return GPSRouteResponse(
+                success=True,
+                distance=leg["distance"]["text"],
+                duration=leg["duration"]["text"],
+                steps=[
+                    {
+                        "instruction": re.sub(r'<[^>]+>', '', step["html_instructions"]),
+                        "distance": step["distance"]["text"],
+                        "duration": step["duration"]["text"],
+                        "startLocation": step["start_location"],
+                        "endLocation": step["end_location"]
+                    }
+                    for step in leg["steps"]
+                ],
+                polyline=route["overview_polyline"]["points"]
+            )
+        else:
+            return GPSRouteResponse(
+                success=False,
+                error=f"Directions API error: {data.get('status')} - {data.get('error_message', 'Unknown error')}"
+            )
+    
+    except Exception as e:
+        return GPSRouteResponse(
+            success=False,
+            error=f"Error fetching GPS route: {str(e)}"
+        )
+
+
+@app.post("/api/transcribe-audio", response_model=TranscribeResponse)
+async def transcribe_audio(file: UploadFile = File(...)):
+    """
+    Transcribe audio a texto usando Whisper (vía Colab).
+    
+    Args:
+        file: Archivo de audio (WAV, MP3, etc.)
+        
+    Returns:
+        TranscribeResponse con el texto transcrito
+    """
+    try:
+        # Leer el audio
+        audio_data = await file.read()
+        
+        # Intentar usar Colab primero (más rápido con GPU)
+        if COLAB_API_URL:
+            try:
+                # Enviar el audio al servidor de Colab
+                files = {"file": (file.filename, audio_data, file.content_type)}
+                response = requests.post(
+                    f"{COLAB_API_URL}/transcribe",
+                    files=files,
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if data.get("success"):
+                        return TranscribeResponse(
+                            success=True,
+                            text=data.get("text", ""),
+                            error=None
+                        )
+                    else:
+                        raise Exception(data.get("error", "Error en Colab"))
+                else:
+                    raise Exception(f"Error en Colab: {response.status_code}")
+            
+            except requests.exceptions.RequestException as e:
+                error_msg = f"Error de conexión con Colab: {str(e)}"
+                print(f"⚠️ {error_msg}")
+                return TranscribeResponse(
+                    success=False,
+                    text="",
+                    error=error_msg
+                )
+        else:
+            return TranscribeResponse(
+                success=False,
+                text="",
+                error="Colab API URL no configurada. Configura COLAB_API_URL en planning_api.py"
+            )
+    
+    except Exception as e:
+        return TranscribeResponse(
+            success=False,
+            text="",
+            error=f"Error transcribiendo audio: {str(e)}"
         )
 
 

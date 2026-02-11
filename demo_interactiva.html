@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -329,6 +329,67 @@
             margin-bottom: 0;
         }
 
+        .btn-accessibility {
+            padding: 10px 15px;
+            background: #60a5fa;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-accessibility:hover {
+            background: #3b82f6;
+            transform: translateY(-1px);
+        }
+        
+        .btn-accessibility:active {
+            transform: translateY(0);
+        }
+        
+        .plan-step {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .plan-step:hover {
+            background: #f3f4f6;
+        }
+        
+        .plan-step:focus {
+            outline: 2px solid #60a5fa;
+            outline-offset: 2px;
+        }
+        
+        .btn-gps {
+            padding: 10px 20px;
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-gps:hover {
+            background: #0284c7;
+            transform: translateY(-1px);
+        }
+        
+        .btn-gps:active {
+            transform: translateY(0);
+        }
+        
+        .btn-gps:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
         .plan-step-number {
             display: inline-block;
             width: 25px;
@@ -521,6 +582,156 @@
             border-top: 1px solid rgba(0, 0, 0, 0.1);
         }
 
+        /* Diálogo de clarificación */
+        .clarification-dialog {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-left: 4px solid #60a5fa;
+            border-radius: 8px;
+        }
+
+        .clarification-dialog h3 {
+            margin-top: 0;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .system-question {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 16px;
+            line-height: 1.6;
+            border: 2px solid #60a5fa;
+        }
+
+        .clarification-input-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .clarification-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .clarification-input-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
+        }
+
+        .btn-voice {
+            padding: 12px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-voice:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+
+        .btn-voice:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-voice.recording {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-send-response {
+            padding: 12px 24px;
+            background: #60a5fa;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-send-response:hover:not(:disabled) {
+            background: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .btn-send-response:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-repeat-question {
+            padding: 8px 16px;
+            background: #e0e7ff;
+            color: #4f46e5;
+            border: 2px solid #4f46e5;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .btn-repeat-question:hover {
+            background: #c7d2fe;
+        }
+
+        .conversation-history {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .conversation-history .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .conversation-history .message.system {
+            background: #dbeafe;
+            border-left: 3px solid #60a5fa;
+        }
+
+        .conversation-history .message.user {
+            background: #dcfce7;
+            border-left: 3px solid #10b981;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
         @media (max-width: 768px) {
             .content {
                 padding: 20px;
@@ -539,6 +750,8 @@
             }
         }
     </style>
+    <!-- Google Maps JavaScript API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=***REMOVED***&callback=initMap" async defer></script>
 </head>
 <body>
     <div class="container">
@@ -562,7 +775,7 @@
                             <polyline points="17 8 12 3 7 8"></polyline>
                             <line x1="12" y1="3" x2="12" y2="15"></line>
                         </svg>
-                        <p>Arrastra una imagen aquí o haz clic para seleccionar</p>
+                        <p>Drag an image here or click to select</p>
                         <p class="upload-hint">Sube una foto del cartel de señalización del campus</p>
                     </div>
                     <div class="image-preview" id="imagePreview" style="display: none;">
@@ -574,22 +787,55 @@
                     Analizar Imagen con Paligemma
                 </button>
                 <div class="analysis-result" id="analysisResult" style="display: none;"></div>
+                
+                <!-- Diálogo de clarificación (aparece cuando needs_clarification es true) -->
+                <div class="clarification-dialog" id="clarificationDialog" style="display: none;" role="dialog" aria-labelledby="dialog-title" aria-live="polite">
+                    <h3 id="dialog-title">The system needs more information</h3>
+                    <button class="btn-repeat-question" id="repeatQuestionBtn" onclick="repeatQuestion()" aria-label="Repeat system question">
+                        🔁 Repeat question
+                    </button>
+                    <div class="system-question" id="systemQuestion" role="status" aria-live="assertive"></div>
+                    <div class="clarification-input-group">
+                        <input type="text" 
+                               id="userResponseInput" 
+                               placeholder="Type your response or use the voice button..."
+                               aria-label="Your response"
+                               aria-describedby="response-hint"
+                               onkeypress="handleResponseKeyPress(event)">
+                        <span id="response-hint" class="sr-only">
+                            You can type or use the voice button to respond
+                        </span>
+                        <button class="btn-voice" 
+                                id="voiceInputBtn" 
+                                onclick="toggleVoiceInput()"
+                                aria-label="Activate microphone to respond by voice">
+                            🎤 Speak
+                        </button>
+                        <button class="btn-send-response" 
+                                id="sendResponseBtn" 
+                                onclick="sendClarificationResponse()"
+                                aria-label="Send response">
+                            Send
+                        </button>
+                    </div>
+                    <div class="conversation-history" id="conversationHistory" role="log" aria-label="Historial de conversación"></div>
+                </div>
             </div>
 
-            <!-- Estado Inicial -->
+            <!-- Initial State -->
             <div class="section">
-                <div class="section-title">Estado Inicial</div>
+                <div class="section-title">Initial State</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
                         <label for="initialBuilding">Edificio</label>
                         <select id="initialBuilding" onchange="updateInitialFloors()">
-                            <option value="">Selecciona un edificio...</option>
+                            <option value="">Select a building...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="initialFloor">Planta</label>
                         <select id="initialFloor">
-                            <option value="">Selecciona una planta...</option>
+                            <option value="">Select a floor...</option>
                         </select>
                     </div>
                 </div>
@@ -617,13 +863,13 @@
                     <div class="form-group">
                         <label for="goalBuilding">Edificio</label>
                         <select id="goalBuilding" onchange="updateGoalFloors()">
-                            <option value="">Selecciona un edificio...</option>
+                            <option value="">Select a building...</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="goalFloor">Planta</label>
                         <select id="goalFloor">
-                            <option value="">Selecciona una planta...</option>
+                            <option value="">Select a floor...</option>
                         </select>
                     </div>
                 </div>
@@ -684,13 +930,75 @@
                     </div>
                 </div>
 
-                <div class="plan-steps" id="planSteps"></div>
+                <div class="plan-steps" id="planSteps" role="region" aria-label="Plan steps" aria-live="polite"></div>
+                
+                <!-- Controles de accesibilidad para el plan -->
+                <div class="accessibility-controls" style="margin-top: 15px; padding: 15px; background: #f3f4f6; border-radius: 8px; display: none;" id="accessibilityControls">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">Accessibility Controls</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button onclick="readPlanAloud()" class="btn-accessibility" aria-label="Read entire plan aloud">
+                            🔊 Read Plan Aloud
+                        </button>
+                        <button onclick="readNextStep()" class="btn-accessibility" aria-label="Read next step">
+                            ⏭️ Next Step
+                        </button>
+                        <button onclick="readPreviousStep()" class="btn-accessibility" aria-label="Read previous step">
+                            ⏮️ Previous Step
+                        </button>
+                        <button onclick="stopReading()" class="btn-accessibility" aria-label="Stop reading">
+                            ⏹️ Stop
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Controles de navegación GPS -->
+                <div class="gps-navigation-controls" style="margin-top: 15px; padding: 15px; background: #e0f2fe; border-radius: 8px; display: none;" id="gpsNavigationControls">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">GPS Navigation</h4>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                        <button onclick="startGPSNavigation()" class="btn-gps" id="startGPSBtn" aria-label="Start GPS navigation">
+                            🧭 Start Navigation
+                        </button>
+                        <button onclick="stopGPSNavigation()" class="btn-gps" id="stopGPSBtn" style="display: none;" aria-label="Stop GPS navigation">
+                            ⏹️ Stop Navigation
+                        </button>
+                        <span id="gpsStatus" style="font-size: 12px; color: #6b7280;"></span>
+                    </div>
+                    <div id="currentInstruction" style="margin-top: 10px; padding: 10px; background: white; border-radius: 5px; font-size: 14px; display: none;"></div>
+                </div>
+                
+                <!-- Mapa de Google Maps para visualizar la ruta -->
+                <div class="map-container" id="mapContainer" style="display: none; margin-top: 20px;" role="region" aria-label="Route map">
+                    <div class="section-title">Route Map</div>
+                    <div id="map" style="width: 100%; height: 400px; border-radius: 10px; border: 2px solid #e5e7eb;"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Google Maps API Key
+        // IMPORTANTE: Cambia esta API key si la compartiste o si quieres usar una diferente
+        const GOOGLE_MAPS_API_KEY = '***REMOVED***';
+        
         const API_URL = 'http://localhost:8000';
+        
+        // Estado de navegación GPS
+        let navigationState = {
+            isActive: false,
+            currentStep: 0,
+            gpsRoute: null,
+            watchId: null,
+            hybridPlan: null
+        };
+        
+        // Hashmap de coordenadas GPS de los edificios del campus
+        // Formato: {building_id: {lat: number, lng: number, name: string}}
+        const buildingGPS = {
+            1: { lat: 40.44162251912561, lng: -3.8336784343565533, name: 'EPS - Escuela Politécnica Superior' },
+            2: { lat: 40.44139393985062, lng: -3.833504032472637, name: 'CD - Centro Deportivo' },
+            3: { lat: 40.44188587337159, lng: -3.83444151925449, name: 'H - Edificio H' }
+            // Añadir más edificios aquí cuando tengas sus coordenadas
+        };
         
         // Edificios del campus (hardcodeados desde campus_graph.json)
         const buildings = [
@@ -805,19 +1113,35 @@
         }
 
         async function checkAPIStatus() {
+            const statusElement = document.getElementById('apiStatus');
+            const statusTextElement = document.getElementById('apiStatusText');
+            
+            if (!statusElement || !statusTextElement) {
+                return;
+            }
+            
             try {
-                const response = await fetch(`${API_URL}/`, { method: 'GET', timeout: 2000 });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch(`${API_URL}/`, {
+                    method: 'GET',
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
                 if (response.ok) {
-                    document.getElementById('apiStatus').classList.remove('offline');
-                    document.getElementById('apiStatus').classList.add('online');
-                    document.getElementById('apiStatusText').textContent = 'API conectada - Fast Downward listo';
+                    statusElement.classList.remove('offline');
+                    statusElement.classList.add('online');
+                    statusTextElement.textContent = 'API conectada - Fast Downward listo';
                 } else {
                     throw new Error('API no disponible');
                 }
             } catch (error) {
-                document.getElementById('apiStatus').classList.remove('online');
-                document.getElementById('apiStatus').classList.add('offline');
-                document.getElementById('apiStatusText').textContent = 'API desconectada - Inicia el servidor con: python run_api.py';
+                statusElement.classList.remove('online');
+                statusElement.classList.add('offline');
+                statusTextElement.textContent = 'API desconectada - Inicia el servidor con: python run_api.py';
             }
         }
 
@@ -827,7 +1151,7 @@
             const initialFloor = document.getElementById('initialFloor').value;
             
             if (!initialBuilding || initialFloor === '') {
-                showError('Por favor, selecciona el estado inicial (edificio y planta)');
+                showError('Please select the initial state (building and floor)');
                 return;
             }
 
@@ -845,7 +1169,7 @@
             
             if (goalType === 'functional') {
                 if (!selectedFunctionalGoal) {
-                    showError('Por favor, selecciona un objetivo funcional (Cafetería o Gimnasio)');
+                    showError('Please select a functional objective (Cafeteria or Gym)');
                     return;
                 }
                 request.goal_functional = selectedFunctionalGoal;
@@ -854,7 +1178,7 @@
                 const goalFloor = document.getElementById('goalFloor').value;
                 
                 if (!goalBuilding || goalFloor === '') {
-                    showError('Por favor, selecciona el objetivo (edificio y planta)');
+                    showError('Please select the objective (building and floor)');
                     return;
                 }
                 
@@ -934,22 +1258,89 @@
                 data.plan.forEach((action, index) => {
                     const stepDiv = document.createElement('div');
                     stepDiv.className = 'plan-step';
+                    stepDiv.setAttribute('role', 'listitem');
+                    stepDiv.setAttribute('tabindex', '0');
+                    const actionText = formatAction(action);
+                    stepDiv.setAttribute('aria-label', `Step ${index + 1}: ${actionText}`);
+                    stepDiv.onclick = () => readStep(index);
+                    stepDiv.onkeypress = (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            readStep(index);
+                        }
+                    };
                     stepDiv.innerHTML = `
                         <span class="plan-step-number">${index + 1}</span>
-                        ${formatAction(action)}
+                        ${actionText}
                     `;
                     planStepsDiv.appendChild(stepDiv);
                 });
+                
+                // Guardar el plan para lectura
+                window.currentPlan = {
+                    origin: document.getElementById('resultOrigin').textContent,
+                    destination: document.getElementById('resultDestination').textContent,
+                    steps: data.steps || 0,
+                    cost: data.cost || 0,
+                    actions: data.plan.map((action, index) => ({
+                        number: index + 1,
+                        text: formatAction(action), // For display (Spanish)
+                        originalAction: action // For TTS translation (original format)
+                    }))
+                };
+                window.currentStepIndex = 0;
+                
+                // Mostrar controles de accesibilidad
+                document.getElementById('accessibilityControls').style.display = 'block';
             } else {
                 planStepsDiv.innerHTML = '<p style="text-align: center; color: #6b7280;">No se generaron acciones en el plan</p>';
             }
 
             // Mostrar sección de resultados
             document.getElementById('resultSection').classList.add('show');
+            
+            // Anunciar el plan generado con TTS
+            announcePlanGenerated();
+            
+            // Mostrar ruta en el mapa si tenemos coordenadas GPS
+            if (data.plan && data.plan.length > 0) {
+                const initialBuilding = request.initial_state.building;
+                const initialFloor = request.initial_state.floor;
+                let goalBuilding = null;
+                let goalFloor = null;
+                
+                if (request.goal_state) {
+                    goalBuilding = request.goal_state.building;
+                    goalFloor = request.goal_state.floor;
+                } else if (request.goal_functional === 'cafeteria') {
+                    goalBuilding = 2; // CD
+                    goalFloor = 0;
+                } else if (request.goal_functional === 'gimnasio') {
+                    goalBuilding = 2; // CD
+                    goalFloor = -1;
+                }
+                
+                if (goalBuilding && buildingGPS[initialBuilding] && buildingGPS[goalBuilding]) {
+                    showRouteOnMap(data.plan, initialBuilding, initialFloor, goalBuilding, goalFloor);
+                    
+                    // Crear plan híbrido (PDDL + GPS)
+                    createHybridPlan(data.plan, initialBuilding, initialFloor, goalBuilding, goalFloor)
+                        .then(hybridPlan => {
+                            window.hybridPlan = hybridPlan;
+                            console.log('Hybrid plan created:', hybridPlan);
+                            
+                            // Mostrar botón de inicio de navegación GPS
+                            showGPSNavigationButton();
+                        })
+                        .catch(error => {
+                            console.error('Error creating hybrid plan:', error);
+                        });
+                }
+            }
         }
 
         function formatAction(action) {
-            // Formatear acción para que sea más legible
+            // Formatear acción para que sea más legible (para visualización en español)
             return action
                 .replace(/robot1/g, 'Robot')
                 .replace(/edificio_/g, 'Edificio ')
@@ -961,12 +1352,670 @@
                 .replace(/hallway/g, 'Pasillo Exterior')
                 .replace(/mover_edificio/g, 'Mover entre Edificios');
         }
+        
+        function formatActionForSpeech(action) {
+            // Formatear acción para TTS en inglés (traduce español a inglés y limpia texto)
+            // First apply standard formatting
+            let text = formatAction(action);
+            
+            // Translate Spanish to English
+            text = text
+                .replace(/Edificio/g, 'Building')
+                .replace(/Planta/g, 'Floor')
+                .replace(/Ascensor/g, 'Elevator')
+                .replace(/Mover entre Edificios/g, 'Move between buildings')
+                .replace(/pedir_ayuda_ascensor/g, 'Request elevator help')
+                .replace(/usar_ascensor/g, 'Use elevator')
+                .replace(/Subir Escaleras/g, 'Go up stairs')
+                .replace(/Bajar Escaleras/g, 'Go down stairs')
+                .replace(/Pasillo Exterior/g, 'Exterior corridor')
+                .replace(/Robot/g, 'Robot');
+            
+            // Remove underscores and replace with spaces
+            text = text.replace(/_/g, ' ');
+            
+            // Remove parentheses and numbers like "(1)"
+            text = text.replace(/\s*\(\d+\)\s*/g, '');
+            
+            // Clean up multiple spaces
+            text = text.replace(/\s+/g, ' ').trim();
+            
+            return text;
+        }
+        
+        function formatGPSInstruction(instruction, distance) {
+            // Clean HTML tags
+            let text = instruction.replace(/<[^>]+>/g, '');
+            
+            // Expand abbreviations
+            text = text
+                .replace(/\s+m\b/g, ' meters')
+                .replace(/\s+km\b/g, ' kilometers')
+                .replace(/\s+min\b/g, ' minutes')
+                .replace(/\s+mins\b/g, ' minutes');
+            
+            // Format distance similarly
+            let distText = distance
+                .replace(/\s+m\b/g, ' meters')
+                .replace(/\s+km\b/g, ' kilometers');
+            
+            // Combine instruction and distance naturally
+            return `${text}, ${distText}`;
+        }
+        
+        // ========== FUNCIONES DE NAVEGACIÓN GPS HÍBRIDA ==========
+        
+        // Analizar acción PDDL para determinar si es interior o exterior
+        function isExteriorAction(action) {
+            // Las acciones que requieren GPS son las que mueven entre edificios
+            // Verificar tanto en la acción original como en la formateada
+            const actionLower = action.toLowerCase();
+            return actionLower.includes('mover_edificio') || 
+                   actionLower.includes('mover entre edificios') ||
+                   actionLower.includes('mover_edificio');
+        }
+        
+        // Extraer información de una acción de movimiento entre edificios
+        function parseBuildingMoveAction(action) {
+            // Formato esperado: "mover_edificio robot1 edificio_X edificio_Y planta_Z hallway"
+            const match = action.match(/edificio[_\s]*(\d+)[_\s]*edificio[_\s]*(\d+)/i);
+            if (match) {
+                return {
+                    fromBuilding: parseInt(match[1]),
+                    toBuilding: parseInt(match[2]),
+                    isExterior: true
+                };
+            }
+            return null;
+        }
+        
+        // Obtener ruta GPS usando el endpoint del backend (evita CORS)
+        async function getGPSRoute(fromBuilding, toBuilding) {
+            try {
+                const response = await fetch(`${API_URL}/api/gps-route`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from_building: fromBuilding,
+                        to_building: toBuilding
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    return {
+                        distance: data.distance,
+                        duration: data.duration,
+                        steps: data.steps || [],
+                        polyline: data.polyline
+                    };
+                } else {
+                    console.error('GPS route error:', data.error);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Error fetching GPS route:', error);
+                return null;
+            }
+        }
+        
+        // Crear plan híbrido combinando PDDL con GPS
+        async function createHybridPlan(plan, initialBuilding, initialFloor, goalBuilding, goalFloor) {
+            const hybridPlan = [];
+            let currentBuilding = initialBuilding;
+            let currentFloor = initialFloor;
+            
+            for (let i = 0; i < plan.length; i++) {
+                const action = plan[i];
+                const actionText = formatAction(action);
+                
+                const isExterior = isExteriorAction(action);
+                console.log(`Action ${i}: "${action}" -> isExterior: ${isExterior}`);
+                
+                if (isExterior) {
+                    // Acción exterior: obtener ruta GPS
+                    const moveInfo = parseBuildingMoveAction(action);
+                    console.log(`Move info parsed:`, moveInfo);
+                    if (moveInfo) {
+                        const gpsRoute = await getGPSRoute(moveInfo.fromBuilding, moveInfo.toBuilding);
+                        
+                        // Siempre marcar como exterior si es una acción de mover entre edificios
+                        // Incluso si falla la ruta GPS, es una acción exterior
+                        hybridPlan.push({
+                            type: 'exterior',
+                            action: action,
+                            actionText: actionText,
+                            gpsRoute: gpsRoute, // Puede ser null si falla
+                            fromBuilding: moveInfo.fromBuilding,
+                            toBuilding: moveInfo.toBuilding,
+                            stepIndex: i
+                        });
+                        currentBuilding = moveInfo.toBuilding;
+                    } else {
+                        hybridPlan.push({
+                            type: 'interior',
+                            action: action,
+                            actionText: actionText,
+                            stepIndex: i
+                        });
+                    }
+                } else {
+                    // Acción interior: usar plan PDDL
+                    hybridPlan.push({
+                        type: 'interior',
+                        action: action,
+                        actionText: actionText,
+                        stepIndex: i
+                    });
+                    
+                    // Actualizar building/floor si es necesario
+                    if (action.includes('usar_ascensor')) {
+                        const floorMatch = action.match(/planta[_\s]*(\d+)[_\s]*planta[_\s]*(\d+)/i);
+                        if (floorMatch) {
+                            currentFloor = parseInt(floorMatch[2]);
+                        }
+                    }
+                }
+            }
+            
+            return hybridPlan;
+        }
+        
+        function showGPSNavigationButton() {
+            const gpsControls = document.getElementById('gpsNavigationControls');
+            if (gpsControls && window.hybridPlan && window.hybridPlan.length > 0) {
+                gpsControls.style.display = 'block';
+            }
+        }
+        
+        async function startGPSNavigation() {
+            if (!window.hybridPlan || window.hybridPlan.length === 0) {
+                speakText('No navigation plan available. Please generate a plan first.');
+                return;
+            }
+            
+            // Solicitar permiso de geolocalización
+            if (!navigator.geolocation) {
+                speakText('Geolocation is not supported by your browser.');
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+            
+            navigationState.isActive = true;
+            navigationState.currentStep = 0;
+            
+            // Actualizar UI
+            document.getElementById('startGPSBtn').style.display = 'none';
+            document.getElementById('stopGPSBtn').style.display = 'inline-block';
+            document.getElementById('gpsStatus').textContent = 'Navigation active';
+            document.getElementById('currentInstruction').style.display = 'block';
+            
+            // Iniciar seguimiento GPS
+            navigationState.watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    handleGPSUpdate(position);
+                },
+                (error) => {
+                    console.error('GPS error:', error);
+                    speakText('GPS error. Please check your location permissions.');
+                    document.getElementById('gpsStatus').textContent = 'GPS error: ' + error.message;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+            
+            // Iniciar con el primer paso
+            await executeNextStep();
+        }
+        
+        function stopGPSNavigation() {
+            navigationState.isActive = false;
+            
+            if (navigationState.watchId !== null) {
+                navigator.geolocation.clearWatch(navigationState.watchId);
+                navigationState.watchId = null;
+            }
+            
+            // Actualizar UI
+            document.getElementById('startGPSBtn').style.display = 'inline-block';
+            document.getElementById('stopGPSBtn').style.display = 'none';
+            document.getElementById('gpsStatus').textContent = 'Navigation stopped';
+            document.getElementById('currentInstruction').textContent = '';
+            document.getElementById('currentInstruction').style.display = 'none';
+            
+            speakText('Navigation stopped.');
+        }
+        
+        async function executeNextStep() {
+            if (!navigationState.isActive || !window.hybridPlan) {
+                return;
+            }
+            
+            if (navigationState.currentStep >= window.hybridPlan.length) {
+                speakText('You have reached your destination. Navigation complete.');
+                stopGPSNavigation();
+                return;
+            }
+            
+            const step = window.hybridPlan[navigationState.currentStep];
+            const instructionDiv = document.getElementById('currentInstruction');
+            
+            if (step.type === 'interior') {
+                // Instrucción interior (PDDL)
+                const actionForSpeech = formatActionForSpeech(step.action);
+                const instruction = `Step ${step.stepIndex + 1}: ${actionForSpeech}`;
+                instructionDiv.innerHTML = `<strong>Interior Navigation:</strong> Step ${step.stepIndex + 1}: ${step.actionText}`;
+                speakText(instruction, {
+                    rate: 0.9,
+                    onend: () => {
+                        // Esperar un poco antes de continuar
+                        setTimeout(() => {
+                            navigationState.currentStep++;
+                            executeNextStep();
+                        }, 3000);
+                    }
+                });
+            } else if (step.type === 'exterior' && step.gpsRoute) {
+                // Instrucción exterior (GPS)
+                const distanceFormatted = step.gpsRoute.distance.replace(/\s+m\b/g, ' meters').replace(/\s+km\b/g, ' kilometers');
+                const durationFormatted = step.gpsRoute.duration.replace(/\s+min\b/g, ' minutes').replace(/\s+mins\b/g, ' minutes');
+                instructionDiv.innerHTML = `<strong>GPS Navigation:</strong> Walking to ${buildingGPS[step.toBuilding].name} (${step.gpsRoute.distance}, ${step.gpsRoute.duration})`;
+                speakText(`Now walking outside. Follow GPS directions to ${buildingGPS[step.toBuilding].name}. Distance: ${distanceFormatted}. Estimated time: ${durationFormatted}.`, {
+                    rate: 0.85
+                });
+                
+                // Leer las primeras instrucciones GPS
+                if (step.gpsRoute.steps && step.gpsRoute.steps.length > 0) {
+                    setTimeout(() => {
+                        readGPSInstructions(step.gpsRoute.steps, 0, step.toBuilding);
+                    }, 2000);
+                }
+            }
+        }
+        
+        function readGPSInstructions(gpsSteps, currentGPSStep, targetBuilding) {
+            if (!navigationState.isActive || currentGPSStep >= gpsSteps.length) {
+                // Llegamos al edificio destino
+                speakText(`You have arrived at ${buildingGPS[targetBuilding].name}. Continue with interior navigation.`, {
+                    rate: 0.9,
+                    onend: () => {
+                        navigationState.currentStep++;
+                        executeNextStep();
+                    }
+                });
+                return;
+            }
+            
+            const gpsStep = gpsSteps[currentGPSStep];
+            const instruction = formatGPSInstruction(gpsStep.instruction, gpsStep.distance);
+            
+            speakText(instruction, {
+                rate: 0.9,
+                onend: () => {
+                    // Continuar con la siguiente instrucción GPS después de un delay
+                    setTimeout(() => {
+                        readGPSInstructions(gpsSteps, currentGPSStep + 1, targetBuilding);
+                    }, 2000);
+                }
+            });
+        }
+        
+        function handleGPSUpdate(position) {
+            if (!navigationState.isActive || !window.hybridPlan) {
+                return;
+            }
+            
+            const currentStep = window.hybridPlan[navigationState.currentStep];
+            if (!currentStep || currentStep.type !== 'exterior' || !currentStep.gpsRoute) {
+                return;
+            }
+            
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            
+            // Verificar si el usuario está cerca del destino
+            const targetGPS = buildingGPS[currentStep.toBuilding];
+            const distance = calculateDistance(userLat, userLng, targetGPS.lat, targetGPS.lng);
+            
+            if (distance < 20) { // 20 metros de tolerancia
+                speakText(`You are approaching ${targetGPS.name}.`, { rate: 0.9 });
+            }
+        }
+        
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371e3; // Radio de la Tierra en metros
+            const φ1 = lat1 * Math.PI / 180;
+            const φ2 = lat2 * Math.PI / 180;
+            const Δφ = (lat2 - lat1) * Math.PI / 180;
+            const Δλ = (lng2 - lng1) * Math.PI / 180;
+            
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            
+            return R * c;
+        }
+        
+        // Variables globales para Google Maps
+        let map = null;
+        let routeMarkers = [];
+        let routePolyline = null;
+        
+        // Verificar que Google Maps esté cargado
+        function checkGoogleMapsLoaded() {
+            if (typeof google !== 'undefined' && google.maps && google.maps.Map) {
+                return true;
+            }
+            return false;
+        }
+        
+        // Inicializar Google Maps (callback para cuando la API esté lista)
+        // IMPORTANTE: Esta función debe estar disponible globalmente antes de que se cargue el script
+        window.initMap = function() {
+            console.log('✅ Google Maps API cargada correctamente');
+            console.log('Google Maps version:', google.maps.version);
+        };
+        
+        // También verificar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar después de un pequeño delay para dar tiempo a que cargue el script
+            setTimeout(() => {
+                if (checkGoogleMapsLoaded()) {
+                    console.log('✅ Google Maps verificado después de DOMContentLoaded');
+                } else {
+                    console.warn('⚠️ Google Maps aún no está cargado después de DOMContentLoaded');
+                }
+            }, 1000);
+        });
+        
+        // Mostrar ruta en el mapa
+        function showRouteOnMap(plan, initialBuilding, initialFloor, goalBuilding, goalFloor) {
+            // Verificar que Google Maps esté cargado
+            if (!checkGoogleMapsLoaded()) {
+                console.error('Google Maps API no está cargada. Esperando...');
+                // Intentar de nuevo después de un delay
+                setTimeout(() => {
+                    if (checkGoogleMapsLoaded()) {
+                        showRouteOnMap(plan, initialBuilding, initialFloor, goalBuilding, goalFloor);
+                    } else {
+                        console.error('Google Maps API no se pudo cargar después de esperar');
+                        const mapContainer = document.getElementById('mapContainer');
+                        if (mapContainer) {
+                            mapContainer.innerHTML = '<p style="color: red; padding: 20px;">Error: Google Maps no se pudo cargar. Verifica tu conexión a internet y que la API Key sea válida.</p>';
+                            mapContainer.style.display = 'block';
+                        }
+                    }
+                }, 2000);
+                return;
+            }
+            
+            // Obtener coordenadas del origen y destino
+            const originGPS = buildingGPS[initialBuilding];
+            const goalGPS = buildingGPS[goalBuilding];
+            
+            if (!originGPS || !goalGPS) {
+                console.warn('No hay coordenadas GPS para algunos edificios');
+                console.warn('Origin building ID:', initialBuilding, 'Goal building ID:', goalBuilding);
+                console.warn('Available GPS keys:', Object.keys(buildingGPS));
+                return;
+            }
+            
+            // Mostrar contenedor del mapa
+            const mapContainer = document.getElementById('mapContainer');
+            if (!mapContainer) {
+                console.error('Contenedor del mapa no encontrado');
+                return;
+            }
+            mapContainer.style.display = 'block';
+            
+            // Anunciar que el mapa se ha cargado (para accesibilidad)
+            setTimeout(() => {
+                const buildingNames = {
+                    1: 'EPS',
+                    2: 'Centro Deportivo',
+                    3: 'Edificio H'
+                };
+                const originName = buildingNames[initialBuilding] || `Building ${initialBuilding}`;
+                const goalName = buildingNames[goalBuilding] || `Building ${goalBuilding}`;
+                speakText(`Route map loaded. Showing route from ${originName} to ${goalName}.`, { 
+                    rate: 0.9,
+                    allowInterrupt: false 
+                });
+            }, 500);
+            
+            // Inicializar mapa centrado entre origen y destino
+            const centerLat = (originGPS.lat + goalGPS.lat) / 2;
+            const centerLng = (originGPS.lng + goalGPS.lng) / 2;
+            
+            const mapElement = document.getElementById('map');
+            if (!mapElement) {
+                console.error('Elemento del mapa no encontrado');
+                return;
+            }
+            
+            try {
+                if (!map) {
+                    console.log('Inicializando nuevo mapa de Google Maps...');
+                    map = new google.maps.Map(mapElement, {
+                        zoom: 17,
+                        center: { lat: centerLat, lng: centerLng },
+                        mapTypeId: 'roadmap'
+                    });
+                    console.log('✅ Mapa de Google Maps inicializado correctamente');
+                } else {
+                    console.log('Actualizando mapa existente...');
+                    map.setCenter({ lat: centerLat, lng: centerLng });
+                    map.setZoom(17);
+                }
+            } catch (error) {
+                console.error('❌ Error inicializando Google Maps:', error);
+                console.error('Error details:', error.message, error.stack);
+                mapContainer.innerHTML = `<p style="color: red; padding: 20px;">Error inicializando el mapa: ${error.message}<br><small>Revisa la consola para más detalles</small></p>`;
+                return;
+            }
+            
+            // Limpiar marcadores y rutas anteriores
+            routeMarkers.forEach(marker => marker.setMap(null));
+            routeMarkers = [];
+            if (routePolyline) {
+                routePolyline.setMap(null);
+            }
+            
+            // Crear marcador de origen
+            const originMarker = new google.maps.Marker({
+                position: { lat: originGPS.lat, lng: originGPS.lng },
+                map: map,
+                label: 'O',
+                title: `${originGPS.name} - Floor ${initialFloor}`,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: '#10b981',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                }
+            });
+            routeMarkers.push(originMarker);
+            
+            // Crear marcador de destino
+            const goalMarker = new google.maps.Marker({
+                position: { lat: goalGPS.lat, lng: goalGPS.lng },
+                map: map,
+                label: 'D',
+                title: `${goalGPS.name} - Floor ${goalFloor}`,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: '#ef4444',
+                    fillOpacity: 1,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2
+                }
+            });
+            routeMarkers.push(goalMarker);
+            
+            // Crear línea entre origen y destino
+            routePolyline = new google.maps.Polyline({
+                path: [
+                    { lat: originGPS.lat, lng: originGPS.lng },
+                    { lat: goalGPS.lat, lng: goalGPS.lng }
+                ],
+                geodesic: true,
+                strokeColor: '#3b82f6',
+                strokeOpacity: 1.0,
+                strokeWeight: 3
+            });
+            routePolyline.setMap(map);
+            
+            // Ajustar vista para mostrar ambos marcadores
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend({ lat: originGPS.lat, lng: originGPS.lng });
+            bounds.extend({ lat: goalGPS.lat, lng: goalGPS.lng });
+            map.fitBounds(bounds);
+        }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMessage');
             errorDiv.textContent = message;
             errorDiv.classList.add('show');
         }
+        
+        // ========== FUNCIONES DE ACCESIBILIDAD PARA EL PLAN ==========
+        
+        function announcePlanGenerated() {
+            if (!window.currentPlan) return;
+            
+            const plan = window.currentPlan;
+            const announcement = `Plan generated successfully. From ${plan.origin} to ${plan.destination}. The route has ${plan.steps} step${plan.steps !== 1 ? 's' : ''} with a total cost of ${plan.cost}. Use the accessibility controls below to hear the steps read aloud.`;
+            
+            speakText(announcement, {
+                rate: 0.9,
+                onend: () => {
+                    // Anunciar que el mapa se está cargando si hay coordenadas GPS
+                    setTimeout(() => {
+                        const mapContainer = document.getElementById('mapContainer');
+                        if (mapContainer && mapContainer.style.display !== 'none') {
+                            speakText('Route map has been loaded. The map shows your route from origin to destination with markers.', { rate: 0.9 });
+                        }
+                    }, 1000);
+                }
+            });
+        }
+        
+        function readPlanAloud() {
+            if (!window.currentPlan) {
+                speakText('No plan available to read.');
+                return;
+            }
+            
+            const plan = window.currentPlan;
+            let fullText = `Complete plan: From ${plan.origin} to ${plan.destination}. `;
+            fullText += `Total steps: ${plan.steps}. Total cost: ${plan.cost}. `;
+            fullText += 'Steps: ';
+            
+            plan.actions.forEach((step, index) => {
+                const actionForSpeech = formatActionForSpeech(step.originalAction);
+                fullText += `Step ${step.number}: ${actionForSpeech}. `;
+            });
+            
+            speakText(fullText, { rate: 0.85 });
+        }
+        
+        function readNextStep() {
+            if (!window.currentPlan) {
+                speakText('No plan available.');
+                return;
+            }
+            
+            if (window.currentStepIndex >= window.currentPlan.actions.length) {
+                speakText('You have reached the end of the plan.');
+                window.currentStepIndex = 0; // Reset
+                return;
+            }
+            
+            const step = window.currentPlan.actions[window.currentStepIndex];
+            const actionForSpeech = formatActionForSpeech(step.originalAction);
+            speakText(`Step ${step.number}: ${actionForSpeech}`, {
+                rate: 0.9,
+                onend: () => {
+                    window.currentStepIndex++;
+                }
+            });
+            
+            // Resaltar visualmente el paso actual
+            const stepElements = document.querySelectorAll('.plan-step');
+            stepElements.forEach((el, idx) => {
+                if (idx === window.currentStepIndex) {
+                    el.style.backgroundColor = '#dbeafe';
+                    el.style.borderLeft = '4px solid #3b82f6';
+                    el.focus();
+                } else {
+                    el.style.backgroundColor = '';
+                    el.style.borderLeft = '';
+                }
+            });
+        }
+        
+        function readPreviousStep() {
+            if (!window.currentPlan) {
+                speakText('No plan available.');
+                return;
+            }
+            
+            if (window.currentStepIndex <= 0) {
+                speakText('You are at the beginning of the plan.');
+                window.currentStepIndex = 0;
+                return;
+            }
+            
+            window.currentStepIndex--;
+            const step = window.currentPlan.actions[window.currentStepIndex];
+            const actionForSpeech = formatActionForSpeech(step.originalAction);
+            speakText(`Step ${step.number}: ${actionForSpeech}`, { rate: 0.9 });
+            
+            // Resaltar visualmente el paso actual
+            const stepElements = document.querySelectorAll('.plan-step');
+            stepElements.forEach((el, idx) => {
+                if (idx === window.currentStepIndex) {
+                    el.style.backgroundColor = '#dbeafe';
+                    el.style.borderLeft = '4px solid #3b82f6';
+                    el.focus();
+                } else {
+                    el.style.backgroundColor = '';
+                    el.style.borderLeft = '';
+                }
+            });
+        }
+        
+        function readStep(stepIndex) {
+            if (!window.currentPlan || stepIndex < 0 || stepIndex >= window.currentPlan.actions.length) {
+                return;
+            }
+            
+            window.currentStepIndex = stepIndex;
+            const step = window.currentPlan.actions[stepIndex];
+            const actionForSpeech = formatActionForSpeech(step.originalAction);
+            speakText(`Step ${step.number}: ${actionForSpeech}`, { rate: 0.9 });
+        }
+        
+        function stopReading() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                currentUtterance = null;
+                speakText('Reading stopped.', { rate: 1.2 });
+            }
+        }
+        
+        // Las funciones de Google Maps ya están definidas arriba (líneas 1208-1280)
+        // No duplicar aquí
 
         // Funcionalidad de imagen con Paligemma
         let selectedImageFile = null;
@@ -1010,7 +2059,7 @@
         function handleImageFile(file) {
             // Validar tipo
             if (!file.type.match('image.*')) {
-                showError('Por favor, selecciona un archivo de imagen válido');
+                showError('Please select a valid image file');
                 return;
             }
 
@@ -1048,7 +2097,7 @@
 
         async function analyzeImageWithPaligemma() {
             if (!selectedImageFile) {
-                showError('Por favor, selecciona una imagen primero');
+                showError('Please select an image first');
                 return;
             }
 
@@ -1065,13 +2114,24 @@
                 const formData = new FormData();
                 formData.append('file', selectedImageFile);
 
+                console.log('Enviando imagen a:', `${API_URL}/api/analyze-image`);
+                
                 // Llamar a la API
                 const response = await fetch(`${API_URL}/api/analyze-image`, {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Respuesta recibida, status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error en respuesta:', errorText);
+                    throw new Error(`Error ${response.status}: ${errorText}`);
+                }
+
                 const data = await response.json();
+                console.log('Datos recibidos:', data);
 
                 if (data.success) {
                     // Auto-completar formulario
@@ -1089,6 +2149,11 @@
                         </div>
                     `;
                     resultDiv.style.display = 'block';
+                    // Ocultar diálogo si estaba visible
+                    document.getElementById('clarificationDialog').style.display = 'none';
+                } else if (data.needs_clarification) {
+                    // Necesita clarificación - mostrar diálogo
+                    showClarificationDialog(data);
                 } else {
                     // Mostrar error
                     resultDiv.className = 'analysis-result error';
@@ -1105,12 +2170,13 @@
 
             } catch (error) {
                 console.error('Error completo:', error);
+                console.error('Error stack:', error.stack);
                 resultDiv.className = 'analysis-result error';
                 let errorDetails = error.message || 'Error desconocido';
                 
                 // Si es un error de red, dar más detalles
-                if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-                    errorDetails = 'No se pudo conectar con la API local. Verifica que esté corriendo.';
+                if (error.message === 'Failed to fetch' || error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
+                    errorDetails = 'No se pudo conectar con la API local. Verifica que esté corriendo en http://localhost:8000';
                 }
                 
                 resultDiv.innerHTML = `
@@ -1121,7 +2187,7 @@
                         - La API local esté corriendo: <code>python run_api.py</code><br>
                         - El servidor esté escuchando en: <code>http://localhost:8000</code><br>
                         - El notebook de Colab esté activo y el servidor corriendo<br>
-                        - Abre la consola del navegador (F12) para más detalles
+                        - Abre la consola del navegador (F12) para ver más detalles del error
                     </p>
                 `;
                 resultDiv.style.display = 'block';
@@ -1132,16 +2198,332 @@
         }
 
         function autoFillLocation(buildingId, floor) {
+            console.log('autoFillLocation llamado con:', { buildingId, floor, types: { buildingId: typeof buildingId, floor: typeof floor } });
+            
             // Auto-completar edificio
             const buildingSelect = document.getElementById('initialBuilding');
-            buildingSelect.value = buildingId;
-            updateInitialFloors();
+            if (buildingId !== null && buildingId !== undefined) {
+                // Convertir a string para asegurar que coincida con el value del option
+                const buildingValue = String(buildingId);
+                buildingSelect.value = buildingValue;
+                updateInitialFloors();
+                console.log('✅ Edificio actualizado a:', buildingValue, 'Valor actual del select:', buildingSelect.value);
+                
+                // Verificar que se actualizó correctamente
+                if (buildingSelect.value !== buildingValue) {
+                    console.warn('⚠️ El valor del select no coincide. Esperado:', buildingValue, 'Actual:', buildingSelect.value);
+                }
+            }
 
             // Auto-completar planta (con un pequeño delay para que se actualicen las opciones)
+            if (floor !== null && floor !== undefined) {
+                setTimeout(() => {
+                    const floorSelect = document.getElementById('initialFloor');
+                    // Convertir a string para asegurar que coincida con el value del option
+                    const floorValue = String(floor);
+                    floorSelect.value = floorValue;
+                    console.log('✅ Planta actualizada a:', floorValue, 'Valor actual del select:', floorSelect.value);
+                    
+                    // Verificar que se actualizó correctamente
+                    if (floorSelect.value !== floorValue) {
+                        console.warn('⚠️ El valor del select no coincide. Esperado:', floorValue, 'Actual:', floorSelect.value);
+                    }
+                }, 100);
+            }
+        }
+
+        // Variables globales para clarificación
+        let clarificationContext = null;
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
+        // Mostrar diálogo de clarificación
+        function showClarificationDialog(data) {
+            clarificationContext = {
+                building: data.building,
+                floor: data.floor,
+                raw_response: data.raw_response
+            };
+            
+            const dialog = document.getElementById('clarificationDialog');
+            const questionDiv = document.getElementById('systemQuestion');
+            const historyDiv = document.getElementById('conversationHistory');
+            
+            // Mostrar pregunta
+            questionDiv.textContent = data.clarification_question;
+            dialog.style.display = 'block';
+            
+            // Auto-completar campos con información parcial
+            if (data.building !== null && data.building !== undefined) {
+                const buildingSelect = document.getElementById('initialBuilding');
+                buildingSelect.value = String(data.building);
+                updateInitialFloors();
+                console.log('✅ Edificio auto-completado desde diálogo:', data.building);
+            }
+            
+            if (data.floor !== null && data.floor !== undefined) {
+                setTimeout(() => {
+                    const floorSelect = document.getElementById('initialFloor');
+                    floorSelect.value = String(data.floor);
+                    console.log('✅ Planta auto-completada desde diálogo:', data.floor);
+                }, 100);
+            }
+            
+            // Limpiar historial y añadir primera pregunta
+            historyDiv.innerHTML = '';
+            addMessageToHistory('system', data.clarification_question);
+            
+            // Leer pregunta automáticamente (TTS)
+            speakText(data.clarification_question);
+            
+            // Enfocar en el campo de texto
             setTimeout(() => {
-                const floorSelect = document.getElementById('initialFloor');
-                floorSelect.value = floor;
+                document.getElementById('userResponseInput').focus();
             }, 100);
+        }
+
+        // Repetir pregunta (TTS)
+        function repeatQuestion() {
+            const question = document.getElementById('systemQuestion').textContent;
+            if (question) {
+                speakText(question);
+            }
+        }
+
+        let currentUtterance = null;
+        
+        // Síntesis de voz (TTS)
+        function speakText(text, options = {}) {
+            if ('speechSynthesis' in window) {
+                // Cancelar cualquier síntesis anterior si no se especifica que no se cancele
+                if (options.allowInterrupt !== false) {
+                    window.speechSynthesis.cancel();
+                }
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = options.lang || 'en-US';  // English with US accent for better pronunciation
+                utterance.rate = options.rate || 0.9;
+                utterance.pitch = options.pitch || 1.0;
+                utterance.volume = options.volume || 1.0;
+                
+                // Intentar usar una voz en inglés
+                const voices = window.speechSynthesis.getVoices();
+                const englishVoice = voices.find(voice => 
+                    voice.lang.startsWith('en') && voice.name.includes('English')
+                ) || voices.find(voice => voice.lang.startsWith('en'));
+                
+                if (englishVoice) {
+                    utterance.voice = englishVoice;
+                }
+                
+                // Callbacks
+                utterance.onend = options.onend || null;
+                utterance.onerror = options.onerror || null;
+                
+                currentUtterance = utterance;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Manejar tecla Enter en el campo de respuesta
+        function handleResponseKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendClarificationResponse();
+            }
+        }
+
+        // Toggle grabación de voz
+        async function toggleVoiceInput() {
+            const voiceBtn = document.getElementById('voiceInputBtn');
+            
+            if (!isRecording) {
+                // Iniciar grabación
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        await transcribeAudio(audioBlob);
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    voiceBtn.textContent = '⏹️ Detener';
+                    voiceBtn.classList.add('recording');
+                    voiceBtn.setAttribute('aria-label', 'Detener grabación');
+                } catch (error) {
+                    console.error('Error accediendo al micrófono:', error);
+                    alert('No se pudo acceder al micrófono. Asegúrate de dar permisos.');
+                }
+            } else {
+                // Detener grabación
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                isRecording = false;
+                voiceBtn.textContent = '🎤 Speak';
+                voiceBtn.classList.remove('recording');
+                voiceBtn.setAttribute('aria-label', 'Activar micrófono para responder por voz');
+            }
+        }
+
+        // Transcribir audio con Whisper
+        async function transcribeAudio(audioBlob) {
+            const voiceBtn = document.getElementById('voiceInputBtn');
+            const inputField = document.getElementById('userResponseInput');
+            
+            voiceBtn.disabled = true;
+            voiceBtn.textContent = '🔄 Transcribiendo...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'audio.wav');
+                
+                const response = await fetch(`${API_URL}/api/transcribe-audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    inputField.value = data.text;
+                    addMessageToHistory('user', data.text);
+                    // Enfocar en el campo y mover cursor al final
+                    inputField.focus();
+                    inputField.setSelectionRange(inputField.value.length, inputField.value.length);
+                } else {
+                    alert(`Error al transcribir: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error transcribiendo:', error);
+                alert('Error al transcribir el audio. Intenta de nuevo.');
+            } finally {
+                voiceBtn.disabled = false;
+                voiceBtn.textContent = '🎤 Speak';
+            }
+        }
+
+        // Enviar respuesta de clarificación
+        async function sendClarificationResponse() {
+            const inputField = document.getElementById('userResponseInput');
+            const sendBtn = document.getElementById('sendResponseBtn');
+            const userResponse = inputField.value.trim();
+            
+            if (!userResponse) {
+                alert('Please type or record a response');
+                return;
+            }
+            
+            if (!clarificationContext) {
+                console.error('No hay contexto de clarificación');
+                return;
+            }
+            
+            sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/clarify-location`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_response: userResponse,
+                        previous_context: clarificationContext
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Respuesta del servidor:', data);
+                
+                // Añadir respuesta del usuario al historial
+                addMessageToHistory('user', userResponse);
+                
+                if (data.success) {
+                    // Éxito - completar ubicación
+                    console.log('✅ Clarificación exitosa:', { building: data.building, floor: data.floor });
+                    console.log('Llamando a autoFillLocation con:', { building: data.building, floor: data.floor });
+                    autoFillLocation(data.building, data.floor);
+                    
+                    // Ocultar diálogo
+                    document.getElementById('clarificationDialog').style.display = 'none';
+                    
+                    // Mostrar resultado exitoso
+                    const resultDiv = document.getElementById('analysisResult');
+                    resultDiv.className = 'analysis-result success';
+                    const buildingName = buildings.find(b => b.id === data.building)?.full_name || `Building ${data.building}`;
+                    const floorText = data.floor < 0 ? `floor ${data.floor}` : `floor +${data.floor}`;
+                    resultDiv.innerHTML = `
+                        <p><strong>✓ Location detected:</strong></p>
+                        <p>Building: ${buildingName}</p>
+                        <p>Floor: ${floorText}</p>
+                    `;
+                    resultDiv.style.display = 'block';
+                    
+                    // Confirmar con TTS
+                    speakText(`Location detected successfully. ${buildingName}, ${floorText}`);
+                } else if (data.needs_clarification) {
+                    // Aún necesita más información
+                    const questionDiv = document.getElementById('systemQuestion');
+                    questionDiv.textContent = data.clarification_question;
+                    addMessageToHistory('system', data.clarification_question);
+                    
+                    // Actualizar contexto
+                    clarificationContext.building = data.building;
+                    clarificationContext.floor = data.floor;
+                    
+                    // Si tenemos información parcial, actualizar campos del formulario
+                    if (data.building !== null && data.building !== undefined) {
+                        const buildingSelect = document.getElementById('initialBuilding');
+                        buildingSelect.value = String(data.building);
+                        updateInitialFloors();
+                        console.log('✅ Edificio actualizado durante clarificación:', data.building);
+                    }
+                    
+                    if (data.floor !== null && data.floor !== undefined) {
+                        setTimeout(() => {
+                            const floorSelect = document.getElementById('initialFloor');
+                            floorSelect.value = String(data.floor);
+                            console.log('✅ Planta actualizada durante clarificación:', data.floor);
+                        }, 100);
+                    }
+                    
+                    // Limpiar campo de entrada
+                    inputField.value = '';
+                    
+                    // Leer nueva pregunta
+                    speakText(data.clarification_question);
+                } else {
+                    // Error
+                    alert(`Error: ${data.error || 'Could not process the response'}`);
+                }
+            } catch (error) {
+                console.error('Error enviando clarificación:', error);
+                alert('Error sending response. Please try again.');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+            }
+        }
+
+        // Añadir mensaje al historial
+        function addMessageToHistory(type, message) {
+            const historyDiv = document.getElementById('conversationHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = `${type === 'system' ? 'Sistema' : 'Usuario'}: ${message}`;
+            historyDiv.appendChild(messageDiv);
+            historyDiv.scrollTop = historyDiv.scrollHeight;
         }
     </script>
 </body>
