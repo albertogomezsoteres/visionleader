@@ -27,6 +27,30 @@ class CampusGraphToPDDL:
         """Obtiene la lista de conexiones."""
         return self.data.get("connections", [])
     
+    def _find_functional_goal(self, goal_functional: str) -> Tuple[Optional[int], Optional[int]]:
+        """
+        Busca un objetivo funcional (cafetería, gimnasio) en el JSON.
+        
+        Args:
+            goal_functional: "cafeteria" o "gimnasio"
+            
+        Returns:
+            (building_id, floor) o (None, None) si no se encuentra
+        """
+        goal_lower = goal_functional.lower()
+        
+        for building in self.get_buildings():
+            if goal_lower == "cafeteria":
+                cafeteria_floor = building.get('cafeteria_floor')
+                if cafeteria_floor is not None:
+                    return (building['id'], cafeteria_floor)
+            elif goal_lower == "gimnasio":
+                gimnasio_floor = building.get('gimnasio_floor')
+                if gimnasio_floor is not None:
+                    return (building['id'], gimnasio_floor)
+        
+        return (None, None)
+    
     def generate_problem_objects(self) -> Dict[str, List[str]]:
         """
         Genera los objetos PDDL desde el JSON.
@@ -101,12 +125,14 @@ class CampusGraphToPDDL:
                 if has_stairs:
                     init.append(f"    (hay_escalera edificio_{edificio_id} {planta_str})")
                 
-                # Cafetería en CD planta 0
-                if edificio_id == 2 and planta == 0:
+                # Cafetería: leer del JSON en lugar de hardcodeado
+                cafeteria_floor = building.get('cafeteria_floor')
+                if cafeteria_floor is not None and planta == cafeteria_floor:
                     init.append(f"    (hay_cafeteria edificio_{edificio_id} {planta_str})")
                 
-                # Gimnasio en CD planta -1
-                if edificio_id == 2 and planta == -1:
+                # Gimnasio: leer del JSON en lugar de hardcodeado
+                gimnasio_floor = building.get('gimnasio_floor')
+                if gimnasio_floor is not None and planta == gimnasio_floor:
                     init.append(f"    (hay_gimnasio edificio_{edificio_id} {planta_str})")
         
         # Conexiones
@@ -151,11 +177,17 @@ class CampusGraphToPDDL:
         
         # Goal
         if goal_functional:
-            # Goal funcional: "cafeteria" o "gimnasio"
+            # Goal funcional: buscar en JSON en lugar de hardcodeado
+            goal_building_id, goal_floor = self._find_functional_goal(goal_functional)
+            if goal_building_id is None or goal_floor is None:
+                raise ValueError(f"Goal funcional '{goal_functional}' no encontrado en campus_graph.json")
+            
+            goal_floor_str = f"planta_m{abs(goal_floor)}" if goal_floor < 0 else f"planta_{goal_floor}"
+            
             if goal_functional.lower() == "cafeteria":
-                goal = "    (and\n      (en robot1 edificio_2 planta_0)\n      (hay_cafeteria edificio_2 planta_0)\n    )"
+                goal = f"    (and\n      (en robot1 edificio_{goal_building_id} {goal_floor_str})\n      (hay_cafeteria edificio_{goal_building_id} {goal_floor_str})\n    )"
             elif goal_functional.lower() == "gimnasio":
-                goal = "    (and\n      (en robot1 edificio_2 planta_m1)\n      (hay_gimnasio edificio_2 planta_m1)\n    )"
+                goal = f"    (and\n      (en robot1 edificio_{goal_building_id} {goal_floor_str})\n      (hay_gimnasio edificio_{goal_building_id} {goal_floor_str})\n    )"
             else:
                 raise ValueError(f"Goal funcional desconocido: {goal_functional}. Usa 'cafeteria' o 'gimnasio'")
         elif goal_state:

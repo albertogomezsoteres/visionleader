@@ -38,9 +38,13 @@ from api.models import (
     TranscribeResponse,
     GPSRouteRequest,
     GPSRouteResponse,
+    ConversationRequest,
+    ConversationResponse,
 )
 from navigation.fast_downward_client import FastDownwardPlanner
 from navigation.pddl_converter import CampusGraphToPDDL
+from navigation.agents import Agent1_Identifier, Agent2_Searcher, Agent3_Planner
+from navigation.conversation_agent import ConversationAgent
 
 # Inicializar FastAPI
 app = FastAPI(
@@ -68,6 +72,17 @@ PDDL_DIR = BASE_DIR / "pddl"
 planner = FastDownwardPlanner()
 converter = CampusGraphToPDDL(str(CAMPUS_JSON))
 
+# Inicializar agente conversacional (singleton)
+_conversation_agent = None
+
+def get_conversation_agent() -> ConversationAgent:
+    """Obtiene o crea el agente conversacional."""
+    global _conversation_agent
+    if _conversation_agent is None:
+        campus_graph = load_campus_graph()
+        _conversation_agent = ConversationAgent(campus_graph)
+    return _conversation_agent
+
 # Variables globales para Paligemma (singleton)
 # Mantenemos el modelo y procesador en memoria para no cargarlos cada vez
 _paligemma_model = None
@@ -92,6 +107,7 @@ async def root():
             "analyze-image": "POST /api/analyze-image",
             "clarify-location": "POST /api/clarify-location",
             "transcribe-audio": "POST /api/transcribe-audio",
+            "conversation": "POST /api/conversation - Sistema conversacional con agente",
             "demo": "GET /demo - Interfaz web interactiva",
             "docs": "GET /docs"
         }
@@ -149,9 +165,42 @@ async def generate_plan(request: PlanningRequest):
         # Preparar información del objetivo para la respuesta
         goal_info = {}
         if request.goal_functional:
+            # Usar Agente 2 (Buscador) para encontrar objetivo funcional
+            campus_graph = load_campus_graph()
+            # Por ahora, usar búsqueda en JSON (Agente 2 puede usar detección de imagen si está disponible)
+            goal_building_id, goal_floor, source = Agent2_Searcher.search_goal(
+                request.goal_functional,
+                agent1_detection=None,  # Podría venir de una imagen previa
+                campus_graph=campus_graph
+            )
+            print(f"🔍 Agente 2 buscó '{request.goal_functional}': encontrado en {source} -> Edificio {goal_building_id}, Planta {goal_floor}")
+            
+            if goal_building_id is None or goal_floor is None:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Objetivo funcional '{request.goal_functional}' no encontrado en el campus. Agente 2 no pudo localizarlo."
+                )
+            
+            if goal_building_id and goal_floor is not None:
+                # Obtener nombre del edificio
+                building_name = None
+                for b in campus_graph.get("buildings", []):
+                    if b.get("id") == goal_building_id:
+                        building_name = b.get("name", f"Edificio {goal_building_id}")
+                        break
+                
+                floor_text = "planta 0" if goal_floor == 0 else f"planta {goal_floor}"
+                if request.goal_functional.lower() == "cafeteria":
+                    description = f"Cafetería ({building_name} {floor_text})"
+                else:
+                    description = f"Gimnasio ({building_name} {floor_text})"
+            else:
+                # Fallback si no se encuentra (no debería pasar)
+                description = "Cafetería (CD planta 0)" if request.goal_functional == "cafeteria" else "Gimnasio (CD planta -1)"
+            
             goal_info = {
                 "functional": request.goal_functional,
-                "description": "Cafetería (CD planta 0)" if request.goal_functional == "cafeteria" else "Gimnasio (CD planta -1)"
+                "description": description
             }
         else:
             goal_building = request.goal_state.get("building")
@@ -169,6 +218,18 @@ async def generate_plan(request: PlanningRequest):
         # Generar problema PDDL
         initial_state = (initial_building, initial_floor)
         goal_state = None if request.goal_functional else (goal_info["building"], goal_info["floor"])
+        
+        # Usar Agente 3 (Planificador) para determinar si se necesita GPS
+        if goal_state:
+            goal_building = goal_state[0]
+            use_gps = Agent3_Planner.needs_gps(initial_building, goal_building)
+            if use_gps:
+                print(f"🗺️ Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building})")
+        elif request.goal_functional:
+            # Si es objetivo funcional, ya tenemos goal_building_id de Agente 2
+            use_gps = Agent3_Planner.needs_gps(initial_building, goal_building_id)
+            if use_gps:
+                print(f"🗺️ Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building_id})")
         
         # Crear archivo temporal para el problema
         with tempfile.NamedTemporaryFile(
@@ -336,6 +397,150 @@ def load_campus_graph():
     return _campus_graph_data
 
 
+def correct_whisper_transcription(text: str, campus_graph: dict) -> str:
+    """
+    Corrige errores comunes de transcripción de Whisper.
+    Especialmente útil para palabras del dominio del campus.
+    
+    Args:
+        text: Texto transcrito por Whisper
+        campus_graph: Grafo del campus para validar palabras
+        
+    Returns:
+        Texto corregido
+    """
+    if not text:
+        return text
+    
+    text_lower = text.lower().strip()
+    original_text = text
+    
+    # Diccionario de correcciones comunes
+    corrections = {
+        # Objetivos funcionales
+        "jim": "gym",
+        "jimnasium": "gymnasium",
+        "gim": "gym",
+        "kafoturia": "cafeteria",
+        "cafeturia": "cafeteria",
+        "cafetaria": "cafeteria",
+        "cafeteria": "cafeteria",  # Asegurar formato correcto
+        "library": "library",
+        "biblioteca": "biblioteca",
+        
+        # Edificios comunes
+        "building age": "building h",
+        "building a": "building h",  # Si está en contexto de edificio H
+        "building eight": "building h",
+        "building h": "building h",
+        "building eps": "building eps",
+        "building cd": "building cd",
+        "edificio h": "edificio h",
+        "edificio eps": "edificio eps",
+        
+        # Palabras comunes
+        "flor": "floor",
+        "flore": "floor",
+        "planta": "planta",
+        "planta": "floor",  # Si está en inglés, convertir
+        "yes": "yes",
+        "no": "no",
+        "please": "please",
+        "guide": "guide",
+        "take": "take",
+        "me": "me",
+        "there": "there",
+        "to": "to",
+        "go": "go",
+        "want": "want",
+        "i": "i",
+    }
+    
+    # Obtener nombres de edificios del campus para validación
+    building_names = []
+    building_codes = []
+    for building in campus_graph.get("buildings", []):
+        name = building.get("name", "").lower()
+        full_name = building.get("full_name", "").lower()
+        if name:
+            building_names.append(name)
+            building_codes.append(name)
+        if full_name:
+            building_names.extend(full_name.split())
+    
+    import re
+    
+    # Correcciones específicas por contexto
+    # Si dice "jim" pero está en contexto de objetivos, probablemente es "gym"
+    if "jim" in text_lower:
+        # Verificar si hay contexto de objetivos (cafeteria, library, etc.)
+        if any(word in text_lower for word in ["want", "go", "to", "cafeteria", "library", "the"]):
+            # Preservar capitalización
+            text = re.sub(r'\bjim\b', "gym", text, flags=re.IGNORECASE)
+    
+    # Corrección de "building age" → "building H"
+    if "building age" in text_lower or "building a" in text_lower:
+        # Si está en contexto de edificios conocidos
+        if any(code in text_lower for code in ["h", "eps", "cd", "b", "r", "floor"]):
+            text = re.sub(r'\bbuilding\s+age\b', "building H", text, flags=re.IGNORECASE)
+            text = re.sub(r'\bbuilding\s+a\b(?!\w)', "building H", text, flags=re.IGNORECASE)
+    
+    # Corrección de "kafoturia" y variantes de cafeteria
+    cafeteria_variants = ["kafoturia", "cafeturia", "cafetaria", "kafeteria", "cafetaria"]
+    for variant in cafeteria_variants:
+        if variant in text_lower:
+            text = re.sub(r'\b' + re.escape(variant) + r'\b', "cafeteria", text, flags=re.IGNORECASE)
+    
+    # Correcciones directas del diccionario (solo para palabras clave del dominio)
+    domain_corrections = {
+        "jim": "gym",
+        "gim": "gym",
+        "jimnasium": "gymnasium",
+    }
+    
+    for wrong, correct in domain_corrections.items():
+        # Reemplazar palabra completa (con límites de palabra)
+        pattern = r'\b' + re.escape(wrong) + r'\b'
+        text = re.sub(pattern, correct, text, flags=re.IGNORECASE)
+    
+    # Validación final: si el texto corregido contiene palabras conocidas del campus
+    # y el original no, usar el corregido
+    corrected_lower = text.lower()
+    has_campus_words = any(word in corrected_lower for word in 
+        ["gym", "cafeteria", "library", "building", "floor", "edificio", "planta"])
+    
+    if has_campus_words and text != original_text:
+        print(f"[CORRECCION] '{original_text}' -> '{text}'")
+    
+    return text.strip()
+
+
+def _find_functional_goal_in_json(campus_graph: dict, goal_functional: str) -> Tuple[Optional[int], Optional[int]]:
+    """
+    Busca un objetivo funcional (cafetería, gimnasio) en el campus_graph.
+    
+    Args:
+        campus_graph: Diccionario con la estructura del campus
+        goal_functional: "cafeteria" o "gimnasio"
+        
+    Returns:
+        (building_id, floor) o (None, None) si no se encuentra
+    """
+    goal_lower = goal_functional.lower()
+    
+    for building in campus_graph.get("buildings", []):
+        if goal_lower == "cafeteria":
+            cafeteria_floor = building.get('cafeteria_floor')
+            if cafeteria_floor is not None:
+                return (building['id'], cafeteria_floor)
+        elif goal_lower == "gimnasio":
+            gimnasio_floor = building.get('gimnasio_floor')
+            if gimnasio_floor is not None:
+                return (building['id'], gimnasio_floor)
+    
+    return (None, None)
+
+
 def load_paligemma_model():
     """Carga el modelo Paligemma una vez y lo mantiene en memoria (singleton)."""
     global _paligemma_model, _paligemma_processor
@@ -374,24 +579,14 @@ def load_paligemma_model():
 def get_paligemma_prompts() -> list[str]:
     """
     Retorna una lista de prompts en inglés para usar con Paligemma.
+    Usa los prompts del Agente 1 (Identificador) que detecta TODO en la imagen.
     Se intentan en orden: si uno falla (respuesta "unanswerable"), se prueba el siguiente.
     
     Returns:
-        Lista de prompts en inglés, ordenados de más específico a más general
+        Lista de prompts en inglés del Agente 1, ordenados de más específico a más general
     """
-    return [
-        # Prompt 1: Instrucciones muy directas y específicas
-        "Look at the signage board in this image. At the very top, you will see text that says 'EDIFICIO' followed by a letter, or a letter followed by 'BUILDING'. For example: 'EDIFICIO H' or 'H BUILDING' or 'EDIFICIO H / H BUILDING'. Read the LETTER that appears with 'EDIFICIO' or 'BUILDING'. That letter (H, B, R, E, M, O, P) is the building code. Do NOT read numbers. Only read the letter. Also check if there is floor information (PLANTA or FLOOR with a number).",
-        
-        # Prompt 2: Enfoque en leer el texto exacto
-        "Read the text on the signage board. Find where it says 'EDIFICIO' - the letter immediately after 'EDIFICIO' is the building code. Or find where it says 'BUILDING' - the letter immediately before 'BUILDING' is the building code. Read that single letter (H, B, R, E, M, O, P, etc.). Do not read any numbers. The building code is a LETTER, not a number. Also look for floor numbers after 'PLANTA' or 'FLOOR'.",
-        
-        # Prompt 3: Instrucciones paso a paso
-        "Step 1: Find the signage board in the image. Step 2: Look at the top of the sign. Step 3: Find the text 'EDIFICIO' or 'BUILDING'. Step 4: Read the LETTER that appears next to these words. For example, if you see 'EDIFICIO H', the building code is 'H'. If you see 'H BUILDING', the building code is 'H'. Read only the letter, not numbers. Step 5: Check for floor information (PLANTA or FLOOR with a number).",
-        
-        # Prompt 4: Formato muy específico con ejemplos
-        "The signage board shows building information at the top. The format is: 'EDIFICIO [LETTER]' or '[LETTER] BUILDING' where [LETTER] is a single letter like H, B, R, E, M, O, or P. Read that letter. Examples: 'EDIFICIO H' means building code is H. 'H BUILDING' means building code is H. 'EDIFICIO B' means building code is B. Read the letter, not numbers. Also identify floor if shown (PLANTA or FLOOR with number)."
-    ]
+    # Usar los prompts del Agente 1 (Identificador)
+    return Agent1_Identifier.get_prompts()
 
 
 def parse_location_from_paligemma_response(response: str, campus_graph: dict) -> dict:
@@ -554,7 +749,7 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
             else:
                 building_id = building_map.get(building_found)
                 result["building"] = building_id
-                print(f"   🏢 Edificio encontrado: código='{building_found}' -> ID={building_id}")
+                print(f"   [BUILDING] Edificio encontrado: codigo='{building_found}' -> ID={building_id}")
         else:
             building_id = building_map.get(building_found)
             result["building"] = building_id
@@ -713,17 +908,23 @@ async def analyze_image(file: UploadFile = File(...)):
                                     print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: 'unanswerable', intentando siguiente...")
                                     continue
                                 
-                                # Parsear la respuesta de Paligemma para extraer edificio y planta
-                                # Usar la respuesta original (sin convertir a minúsculas) para mejor parsing
+                                # Usar Agente 1 para parsear respuesta completa (incluye landmarks)
+                                agent1_result = Agent1_Identifier.parse_response(raw_response_original, campus_graph)
+                                
+                                # También usar el parser original para compatibilidad
                                 parsed = parse_location_from_paligemma_response(raw_response_original, campus_graph)
                                 
-                                # Verificar si tenemos información parcial o completa
-                                building_id = parsed.get("building")
-                                floor_num = parsed.get("floor")
+                                # Priorizar Agente 1, pero usar parser original como fallback
+                                building_id = agent1_result.get("building") or parsed.get("building")
+                                floor_num = agent1_result.get("floor") or parsed.get("floor")
+                                landmarks = agent1_result.get("landmarks", [])
+                                resources = agent1_result.get("resources", [])
                                 
                                 # Si tenemos ambos, éxito completo
                                 if building_id is not None and floor_num is not None:
                                     print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito completo")
+                                    print(f"   🎯 Agente 1 detectó landmarks: {landmarks}")
+                                    print(f"   🎯 Agente 1 detectó recursos: {resources}")
                                     return ImageAnalysisResponse(
                                         success=True,
                                         building=building_id,
@@ -731,12 +932,15 @@ async def analyze_image(file: UploadFile = File(...)):
                                         raw_response=data.get("response", ""),
                                         error=None,
                                         needs_clarification=False,
-                                        clarification_question=None
+                                        clarification_question=None,
+                                        landmarks=landmarks if landmarks else None,
+                                        resources=resources if resources else None
                                     )
                                 
                                 # Si tenemos información parcial, necesitamos clarificación
                                 elif building_id is not None or floor_num is not None:
                                     print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Información parcial detectada")
+                                    print(f"   🎯 Agente 1 detectó landmarks: {landmarks}")
                                     question = generate_clarification_question(building_id, floor_num, campus_graph)
                                     return ImageAnalysisResponse(
                                         success=False,
@@ -745,7 +949,9 @@ async def analyze_image(file: UploadFile = File(...)):
                                         raw_response=data.get("response", ""),
                                         error=None,
                                         needs_clarification=True,
-                                        clarification_question=question
+                                        clarification_question=question,
+                                        landmarks=landmarks if landmarks else None,
+                                        resources=resources if resources else None
                                     )
                                 
                                 # Si no tenemos nada, intentar siguiente prompt
@@ -1152,6 +1358,46 @@ async def get_gps_route(request: GPSRouteRequest):
         )
 
 
+@app.post("/api/conversation", response_model=ConversationResponse)
+async def conversation(request: ConversationRequest):
+    """
+    Endpoint para conversación con el agente inteligente.
+    El agente decide qué hacer según el contexto y el mensaje del usuario.
+    
+    Args:
+        request: ConversationRequest con session_id, user_message y opcionalmente image_analysis
+        
+    Returns:
+        ConversationResponse con la respuesta del sistema, acción a tomar y contexto actualizado
+    """
+    try:
+        agent = get_conversation_agent()
+        # Asegurar que image_analysis sea un dict o None
+        image_analysis = request.image_analysis if isinstance(request.image_analysis, dict) else None
+        result = agent.process_user_message(
+            session_id=request.session_id,
+            user_message=request.user_message,
+            image_analysis=image_analysis
+        )
+        
+        # Si la acción es generar plan, incluir el request de planificación
+        plan_request = None
+        if result.get("action") == "generate_plan":
+            plan_request = agent.generate_plan_request(request.session_id)
+            result["plan_request"] = plan_request
+        
+        return ConversationResponse(**result)
+    
+    except Exception as e:
+        return ConversationResponse(
+            response=f"Sorry, I encountered an error: {str(e)}",
+            action="error",
+            needs_input=True,
+            context={},
+            error=str(e)
+        )
+
+
 @app.post("/api/transcribe-audio", response_model=TranscribeResponse)
 async def transcribe_audio(file: UploadFile = File(...)):
     """
@@ -1181,9 +1427,14 @@ async def transcribe_audio(file: UploadFile = File(...)):
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("success"):
+                        # Corregir transcripción con post-procesamiento
+                        transcribed_text = data.get("text", "")
+                        campus_graph = load_campus_graph()
+                        corrected_text = correct_whisper_transcription(transcribed_text, campus_graph)
+                        
                         return TranscribeResponse(
                             success=True,
-                            text=data.get("text", ""),
+                            text=corrected_text,
                             error=None
                         )
                     else:

@@ -70,6 +70,8 @@ class ImageAnalysisResponse(BaseModel):
     error: Optional[str] = Field(None, description="Mensaje de error si falla")
     needs_clarification: bool = Field(False, description="Si el sistema necesita más información del usuario")
     clarification_question: Optional[str] = Field(None, description="Pregunta que hace el sistema para clarificar")
+    landmarks: Optional[List[str]] = Field(None, description="Landmarks detectados en la imagen (Agente 1)")
+    resources: Optional[List[str]] = Field(None, description="Recursos detectados (elevator, stairs, etc.)")
 
 
 class ClarificationRequest(BaseModel):
@@ -113,4 +115,22 @@ class GPSRouteResponse(BaseModel):
     duration: Optional[str] = Field(None, description="Duración estimada")
     steps: Optional[List[Dict[str, Any]]] = Field(None, description="Lista de pasos de la ruta")
     polyline: Optional[str] = Field(None, description="Polilínea de la ruta")
+    error: Optional[str] = Field(None, description="Mensaje de error si falla")
+
+
+class ConversationRequest(BaseModel):
+    """Request para conversación con el agente."""
+    session_id: str = Field(..., description="ID de la sesión de conversación")
+    user_message: str = Field(..., description="Mensaje del usuario")
+    image_analysis: Optional[Dict[str, Any]] = Field(None, description="Resultado del análisis de imagen (opcional)")
+
+
+class ConversationResponse(BaseModel):
+    """Response de la conversación."""
+    response: str = Field(..., description="Respuesta del sistema")
+    action: str = Field(..., description="Acción a tomar (ask_location, ask_goal, search_goal, generate_plan, etc.)")
+    needs_input: bool = Field(..., description="Si necesita más información del usuario")
+    context: Dict[str, Any] = Field(..., description="Contexto de la conversación actualizado")
+    goal_location: Optional[Dict[str, int]] = Field(None, description="Ubicación del objetivo encontrado (si aplica)")
+    plan_request: Optional[Dict[str, Any]] = Field(None, description="Request para generar plan (si action=generate_plan)")
     error: Optional[str] = Field(None, description="Mensaje de error si falla")

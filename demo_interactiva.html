@@ -630,9 +630,9 @@
 
         .btn-voice {
             padding: 12px 20px;
-            background: #10b981;
-            color: white;
-            border: none;
+            background: white;
+            color: #374151;
+            border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
@@ -643,7 +643,8 @@
         }
 
         .btn-voice:hover:not(:disabled) {
-            background: #059669;
+            background: #f9fafb;
+            border-color: #d1d5db;
             transform: translateY(-2px);
         }
 
@@ -730,6 +731,72 @@
             clip: rect(0, 0, 0, 0);
             white-space: nowrap;
             border-width: 0;
+        }
+
+        /* Estilos para el chat conversacional */
+        .conversation-chat {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f9fafb;
+            margin-bottom: 15px;
+        }
+
+        .chat-history {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 15px;
+            min-height: 200px;
+        }
+
+        .chat-history .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .chat-history .message.system {
+            background: #dbeafe;
+            border-left: 3px solid #60a5fa;
+            margin-right: auto;
+        }
+
+        .chat-history .message.user {
+            background: #dcfce7;
+            border-left: 3px solid #10b981;
+            margin-left: auto;
+        }
+
+        .chat-history .message.action {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .chat-input-group input:focus {
+            outline: none;
+            border-color: #60a5fa;
         }
 
         @media (max-width: 768px) {
@@ -820,6 +887,49 @@
                     </div>
                     <div class="conversation-history" id="conversationHistory" role="log" aria-label="Historial de conversación"></div>
                 </div>
+            </div>
+
+            <!-- Sistema Conversacional con Agente -->
+            <div class="section">
+                <div class="section-title">Conversational Agent System</div>
+                <p style="margin-bottom: 15px; color: #6b7280; font-size: 14px;">
+                    Chat with the intelligent agent. It will help you navigate the campus by asking questions and making decisions automatically.
+                </p>
+                
+                <!-- Historial de conversación -->
+                <div class="conversation-chat" id="conversationChat" style="display: none;">
+                    <div class="chat-history" id="chatHistory" role="log" aria-label="Chat history">
+                        <!-- Los mensajes se añaden aquí -->
+                    </div>
+                    
+                    <!-- Input de conversación -->
+                    <div class="chat-input-group">
+                        <input type="text" 
+                               id="chatInput" 
+                               placeholder="Type your message or use voice..."
+                               aria-label="Your message"
+                               onkeypress="handleChatKeyPress(event)">
+                        <button class="btn-voice" 
+                                id="chatVoiceBtn" 
+                                onclick="toggleChatVoiceInput()"
+                                aria-label="Activate microphone">
+                            🎤
+                        </button>
+                        <button class="btn-send-response" 
+                                id="chatSendBtn" 
+                                onclick="sendChatMessage()"
+                                aria-label="Send message">
+                            Send
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Botón para iniciar conversación -->
+                <button class="btn-generate" id="startChatBtn" onclick="startConversation()">
+                    Start Conversation
+                </button>
+                
+                <div id="chatStatus" style="margin-top: 10px; font-size: 12px; color: #6b7280;"></div>
             </div>
 
             <!-- Initial State -->
@@ -937,16 +1047,16 @@
                     <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">Accessibility Controls</h4>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                         <button onclick="readPlanAloud()" class="btn-accessibility" aria-label="Read entire plan aloud">
-                            🔊 Read Plan Aloud
+                            Read Plan Aloud
                         </button>
                         <button onclick="readNextStep()" class="btn-accessibility" aria-label="Read next step">
-                            ⏭️ Next Step
+                            Next Step
                         </button>
                         <button onclick="readPreviousStep()" class="btn-accessibility" aria-label="Read previous step">
-                            ⏮️ Previous Step
+                            Previous Step
                         </button>
                         <button onclick="stopReading()" class="btn-accessibility" aria-label="Stop reading">
-                            ⏹️ Stop
+                            Stop
                         </button>
                     </div>
                 </div>
@@ -956,10 +1066,10 @@
                     <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #374151;">GPS Navigation</h4>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                         <button onclick="startGPSNavigation()" class="btn-gps" id="startGPSBtn" aria-label="Start GPS navigation">
-                            🧭 Start Navigation
+                            Start Navigation
                         </button>
                         <button onclick="stopGPSNavigation()" class="btn-gps" id="stopGPSBtn" style="display: none;" aria-label="Stop GPS navigation">
-                            ⏹️ Stop Navigation
+                            Stop Navigation
                         </button>
                         <span id="gpsStatus" style="font-size: 12px; color: #6b7280;"></span>
                     </div>
@@ -2137,6 +2247,15 @@
                     // Auto-completar formulario
                     autoFillLocation(data.building, data.floor);
                     
+                    // Guardar análisis de imagen para el sistema conversacional
+                    window.lastImageAnalysis = {
+                        success: true,
+                        building: data.building,
+                        floor: data.floor,
+                        landmarks: data.landmarks,
+                        resources: data.resources
+                    };
+                    
                     // Mostrar resultado exitoso
                     resultDiv.className = 'analysis-result success';
                     resultDiv.innerHTML = `
@@ -2237,6 +2356,12 @@
         let isRecording = false;
         let mediaRecorder = null;
         let audioChunks = [];
+        
+        // Variables globales para el sistema conversacional
+        let conversationSessionId = null;
+        let isChatRecording = false;
+        let chatMediaRecorder = null;
+        let chatAudioChunks = [];
 
         // Mostrar diálogo de clarificación
         function showClarificationDialog(data) {
@@ -2356,9 +2481,9 @@
                     
                     mediaRecorder.start();
                     isRecording = true;
-                    voiceBtn.textContent = '⏹️ Detener';
+                    voiceBtn.textContent = 'Stop';
                     voiceBtn.classList.add('recording');
-                    voiceBtn.setAttribute('aria-label', 'Detener grabación');
+                    voiceBtn.setAttribute('aria-label', 'Stop recording');
                 } catch (error) {
                     console.error('Error accediendo al micrófono:', error);
                     alert('No se pudo acceder al micrófono. Asegúrate de dar permisos.');
@@ -2525,6 +2650,323 @@
             historyDiv.appendChild(messageDiv);
             historyDiv.scrollTop = historyDiv.scrollHeight;
         }
+        
+        // ============================================
+        // SISTEMA CONVERSACIONAL CON AGENTE
+        // ============================================
+        
+        function startConversation() {
+            // Generar ID de sesión único
+            conversationSessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // Mostrar el chat
+            document.getElementById('conversationChat').style.display = 'block';
+            document.getElementById('startChatBtn').style.display = 'none';
+            
+            // Limpiar historial
+            document.getElementById('chatHistory').innerHTML = '';
+            
+            // Si hay análisis de imagen reciente, incluirlo en el mensaje inicial
+            const recentImageAnalysis = getRecentImageAnalysis();
+            
+            // Enviar mensaje inicial (con image_analysis si está disponible)
+            sendChatMessage('Hello', true, recentImageAnalysis);
+        }
+        
+        async function sendChatMessage(message = null, isInitial = false, imageAnalysis = null) {
+            const chatInput = document.getElementById('chatInput');
+            const chatSendBtn = document.getElementById('chatSendBtn');
+            const chatHistory = document.getElementById('chatHistory');
+            const chatStatus = document.getElementById('chatStatus');
+            
+            // Obtener mensaje
+            if (!message) {
+                message = chatInput.value.trim();
+            }
+            
+            if (!message && !isInitial) {
+                return;
+            }
+            
+            // Si no es inicial, añadir mensaje del usuario al historial
+            if (!isInitial && message) {
+                addChatMessage('user', message);
+                chatInput.value = '';
+            }
+            
+            // Deshabilitar botones
+            chatSendBtn.disabled = true;
+            chatInput.disabled = true;
+            chatStatus.textContent = 'Thinking...';
+            
+            try {
+                // Preparar request
+                const request = {
+                    session_id: conversationSessionId,
+                    user_message: message || 'Hello'
+                };
+                
+                // Si hay una imagen analizada (pasada como parámetro o reciente), incluirla
+                const imageToUse = imageAnalysis || getRecentImageAnalysis();
+                if (imageToUse) {
+                    request.image_analysis = imageToUse;
+                }
+                
+                // Llamar al endpoint de conversación
+                const response = await fetch(`${API_URL}/api/conversation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(request)
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Añadir respuesta del sistema
+                addChatMessage('system', data.response);
+                
+                // Auto-completar formulario si hay información de ubicación
+                if (data.auto_fill) {
+                    if (data.auto_fill.building !== undefined && data.auto_fill.floor !== undefined) {
+                        autoFillLocation(data.auto_fill.building, data.auto_fill.floor);
+                    } else if (data.auto_fill.floor !== undefined) {
+                        // Solo planta
+                        const floorSelect = document.getElementById('initialFloor');
+                        if (floorSelect) {
+                            floorSelect.value = data.auto_fill.floor;
+                            updateInitialFloors(); // Actualizar opciones
+                        }
+                    } else if (data.auto_fill.building !== undefined) {
+                        // Solo edificio
+                        const buildingSelect = document.getElementById('initialBuilding');
+                        if (buildingSelect) {
+                            buildingSelect.value = data.auto_fill.building;
+                            updateInitialFloors(); // Actualizar opciones de plantas
+                        }
+                    }
+                }
+                
+                // Auto-completar goal si hay información
+                if (data.auto_fill_goal) {
+                    const goalBuilding = data.auto_fill_goal.building;
+                    const goalFloor = data.auto_fill_goal.floor;
+                    const goalFunctional = data.auto_fill_goal.functional;
+                    
+                    // Auto-completar goal en el formulario
+                    if (goalFunctional) {
+                        // Si es un objetivo funcional, seleccionar el botón correspondiente
+                        const goalButtons = document.querySelectorAll('.functional-buttons button');
+                        goalButtons.forEach(btn => {
+                            const btnText = btn.textContent.toLowerCase();
+                            if (btnText.includes(goalFunctional.toLowerCase()) || 
+                                (goalFunctional === 'gimnasio' && btnText.includes('gym')) ||
+                                (goalFunctional === 'cafeteria' && btnText.includes('cafeteria'))) {
+                                btn.click();
+                            }
+                        });
+                    } else if (goalBuilding && goalFloor !== undefined) {
+                        // Si es una ubicación específica, auto-completar goal_state
+                        const goalBuildingSelect = document.getElementById('goalBuilding');
+                        const goalFloorSelect = document.getElementById('goalFloor');
+                        if (goalBuildingSelect) {
+                            goalBuildingSelect.value = goalBuilding;
+                            updateGoalFloors(); // Actualizar opciones de plantas
+                        }
+                        if (goalFloorSelect) goalFloorSelect.value = goalFloor;
+                    }
+                }
+                
+                // Si hay una acción, mostrarla
+                if (data.action) {
+                    addChatMessage('action', `Action: ${data.action}`);
+                }
+                
+                // Si se encontró un objetivo, mostrar información
+                if (data.goal_location) {
+                    const goal = data.goal_location;
+                    const buildingName = buildings.find(b => b.id === goal.building)?.full_name || `Building ${goal.building}`;
+                    addChatMessage('action', `Goal found: ${buildingName}, floor ${goal.floor}`);
+                }
+                
+                // Si hay un plan_request, significa que podemos generar el plan
+                if (data.plan_request) {
+                    addChatMessage('action', 'Generating navigation plan...');
+                    // Auto-generar el plan
+                    setTimeout(() => {
+                        generatePlanFromConversation(data.plan_request);
+                    }, 500);
+                }
+                
+                // Leer respuesta con TTS
+                speakText(data.response);
+                
+                // Actualizar estado
+                chatStatus.textContent = '';
+                
+            } catch (error) {
+                console.error('Error en conversación:', error);
+                addChatMessage('system', `Error: ${error.message}`);
+                chatStatus.textContent = 'Error occurred';
+            } finally {
+                chatSendBtn.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        }
+        
+        function addChatMessage(role, message) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.textContent = message;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+        
+        function toggleChatVoiceInput() {
+            const voiceBtn = document.getElementById('chatVoiceBtn');
+            
+            if (!isChatRecording) {
+                // Iniciar grabación
+                startChatRecording();
+                voiceBtn.textContent = 'Stop';
+                voiceBtn.style.background = '#ef4444';
+            } else {
+                // Detener grabación
+                stopChatRecording();
+                voiceBtn.textContent = 'Record';
+                voiceBtn.style.background = '';
+            }
+        }
+        
+        async function startChatRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                chatMediaRecorder = new MediaRecorder(stream);
+                chatAudioChunks = [];
+                
+                chatMediaRecorder.ondataavailable = (event) => {
+                    chatAudioChunks.push(event.data);
+                };
+                
+                chatMediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(chatAudioChunks, { type: 'audio/wav' });
+                    await transcribeChatAudio(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+                
+                chatMediaRecorder.start();
+                isChatRecording = true;
+            } catch (error) {
+                console.error('Error iniciando grabación:', error);
+                alert('Error accessing microphone. Please check permissions.');
+            }
+        }
+        
+        function stopChatRecording() {
+            if (chatMediaRecorder && isChatRecording) {
+                chatMediaRecorder.stop();
+                isChatRecording = false;
+            }
+        }
+        
+        async function transcribeChatAudio(audioBlob) {
+            const voiceBtn = document.getElementById('chatVoiceBtn');
+            const chatInput = document.getElementById('chatInput');
+            
+            voiceBtn.disabled = true;
+            voiceBtn.textContent = '🔄 Transcribing...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', audioBlob, 'audio.wav');
+                
+                const response = await fetch(`${API_URL}/api/transcribe-audio`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    chatInput.value = data.text;
+                    // Enviar mensaje automáticamente
+                    sendChatMessage(data.text);
+                } else {
+                    alert(`Error transcribing: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error transcribiendo:', error);
+                alert('Error transcribing audio. Please try again.');
+            } finally {
+                voiceBtn.disabled = false;
+                voiceBtn.textContent = 'Record';
+                voiceBtn.style.background = '';
+            }
+        }
+        
+        function getRecentImageAnalysis() {
+            // Obtener el último análisis de imagen si existe
+            if (window.lastImageAnalysis) {
+                return window.lastImageAnalysis;
+            }
+            
+            // Fallback: obtener del formulario
+            const resultDiv = document.getElementById('analysisResult');
+            if (resultDiv.style.display === 'block' && resultDiv.classList.contains('success')) {
+                const building = document.getElementById('initialBuilding').value;
+                const floor = document.getElementById('initialFloor').value;
+                
+                if (building && floor !== '') {
+                    return {
+                        success: true,
+                        building: parseInt(building),
+                        floor: parseInt(floor)
+                    };
+                }
+            }
+            return null;
+        }
+        
+        async function generatePlanFromConversation(planRequest) {
+            try {
+                const response = await fetch(`${API_URL}/api/plan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planRequest)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    addChatMessage('system', 'Navigation plan generated successfully!');
+                    // Mostrar el plan en la sección de resultados
+                    displayResult(data, planRequest);
+                    // Leer el plan
+                    announcePlanGenerated(data);
+                } else {
+                    addChatMessage('system', `Error generating plan: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error generating plan:', error);
+                addChatMessage('system', `Error: ${error.message}`);
+            }
+        }
+        
+        // ============================================
     </script>
 </body>
 </html>
