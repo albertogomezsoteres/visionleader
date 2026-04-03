@@ -6,7 +6,7 @@ Dashboard interactivo profesional para visualizar los resultados del experimento
 
 1. Instalar dependencias:
 ```bash
-pip install -r dashboard/requirements_dashboard.txt
+pip install -r dashboard/requirements.txt
 ```
 
 ## Uso

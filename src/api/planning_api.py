@@ -7,7 +7,7 @@ Endpoints:
 - POST /api/validate - Validar un plan
 """
 
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
@@ -18,6 +18,7 @@ import re
 import json
 import io
 import requests
+from dotenv import load_dotenv
 from PIL import Image
 from typing import Optional, Tuple
 from pydantic import BaseModel
@@ -43,7 +44,7 @@ from api.models import (
 )
 from navigation.fast_downward_client import FastDownwardPlanner
 from navigation.pddl_converter import CampusGraphToPDDL
-from navigation.agents import Agent1_Identifier, Agent2_Searcher, Agent3_Planner
+from navigation.agents import Agent1_Identifier, Agent2_Searcher, Agent3_Planner, CLASSIFIER_PROMPT
 from navigation.conversation_agent import ConversationAgent
 
 # Inicializar FastAPI
@@ -68,6 +69,8 @@ DOMAIN_PATH = BASE_DIR / "pddl" / "domain.pddl"
 CAMPUS_JSON = BASE_DIR / "config" / "campus_graph.json"
 PDDL_DIR = BASE_DIR / "pddl"
 
+load_dotenv(BASE_DIR / ".env")
+
 # Inicializar componentes
 planner = FastDownwardPlanner()
 converter = CampusGraphToPDDL(str(CAMPUS_JSON))
@@ -89,10 +92,81 @@ _paligemma_model = None
 _paligemma_processor = None
 _campus_graph_data = None
 
-# URL del servidor de Colab con Paligemma
-# Si tienes el notebook corriendo, aquí va la URL que te da ngrok
-# Si no está configurada, usará el modelo local (más lento pero funciona sin Colab)
-COLAB_API_URL = "https://your-subdomain.ngrok-free.app"
+# Base URL del túnel (p. ej. ngrok) hacia Colab con PaliGemma / Whisper. Vacío: inferencia local u otros flujos.
+COLAB_API_URL = (os.getenv("COLAB_API_URL") or "").strip().rstrip("/")
+
+def extract_floor_from_room_code(text: str) -> Optional[int]:
+    """
+    Extrae el número de planta de un código de aula o despacho.
+
+    Ejemplos:
+        "Aula 2.1"     → 2
+        "Lab 1.3"      → 1
+        "Despacho 205" → 2
+        "Room 101"     → 1
+        "Aula 0.3"     → 0
+        "B2.05"        → 2
+    """
+    if not text or text.strip().lower() in ("none", "no", ""):
+        return None
+    text = text.strip()
+
+    # Patrón "Aula 2.1", "Lab 1.3", "Clase 0.5", "Despacho 205", "Office 2.3"
+    p1 = re.search(
+        r'(?:aula|lab|laboratorio|despacho|room|clase|classroom|office|sala|seminar)\s*(\d+)[.\-]',
+        text, re.IGNORECASE
+    )
+    if p1:
+        val = int(p1.group(1))
+        if -1 <= val <= 4:
+            return val
+
+    # Patrón "X.Y" suelto donde X es número de planta válido
+    p2 = re.search(r'\b([0-4])\.\d+\b', text)
+    if p2:
+        return int(p2.group(1))
+
+    # Código de 3 dígitos tipo "201", "105" → centenas = planta
+    p3 = re.search(r'\b(\d{3})\b', text)
+    if p3:
+        hundreds = int(p3.group(1)) // 100
+        if 0 <= hundreds <= 4:
+            return hundreds
+
+    # Número suelto de 1 dígito
+    p4 = re.search(r'\b([0-4])\b', text)
+    if p4:
+        return int(p4.group(1))
+
+    return None
+
+
+def parse_paligemma_json(response_text: str) -> dict:
+    """Parsea la respuesta JSON de PaliGemma con fallback robusto."""
+    import json as _json
+    _default = {
+        'building_code': None, 'floor': None, 'confidence': 'none',
+        'visible_text': [], 'landmarks': [],
+        'reason': 'JSON parse failed, raw: ' + (response_text or '')[:100]
+    }
+    if not response_text:
+        return _default
+    try:
+        result = _json.loads(response_text.strip())
+        if isinstance(result, dict):
+            return result
+    except _json.JSONDecodeError:
+        pass
+    match = re.search(r'\{.*?\}', response_text, re.DOTALL)
+    if match:
+        try:
+            result = _json.loads(match.group())
+            if isinstance(result, dict):
+                return result
+        except Exception:
+            pass
+    return _default
+
 
 @app.get("/")
 async def root():
@@ -173,7 +247,7 @@ async def generate_plan(request: PlanningRequest):
                 agent1_detection=None,  # Podría venir de una imagen previa
                 campus_graph=campus_graph
             )
-            print(f"🔍 Agente 2 buscó '{request.goal_functional}': encontrado en {source} -> Edificio {goal_building_id}, Planta {goal_floor}")
+            print(f"Agente 2 buscó '{request.goal_functional}': encontrado en {source} -> Edificio {goal_building_id}, Planta {goal_floor}")
             
             if goal_building_id is None or goal_floor is None:
                 raise HTTPException(
@@ -224,12 +298,12 @@ async def generate_plan(request: PlanningRequest):
             goal_building = goal_state[0]
             use_gps = Agent3_Planner.needs_gps(initial_building, goal_building)
             if use_gps:
-                print(f"🗺️ Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building})")
+                print(f"Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building})")
         elif request.goal_functional:
             # Si es objetivo funcional, ya tenemos goal_building_id de Agente 2
             use_gps = Agent3_Planner.needs_gps(initial_building, goal_building_id)
             if use_gps:
-                print(f"🗺️ Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building_id})")
+                print(f"Agente 3: Se necesita GPS (movimiento entre edificios {initial_building} -> {goal_building_id})")
         
         # Crear archivo temporal para el problema
         with tempfile.NamedTemporaryFile(
@@ -481,7 +555,7 @@ def correct_whisper_transcription(text: str, campus_graph: dict) -> str:
     # Corrección de "building age" → "building H"
     if "building age" in text_lower or "building a" in text_lower:
         # Si está en contexto de edificios conocidos
-        if any(code in text_lower for code in ["h", "eps", "cd", "b", "r", "floor"]):
+        if any(code in text_lower for code in ["h", "g", "cd", "b", "r", "floor"]):
             text = re.sub(r'\bbuilding\s+age\b', "building H", text, flags=re.IGNORECASE)
             text = re.sub(r'\bbuilding\s+a\b(?!\w)', "building H", text, flags=re.IGNORECASE)
     
@@ -547,26 +621,20 @@ def load_paligemma_model():
     # Solo cargamos el modelo la primera vez que se necesita
     # Esto ahorra tiempo y memoria en peticiones posteriores
     if _paligemma_model is None or _paligemma_processor is None:
-        from model_loader import load_paligemma
+        from evaluation.model_loader import load_paligemma
         from huggingface_hub import login
-        import os
-        
-        # Necesitamos un token de HuggingFace para descargar el modelo
-        # Puedes ponerlo aquí directamente o usar una variable de entorno
-        HF_TOKEN_HARDCODED = "***REMOVED***"
-        
-        # Intentamos usar el token hardcodeado, si no está, buscamos en variables de entorno
-        hf_token = HF_TOKEN_HARDCODED or os.getenv("HF_TOKEN")
+
+        hf_token = (os.getenv("HF_TOKEN") or "").strip() or None
         
         # Autenticarnos en HuggingFace para poder descargar el modelo
         if hf_token:
             try:
                 login(token=hf_token)
-                print("✅ Autenticado en HuggingFace")
+                print("Autenticado en HuggingFace")
             except Exception as e:
-                print(f"⚠️ Error al autenticar en HuggingFace: {e}")
+                print(f"Error al autenticar en HuggingFace: {e}")
         else:
-            print("⚠️ No se encontró HF_TOKEN. El modelo puede requerir autenticación.")
+            print("No se encontró HF_TOKEN. El modelo puede requerir autenticación.")
         
         # Cargar el modelo Paligemma (puede tardar un poco la primera vez)
         model_id = "google/paligemma2-3b-mix-224"
@@ -576,17 +644,72 @@ def load_paligemma_model():
     return _paligemma_model, _paligemma_processor
 
 
-def get_paligemma_prompts() -> list[str]:
+def _normalize_image_type(raw: Optional[str]) -> Optional[str]:
+    """
+    Normaliza la respuesta del clasificador (prompt 7) a un tipo canónico.
+
+    PaliGemma puede responder de formas impredecibles:
+      - Respuesta exacta: "elevator", "sign", "stairs", "door", "other"
+      - Contiene la palabra clave: "it's an elevator", "I see stairs"
+      - Responde con texto de la imagen (ej: "h", "g") → None (fall through al chain)
+      - Respuesta multilínea con explicación → extraer la palabra clave
+    """
+    if not raw:
+        return None
+
+    r = raw.strip().lower()
+
+    # Respuesta exacta de una sola palabra
+    if r in ("elevator", "lift", "ascensor"):
+        return "elevator"
+    if r in ("stairs", "staircase", "escaleras", "escalera"):
+        return "stairs"
+    if r in ("sign", "directory", "cartel", "señal"):
+        return "sign"
+    if r in ("door", "puerta"):
+        return "door"
+    if r == "other":
+        return "other"
+
+    # Respuesta que contiene la palabra clave (ej: "I see an elevator")
+    if any(w in r for w in ("elevator", "lift", "ascensor")):
+        return "elevator"
+    if any(w in r for w in ("stair", "escalera", "escaleras", "steps")):
+        return "stairs"
+    if any(w in r for w in ("directory", "cartel", "facilities", "floor plan", "sign")):
+        return "sign"
+    if "door" in r or "puerta" in r:
+        return "door"
+
+    # Respuesta con texto de imagen (building codes, etc.) → no es una clasificación válida
+    # Dejar que el chain de cartel lo intente
+    return None
+
+
+def _floor_text_local(floor: int) -> str:
+    """Convierte número de planta a texto legible en inglés."""
+    if floor == -1: return "the basement"
+    if floor == 0:  return "the ground floor"
+    if floor == 1:  return "the 1st floor"
+    if floor == 2:  return "the 2nd floor"
+    if floor == 3:  return "the 3rd floor"
+    return f"floor {floor}"
+
+
+def get_paligemma_prompts(campus_graph: Optional[dict] = None) -> list[str]:
     """
     Retorna una lista de prompts en inglés para usar con Paligemma.
     Usa los prompts del Agente 1 (Identificador) que detecta TODO en la imagen.
     Se intentan en orden: si uno falla (respuesta "unanswerable"), se prueba el siguiente.
-    
+
+    Args:
+        campus_graph: Grafo del campus (opcional) para inyectar códigos de edificios dinámicamente.
+
     Returns:
         Lista de prompts en inglés del Agente 1, ordenados de más específico a más general
     """
-    # Usar los prompts del Agente 1 (Identificador)
-    return Agent1_Identifier.get_prompts()
+    building_codes = ["G", "CD", "H"]
+    return Agent1_Identifier.get_prompts(building_codes=building_codes)
 
 
 def parse_location_from_paligemma_response(response: str, campus_graph: dict) -> dict:
@@ -607,7 +730,7 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     response_lower = response.lower()
     
     # Primero creamos un mapeo de todos los edificios para buscarlos fácilmente
-    # Mapeamos tanto códigos (EPS, CD) como nombres completos
+    # Mapeamos tanto códigos (G, CD) como nombres completos
     building_map = {}
     name_to_id = {}
     for building in campus_graph.get("buildings", []):
@@ -623,27 +746,58 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
         if "politécnica" in full_name or "politecnica" in full_name:
             name_to_id["escuela politecnica"] = building_id
             name_to_id["escuela politécnica"] = building_id
+            # G es el nombre del edificio (building ID 1)
+            name_to_id["g"] = building_id
         if "deportivo" in full_name:
             name_to_id["centro deportivo"] = building_id
     
     # Buscar el código del edificio en la respuesta
     building_found = None
-    building_codes = ["EPS", "CD", "H", "B", "R", "C1", "C2", "C3", "C4", "C5", "E", "M", "CB", "O", "P", "PS", "MS", "BA", "CSQ", "CC"]
-    
+    building_codes = ["G", "CD", "H"]
+
+    # ── Patrón compacto: PaliGemma responde "g0", "eps1", "h2", "cd-1" ──
+    # Mapa hardcodeado de los 4 códigos válidos → ID de edificio en campus_graph
+    # G mapea al ID 1
+    _compact_code_map = {"G": 1, "CD": 2, "H": 3}
+    for b in campus_graph.get("buildings", []):
+        bname = b.get("name", "").upper()
+        if bname in _compact_code_map and b.get("id") is not None:
+            _compact_code_map[bname] = b["id"]
+
+    compact_match = re.search(
+        r'\b(eps|g|cd|h)(\s*-?\s*\d+)\b',
+        response.strip(), re.IGNORECASE
+    )
+    if compact_match:
+        compact_code = compact_match.group(1).upper()
+        compact_floor_str = compact_match.group(2).replace(" ", "")
+        try:
+            compact_floor = int(compact_floor_str)
+            if -1 <= compact_floor <= 4:
+                building_id_compact = _compact_code_map.get(compact_code)
+                if building_id_compact is not None:
+                    result["building"] = building_id_compact
+                    result["floor"] = compact_floor
+                    print("   [compact] Detectado '{}' -> building={}({}), floor={}".format(
+                        compact_match.group(), compact_code, building_id_compact, compact_floor))
+                    return result
+        except ValueError:
+            pass
+
     # Si la respuesta es muy corta (1-3 caracteres), puede ser solo el código del edificio
-    # Ej: "H", "EPS", "CD"
+    # Ej: "H", "G", "CD"
     response_stripped = response.strip()
     if len(response_stripped) <= 3:
         # Buscar si coincide exactamente con algún código (case-insensitive)
         for code in building_codes:
             if response_stripped.upper() == code.upper():
                 building_found = code.upper()
-                print(f"   ✅ Código detectado directamente: {building_found}")
+                print(f"   Código detectado directamente: {building_found}")
                 break
     
     # Si no encontramos código directo, buscamos con patrones
     if not building_found:
-        # Primero intentamos buscar códigos directamente (ej: "EPS", "CD", "H")
+        # Primero intentamos buscar códigos directamente (ej: "G", "CD", "H")
         # Para códigos de una letra como "H", necesitamos patrones más específicos
         for code in building_codes:
             # Patrón 1: Palabra completa (ej: "building H" o "H building" o "edificio H")
@@ -708,10 +862,10 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
                     match = re.search(pattern, response, re.IGNORECASE)
                     if match:
                         building_found = code.upper()
-                        print(f"   ⚠️ PROBLEMA: Patrón #{pattern_idx+1} coincidió para '{code}'")
-                        print(f"   📋 Patrón: {pattern}")
-                        print(f"   📋 Match encontrado: '{match.group()}' en posición {match.start()}-{match.end()}")
-                        print(f"   📋 Respuesta completa: '{response}'")
+                        print(f"   PROBLEMA: Patrón #{pattern_idx+1} coincidió para '{code}'")
+                        print(f"   Patrón: {pattern}")
+                        print(f"   Match encontrado: '{match.group()}' en posición {match.start()}-{match.end()}")
+                        print(f"   Respuesta completa: '{response}'")
                         # Si detectamos algo sospechoso, no confiar en este resultado
                         if code.upper() == 'B' and '11' in response.lower():
                             print(f"   ❌ FALSO POSITIVO DETECTADO: 'B' en '11 building' - IGNORANDO")
@@ -724,7 +878,12 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
     
     # Si no encontramos código, buscamos nombres completos
     if not building_found:
+        valid_codes_lower = {c.lower() for c in building_codes}
         for name, building_id in name_to_id.items():
+            # Skip single-letter names that are not a valid building code —
+            # they would cause false positives (e.g. "p" matching "planta").
+            if len(name) == 1 and name not in valid_codes_lower:
+                continue
             if name in response_lower:
                 # Encontrar el código correspondiente al nombre
                 for b in campus_graph.get("buildings", []):
@@ -753,7 +912,7 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
         else:
             building_id = building_map.get(building_found)
             result["building"] = building_id
-            print(f"   🏢 Edificio encontrado: código='{building_found}' -> ID={building_id}")
+            print(f"   Edificio encontrado: código='{building_found}' -> ID={building_id}")
     
     # Ahora buscamos el número de planta
     floor_found = None
@@ -787,7 +946,8 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
         word_to_num = {
             "primera": 1, "segunda": 2, "tercera": 3,
             "primero": 1, "segundo": 2, "tercero": 3,
-            "sótano": -1, "sotano": -1, "planta baja": 0, "baja": 0
+            "sótano": -1, "sotano": -1, "planta baja": 0, "baja": 0,
+            "agora": -1, "ágora": -1,
         }
         for word, num in word_to_num.items():
             if word in response_lower and num in [-1, 0, 1, 2]:
@@ -807,6 +967,16 @@ def parse_location_from_paligemma_response(response: str, campus_graph: dict) ->
         result["error"] = "No se pudo identificar la planta en la respuesta de Paligemma"
     
     return result
+
+
+def _building_name(building_id: Optional[int], campus_graph: dict) -> str:
+    """Devuelve el nombre corto del edificio por su ID."""
+    if building_id is None:
+        return "unknown"
+    for b in campus_graph.get("buildings", []):
+        if b.get("id") == building_id:
+            return b.get("name", f"Building {building_id}")
+    return f"Building {building_id}"
 
 
 def generate_clarification_question(building: Optional[int], floor: Optional[int], campus_graph: dict) -> str:
@@ -850,153 +1020,453 @@ def generate_clarification_question(building: Optional[int], floor: Optional[int
 
 
 @app.post("/api/analyze-image", response_model=ImageAnalysisResponse)
-async def analyze_image(file: UploadFile = File(...)):
+async def analyze_image(
+    file: UploadFile = File(...),
+    current_building: Optional[str] = Form(None),
+    current_floor: Optional[str] = Form(None),
+):
     """
     Analiza una imagen con Paligemma para extraer el edificio y la planta.
-    Usa el endpoint de Colab si está configurado, sino intenta cargar localmente.
+    Opcionalmente recibe estado actual (building, floor) para mensajes de ascensor/escaleras.
     
     Args:
         file: Archivo de imagen (JPEG, PNG)
+        current_building: ID de edificio si ya se conoce (opcional)
+        current_floor: Número de planta si ya se conoce (opcional)
         
     Returns:
         ImageAnalysisResponse con building, floor y raw_response
     """
     try:
-        # Validar que la imagen sea del formato correcto
-        if file.content_type not in ["image/jpeg", "image/jpg", "image/png"]:
+        # Validar que la imagen sea del formato correcto (permitir octet-stream por compatibilidad con Android)
+        allowed_types = ["image/jpeg", "image/jpg", "image/png", "application/octet-stream"]
+        if file.content_type not in allowed_types:
             raise HTTPException(
                 status_code=400,
-                detail="Formato de imagen no soportado. Use JPEG o PNG."
+                detail=f"Formato de imagen no soportado: {file.content_type}. Use JPEG o PNG."
             )
-        
+
         # Leer los bytes de la imagen
         image_data = await file.read()
-        
+
+        # DEBUG: guardar imagen recibida para verificar qué llega realmente
+        _debug_path = Path("debug_received_image.jpg")
+        _debug_path.write_bytes(image_data)
+        print(f"\n   [DEBUG] Imagen guardada en {_debug_path.resolve()} ({len(image_data)} bytes)")
+
         # Necesitamos el campus graph para mapear nombres a IDs
         campus_graph = load_campus_graph()
-        
-        # Obtener lista de prompts para intentar secuencialmente
-        prompts = get_paligemma_prompts()
-        
+
+        # Estado actual opcional (enviado por la app cuando ya tiene building/floor de una foto anterior)
+        known_building: Optional[int] = None
+        known_floor: Optional[int] = None
+        if current_floor is not None and str(current_floor).strip():
+            try:
+                known_floor = int(str(current_floor).strip())
+            except ValueError:
+                pass
+        if current_building is not None and str(current_building).strip():
+            try:
+                known_building = int(str(current_building).strip())
+            except ValueError:
+                pass
+
+        def _call_colab(prompt_text: str, skip_sorry_filter: bool = False, max_tokens: int | None = None) -> str | None:
+            """Llama al endpoint /analyze de Colab y devuelve la respuesta en texto, o None."""
+            if not prompt_text.strip().startswith("<image>"):
+                prompt_text = "<image>\n" + prompt_text
+            payload: dict = {"prompt": prompt_text}
+            if max_tokens is not None:
+                payload["max_tokens"] = str(max_tokens)
+            try:
+                resp = requests.post(
+                    f"{COLAB_API_URL}/analyze",
+                    files={"file": (file.filename, image_data, file.content_type)},
+                    data=payload,
+                    timeout=30,
+                )
+                if resp.status_code != 200:
+                    print(f"   [DEBUG Colab] status={resp.status_code} body={resp.text[:200]!r}")
+                    return None
+                d = resp.json()
+                raw = (d.get("response") or "").strip()
+                if not d.get("success"):
+                    print(f"   [DEBUG Colab] success=False response={raw!r} error={d.get('error')!r}")
+                    return None
+                _invalid = {"none", "null", "n/a", "nothing", "unanswerable", "no", ""}
+                if not raw or raw.lower() in _invalid or "unanswerable" in raw.lower():
+                    return None
+                if not skip_sorry_filter and "sorry" in raw.lower():
+                    print(f"   [DEBUG Colab] respuesta descartada (sorry): {raw!r}")
+                    return None
+                return raw
+            except Exception as e:
+                print(f"   [DEBUG Colab] excepción: {e}")
+                return None
+
+        def _parse_floor_direct(text: str) -> int | None:
+            """Extrae un número de planta directamente de una cadena corta."""
+            if not text:
+                return None
+            import re as _re
+            m = _re.search(r"(?<!\d)(-?\d+)(?!\d)", text.strip())
+            if m:
+                val = int(m.group(1))
+                if -5 <= val <= 10:
+                    return val
+            return None
+
+        prompts = get_paligemma_prompts(campus_graph)
+        # Clasificador: 64 tokens. Resto (sign, fallbacks, landmarks): 256 como antes (detectar G, 0.3, etc.)
+        DEFAULT_MAX_TOKENS = 256
+
         # Intentar usar Colab primero (más rápido con GPU)
         if COLAB_API_URL:
             try:
-                # Intentar cada prompt secuencialmente hasta que uno funcione
-                for prompt_idx, prompt in enumerate(prompts):
-                    try:
-                        # Enviar la imagen al servidor de Colab con el prompt actual
-                        files = {"file": (file.filename, image_data, file.content_type)}
-                        data_form = {"prompt": prompt}
-                        response = requests.post(
-                            f"{COLAB_API_URL}/analyze",
-                            files=files,
-                            data=data_form,
-                            timeout=30
+                # ── Step 0: Clasificar el tipo de imagen ─────────────────────────────
+                classifier_prompt = CLASSIFIER_PROMPT
+                raw_type = _call_colab(classifier_prompt, skip_sorry_filter=True, max_tokens=64)
+                image_type = _normalize_image_type(raw_type)
+                print("\n---------- CLASSIFIER ----------")
+                print(f"Prompt: {classifier_prompt}")
+                print(f"PaliGemma response: {raw_type!r}")
+                print(f"Category: {image_type!r}")
+                print("-------------------------------")
+
+                # ── Elevator ──────────────────────────────────────────────────────────
+                if image_type == "elevator":
+                    elevator_prompt = Agent1_Identifier.get_elevator_prompt()
+                    print("\n---------- ELEVATOR ----------")
+                    print(f"Prompt: {elevator_prompt}")
+                    raw_elev = _call_colab(elevator_prompt, skip_sorry_filter=True, max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"PaliGemma response (open/closed): {raw_elev!r}")
+                    r_elev = (raw_elev or "").lower()
+                    elevator_state = "open" if "open" in r_elev else "closed"
+                    # Intentar extraer planta del panel del ascensor
+                    floor_from_panel: Optional[int] = None
+                    panel_prompt = Agent1_Identifier.get_elevator_panel_floor_prompt()
+                    print(f"Prompt: {panel_prompt}")
+                    raw_panel = _call_colab(panel_prompt, skip_sorry_filter=True, max_tokens=32)
+                    if raw_panel:
+                        floor_from_panel = _parse_floor_direct(raw_panel)
+                    print(f"PaliGemma response (panel floor): {raw_panel!r} -> {floor_from_panel}")
+                    print("----------------------------")
+                    effective_floor = known_floor if known_floor is not None else floor_from_panel
+                    has_full_state = known_building is not None and effective_floor is not None
+                    if has_full_state:
+                        return ImageAnalysisResponse(
+                            success=True,
+                            raw_response=raw_elev or "",
+                            image_type="elevator",
+                            elevator_state=elevator_state,
+                            floor=effective_floor,
+                            needs_clarification=False,
+                            clarification_question=None,
                         )
-                        
-                        if response.status_code == 200:
-                            data = response.json()
-                            if data.get("success"):
-                                raw_response_original = data.get("response", "").strip()
-                                raw_response_lower = raw_response_original.lower()
-                                
-                                # Logging para debugging
-                                print(f"   📝 Prompt {prompt_idx + 1}/{len(prompts)} - Respuesta de Paligemma: '{raw_response_original}'")
-                                
-                                # Si la respuesta es "unanswerable", intentar siguiente prompt
-                                if "unanswerable" in raw_response_lower:
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: 'unanswerable', intentando siguiente...")
-                                    continue
-                                
-                                # Usar Agente 1 para parsear respuesta completa (incluye landmarks)
-                                agent1_result = Agent1_Identifier.parse_response(raw_response_original, campus_graph)
-                                
-                                # También usar el parser original para compatibilidad
-                                parsed = parse_location_from_paligemma_response(raw_response_original, campus_graph)
-                                
-                                # Priorizar Agente 1, pero usar parser original como fallback
-                                building_id = agent1_result.get("building") or parsed.get("building")
-                                floor_num = agent1_result.get("floor") or parsed.get("floor")
-                                landmarks = agent1_result.get("landmarks", [])
-                                resources = agent1_result.get("resources", [])
-                                
-                                # Si tenemos ambos, éxito completo
-                                if building_id is not None and floor_num is not None:
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Éxito completo")
-                                    print(f"   🎯 Agente 1 detectó landmarks: {landmarks}")
-                                    print(f"   🎯 Agente 1 detectó recursos: {resources}")
-                                    return ImageAnalysisResponse(
-                                        success=True,
-                                        building=building_id,
-                                        floor=floor_num,
-                                        raw_response=data.get("response", ""),
-                                        error=None,
-                                        needs_clarification=False,
-                                        clarification_question=None,
-                                        landmarks=landmarks if landmarks else None,
-                                        resources=resources if resources else None
-                                    )
-                                
-                                # Si tenemos información parcial, necesitamos clarificación
-                                elif building_id is not None or floor_num is not None:
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Información parcial detectada")
-                                    print(f"   🎯 Agente 1 detectó landmarks: {landmarks}")
-                                    question = generate_clarification_question(building_id, floor_num, campus_graph)
-                                    return ImageAnalysisResponse(
-                                        success=False,
-                                        building=building_id,
-                                        floor=floor_num,
-                                        raw_response=data.get("response", ""),
-                                        error=None,
-                                        needs_clarification=True,
-                                        clarification_question=question,
-                                        landmarks=landmarks if landmarks else None,
-                                        resources=resources if resources else None
-                                    )
-                                
-                                # Si no tenemos nada, intentar siguiente prompt
-                                else:
-                                    print(f"   Prompt {prompt_idx + 1}/{len(prompts)}: Sin información, intentando siguiente...")
-                                    if prompt_idx < len(prompts) - 1:
-                                        continue
-                                    else:
-                                        # Último prompt, necesitamos clarificación completa
-                                        question = generate_clarification_question(None, None, campus_graph)
-                                        return ImageAnalysisResponse(
-                                            success=False,
-                                            building=None,
-                                            floor=None,
-                                            raw_response=data.get("response", ""),
-                                            error=None,
-                                            needs_clarification=True,
-                                            clarification_question=question
-                                        )
-                            else:
-                                # Si Colab devuelve error, intentar siguiente prompt
-                                if prompt_idx < len(prompts) - 1:
-                                    continue
-                                else:
-                                    raise Exception(data.get("error", "Error en Colab"))
+                    # Estado incompleto — construir mensaje según qué sabemos
+                    open_closed = "open" if elevator_state == "open" else "closed"
+                    sign_hint = "Directory signs are usually right next to the elevator and the stairs."
+                    if effective_floor is None and known_building is None:
+                        msg = (
+                            f"In front of you there is an elevator with the doors {open_closed}. "
+                            "I still don't know your location. "
+                            "I need to know both your building and floor. "
+                            f"{sign_hint} You can also tell me by voice."
+                        )
+                    elif floor_from_panel is not None and known_building is None:
+                        floor_text = _floor_text_local(floor_from_panel)
+                        msg = (
+                            f"In front of you there is an elevator with the doors {open_closed}. "
+                            f"I can see the button shows floor {floor_from_panel}, so you are on {floor_text}. "
+                            "I still need to know your building. "
+                            f"{sign_hint} You can also tell me by voice."
+                        )
+                    elif known_floor is not None and known_building is None:
+                        floor_text = _floor_text_local(known_floor)
+                        msg = (
+                            f"In front of you there is an elevator with the doors {open_closed}. "
+                            f"I know you are on {floor_text}, but I still need to know your building. "
+                            f"{sign_hint} You can also tell me by voice."
+                        )
+                    else:
+                        msg = (
+                            f"In front of you there is an elevator with the doors {open_closed}. "
+                            "I still need more information about your location. "
+                            f"{sign_hint} You can also tell me by voice."
+                        )
+                    return ImageAnalysisResponse(
+                        success=False,
+                        raw_response=raw_elev or "",
+                        image_type="elevator",
+                        elevator_state=elevator_state,
+                        floor=effective_floor,
+                        building=known_building,
+                        needs_clarification=True,
+                        clarification_question=msg,
+                    )
+
+                # ── Stairs ────────────────────────────────────────────────────────────
+                if image_type == "stairs":
+                    stairs_prompt = Agent1_Identifier.get_stairs_prompt()
+                    print("\n---------- STAIRS ----------")
+                    print(f"Prompt: {stairs_prompt}")
+                    raw_stairs = _call_colab(stairs_prompt, skip_sorry_filter=True, max_tokens=8)
+                    print(f"PaliGemma response: {raw_stairs!r}")
+                    r_stairs = (raw_stairs or "").lower()
+                    if "up" in r_stairs and "down" in r_stairs:
+                        stairs_direction = "both"
+                    elif "up" in r_stairs:
+                        stairs_direction = "up"
+                    elif "down" in r_stairs:
+                        stairs_direction = "down"
+                    else:
+                        stairs_direction = "both"
+                    # Intentar extraer número de planta de la pared
+                    floor_stairs: Optional[int] = None
+                    stairs_floor_prompt = Agent1_Identifier.get_stairs_floor_prompt()
+                    print(f"Prompt: {stairs_floor_prompt}")
+                    raw_stairs_floor = _call_colab(stairs_floor_prompt, skip_sorry_filter=True, max_tokens=8)
+                    if raw_stairs_floor:
+                        floor_stairs = _parse_floor_direct(raw_stairs_floor)
+                    print(f"PaliGemma response (wall floor): {raw_stairs_floor!r} -> {floor_stairs}")
+                    print("----------------------------")
+                    effective_floor = known_floor if known_floor is not None else floor_stairs
+                    return ImageAnalysisResponse(
+                        success=False,
+                        raw_response=raw_stairs or "",
+                        image_type="stairs",
+                        stairs_direction=stairs_direction,
+                        building=known_building,
+                        floor=effective_floor,
+                        needs_clarification=True,
+                        clarification_question="stairs",
+                    )
+
+                # ── Door ──────────────────────────────────────────────────────────────
+                if image_type == "door":
+                    door_prompt = Agent1_Identifier.get_door_prompt()
+                    print("\n---------- DOOR ----------")
+                    print(f"Prompt: {door_prompt}")
+                    raw_door = _call_colab(door_prompt, skip_sorry_filter=True, max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"PaliGemma response: {raw_door!r}")
+                    print("----------------------------")
+                    floor_from_door = extract_floor_from_room_code(raw_door or "")
+                    return ImageAnalysisResponse(
+                        success=True,
+                        raw_response=raw_door or "",
+                        floor=floor_from_door,
+                        image_type="door",
+                        needs_clarification=False,
+                        clarification_question=None,
+                        confidence="medium" if floor_from_door is not None else "none",
+                    )
+
+                # ── Other / no reconocido ─────────────────────────────────────────────
+                if image_type == "other":
+                    print(f"[CLASSIFY] Imagen no reconocida, solicitando cartel al usuario")
+                    return ImageAnalysisResponse(
+                        success=False,
+                        raw_response=raw_type or "",
+                        image_type="other",
+                        needs_clarification=True,
+                        clarification_question="I cannot identify the navigation element. Please take a photo of a directory sign.",
+                    )
+
+                # ── Sign (o clasificador falló) → prompt para edificio y planta (max_tokens=256 como antes) ─────
+                building_codes = ["G", "CD", "H"]  # lista corta para prompt directo (detecta bien G 0, etc.)
+                sign_prompt = Agent1_Identifier.get_sign_prompt(building_codes)
+                print("\n---------- SIGN ----------")
+                print(f"Prompt: {sign_prompt}")
+                raw = _call_colab(sign_prompt, max_tokens=DEFAULT_MAX_TOKENS)
+                print(f"PaliGemma response: {raw!r}")
+                print("-------------------------------")
+
+                # Intentar parsear como JSON primero
+                json_parsed = parse_paligemma_json(raw or "")
+
+                agent1 = Agent1_Identifier.parse_response(raw or "", campus_graph)
+                parsed = parse_location_from_paligemma_response(raw or "", campus_graph)
+
+                building_id = agent1.get("building") or parsed.get("building")
+                floor_num   = agent1.get("floor")   or parsed.get("floor")
+
+                # ── UFV-only sign (no building code) ───────────────────────────────
+                # If PaliGemma responds with "ufv …" the sign shows only the floor.
+                # Use a targeted prompt to extract the floor reliably.
+                if raw and "ufv" in raw.lower():
+                    print(f"\n   [ufv-sign] Response starts with 'ufv' → no building code on this sign")
+                    building_id = None  # force: no building extractable from this sign
+                    ufv_floor_prompt = (
+                        "<image>\n"
+                        "Look at the top right corner of this sign. "
+                        "There is a large building letter (e.g. G, H, CD). "
+                        "Directly below that letter is the floor indicator. "
+                        "The floor can be a number (e.g. -1, 0, 1, 2) or a word (e.g. AGORA). "
+                        "Reply with ONLY that number or word, nothing else."
+                    )
+                    print(f"   [ufv-sign] PROMPT: {ufv_floor_prompt!r}")
+                    raw_ufv = _call_colab(ufv_floor_prompt, max_tokens=32)
+                    print(f"   [ufv-sign] RESPUESTA: {raw_ufv!r}")
+                    if raw_ufv:
+                        _ufv_word_map = {"agora": -1, "ágora": -1}
+                        ufv_word = raw_ufv.strip().lower()
+                        if ufv_word in _ufv_word_map:
+                            floor_num = _ufv_word_map[ufv_word]
+                            print(f"   [ufv-sign] Planta extraída (palabra): {raw_ufv.strip()} → {floor_num}")
                         else:
-                            # Error HTTP, intentar siguiente prompt
-                            if prompt_idx < len(prompts) - 1:
-                                continue
-                            else:
-                                raise Exception(f"Error en Colab: {response.status_code}")
-                    except requests.exceptions.RequestException:
-                        # Error de conexión, intentar siguiente prompt
-                        if prompt_idx < len(prompts) - 1:
-                            continue
-                        else:
-                            raise
-                
-                # Si llegamos aquí, todos los prompts fallaron
-                raise Exception("Todos los prompts fallaron al analizar la imagen")
+                            floor_from_ufv = _parse_floor_direct(raw_ufv)
+                            if floor_from_ufv is not None:
+                                floor_num = floor_from_ufv
+                                print(f"   [ufv-sign] Planta extraída: {floor_num}")
+
+                # Si el JSON respondió con confidence, usarlo.
+                # Si no (PaliGemma respondió en texto plano), inferirlo de los datos detectados.
+                json_confidence = json_parsed.get("confidence")
+                if json_confidence and json_confidence != "none":
+                    confidence = json_confidence
+                elif building_id is not None and floor_num is not None:
+                    confidence = "high"
+                elif building_id is not None or floor_num is not None:
+                    confidence = "medium"
+                else:
+                    confidence = "none"
+
+                agent1["confidence"] = confidence
+                landmarks   = agent1.get("landmarks", [])
+                resources   = agent1.get("resources", [])
+
+                # Si el JSON dio building_code, usarlo directamente
+                if json_parsed.get("building_code"):
+                    bc = json_parsed["building_code"].upper()
+                    for b in campus_graph.get("buildings", []):
+                        if b.get("name", "").upper() == bc:
+                            building_id = b["id"]
+                            break
+                if json_parsed.get("floor") is not None:
+                    try:
+                        floor_num = int(json_parsed["floor"])
+                    except (ValueError, TypeError):
+                        pass
+                if json_parsed.get("landmarks"):
+                    landmarks = json_parsed["landmarks"] or landmarks
+
+                # Fallback 1: JSON corto (siempre se intenta si falta planta) ──
+                if floor_num is None:
+                    print(f"\n   [fallback-1] PROMPT: {prompts[1]!r}")
+                    raw2 = _call_colab(prompts[1], max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"   [fallback-1] RESPUESTA: '{raw2}'")
+                    if raw2:
+                        j2 = parse_paligemma_json(raw2)
+                        if j2.get("floor") is not None:
+                            try:
+                                floor_num = int(j2["floor"])
+                            except (ValueError, TypeError):
+                                pass
+                        if floor_num is None:
+                            p2 = parse_location_from_paligemma_response(raw2, campus_graph)
+                            floor_num = p2.get("floor") or _parse_floor_direct(raw2)
+
+                # Fallback 2: número tras PLANTA/FLOOR ──
+                if floor_num is None:
+                    print(f"\n   [fallback-2] PROMPT: {prompts[2]!r}")
+                    raw3 = _call_colab(prompts[2], max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"   [fallback-2] RESPUESTA: '{raw3}'")
+                    floor_num = _parse_floor_direct(raw3)
+
+                # Fallback 3: código de aula (Aula 2.1, Lab 1.3...) ──
+                if floor_num is None:
+                    print(f"\n   [fallback-room] PROMPT: {prompts[4]!r}")
+                    raw5 = _call_colab(prompts[4], max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"   [fallback-room] RESPUESTA: '{raw5}'")
+                    if raw5:
+                        floor_from_room = extract_floor_from_room_code(raw5)
+                        if floor_from_room is not None:
+                            floor_num = floor_from_room
+                            if confidence == "none":
+                                confidence = "medium"
+                            print(f"   [fallback-room] Planta extraída de código de aula: {floor_num}")
+
+                # Fallback 4: lector genérico de texto visible ──
+                if floor_num is None:
+                    print(f"\n   [fallback-text] PROMPT: {prompts[5]!r}")
+                    raw6 = _call_colab(prompts[5], max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"   [fallback-text] RESPUESTA: '{raw6}'")
+                    if raw6:
+                        floor_from_text = extract_floor_from_room_code(raw6)
+                        if floor_from_text is not None:
+                            floor_num = floor_from_text
+                            if confidence == "none":
+                                confidence = "medium"
+                            print(f"   [fallback-text] Planta extraída de texto genérico: {floor_num}")
+                        if floor_num is None:
+                            p6 = parse_location_from_paligemma_response(raw6, campus_graph)
+                            floor_num = p6.get("floor") or _parse_floor_direct(raw6)
+                            if floor_num is not None and confidence == "none":
+                                confidence = "medium"
+
+                # Fallback 5: solo número decimal de planta (0.3, 1.2...) ──
+                if floor_num is None:
+                    print(f"\n   [fallback-decimal] PROMPT: {prompts[6]!r}")
+                    raw7 = _call_colab(prompts[6], max_tokens=DEFAULT_MAX_TOKENS)
+                    print(f"   [fallback-decimal] RESPUESTA: '{raw7}'")
+                    if raw7:
+                        floor_from_decimal = extract_floor_from_room_code(raw7)
+                        if floor_from_decimal is not None:
+                            floor_num = floor_from_decimal
+                            if confidence == "none":
+                                confidence = "medium"
+                            print(f"   [fallback-decimal] Planta extraída de decimal: {floor_num}")
+
+                # Landmarks: desactivado de momento para categoría sign (solo edificio y planta)
+                # if not landmarks:
+                #     print(f"\n   [landmarks] PROMPT: {prompts[3]!r}")
+                #     raw4 = _call_colab(prompts[3], max_tokens=DEFAULT_MAX_TOKENS)
+                #     ...
+
+                # Clasificador indicó "sign" (o no clasificó → asumimos sign)
+                image_type = "sign"
+
+                print(f"   Resultado -> building={building_id}, floor={floor_num}, confidence={confidence}, image_type={image_type}")
+
+                if building_id is not None and floor_num is not None:
+                    return ImageAnalysisResponse(
+                        success=True,
+                        building=building_id,
+                        floor=floor_num,
+                        raw_response=raw or "",
+                        error=None,
+                        needs_clarification=False,
+                        clarification_question=None,
+                        landmarks=landmarks if landmarks else None,
+                        resources=resources if resources else None,
+                        confidence=confidence,
+                        image_type=image_type,
+                        elevator_state=None,
+                        stairs_direction=None,
+                    )
+                else:
+                    # Es un cartel pero falta información (edificio o planta)
+                    question = generate_clarification_question(building_id, floor_num, campus_graph)
+                    return ImageAnalysisResponse(
+                        success=building_id is not None or floor_num is not None,
+                        building=building_id,
+                        floor=floor_num,
+                        raw_response=raw or "",
+                        error=None,
+                        needs_clarification=True,
+                        clarification_question=question,
+                        landmarks=landmarks if landmarks else None,
+                        resources=resources if resources else None,
+                        confidence=confidence,
+                        image_type=image_type,
+                        elevator_state=None,
+                        stairs_direction=None,
+                    )
                 
             except requests.exceptions.RequestException as e:
                 # Si falla la conexión con Colab, intentamos localmente
                 error_msg = f"Error de conexión con Colab: {str(e)}"
-                print(f"⚠️ {error_msg}")
+                print(f"{error_msg}")
                 print(f"   URL intentada: {COLAB_API_URL}/analyze")
                 print("   Intentando cargar modelo localmente...")
                 # Fallback a local
@@ -1004,7 +1474,7 @@ async def analyze_image(file: UploadFile = File(...)):
             except Exception as e:
                 # Cualquier otro error con Colab, también intentamos local
                 error_msg = f"Error inesperado con Colab: {str(e)}"
-                print(f"⚠️ {error_msg}")
+                print(f"{error_msg}")
                 print("   Intentando cargar modelo localmente...")
                 # Fallback a local
                 return await _analyze_image_local(image_data, campus_graph, file.filename, file.content_type)
@@ -1045,7 +1515,7 @@ async def _analyze_image_local(image_data: bytes, campus_graph: dict, filename: 
         prompts = get_paligemma_prompts()
         
         # Intentar cada prompt secuencialmente hasta que uno funcione
-        from inference import run_single_inference
+        from evaluation.inference import run_single_inference
         
         for prompt_idx, prompt in enumerate(prompts):
             try:
@@ -1186,7 +1656,7 @@ def validate_user_response(user_response: str, campus_graph: dict) -> Tuple[bool
     # Si no se pudo extraer nada y la respuesta es larga, puede ser que no sea relevante
     if parsed.get("building") is None and parsed.get("floor") is None:
         # Verificar si contiene palabras relacionadas con edificios o plantas
-        building_keywords = ["building", "edificio", "floor", "planta", "ground", "first", "second", "third", "h", "eps", "cd"]
+        building_keywords = ["building", "edificio", "floor", "planta", "ground", "first", "second", "third", "h", "g", "cd"]
         has_keywords = any(keyword in response_lower for keyword in building_keywords)
         
         # Si tiene palabras clave pero no se pudo parsear, puede ser ambigua
@@ -1243,19 +1713,19 @@ async def clarify_location(request: ClarificationRequest):
         
         # Parsear la respuesta del usuario para extraer edificio y/o planta
         parsed = parse_location_from_paligemma_response(user_response, campus_graph)
-        print(f"📝 Respuesta del usuario parseada: {parsed}")
-        print(f"📝 Contexto previo: building={building_id}, floor={floor_num}")
+        print(f"Respuesta del usuario parseada: {parsed}")
+        print(f"Contexto previo: building={building_id}, floor={floor_num}")
         
         # Combinar información previa con la nueva
         final_building = building_id if building_id is not None else parsed.get("building")
         final_floor = floor_num if floor_num is not None else parsed.get("floor")
         
-        print(f"📝 Información combinada: building={final_building}, floor={final_floor}")
+        print(f"Información combinada: building={final_building}, floor={final_floor}")
         
         # Si ahora tenemos ambos, éxito
         if final_building is not None and final_floor is not None:
-            print(f"✅ Ubicación completa: building={final_building}, floor={final_floor}")
-            print(f"✅ Devolviendo success=True con building={final_building}, floor={final_floor}")
+            print(f"Ubicación completa: building={final_building}, floor={final_floor}")
+            print(f"Devolviendo success=True con building={final_building}, floor={final_floor}")
             return ClarificationResponse(
                 success=True,
                 building=final_building,
@@ -1294,9 +1764,9 @@ async def get_gps_route(request: GPSRouteRequest):
     Este endpoint evita problemas de CORS al hacer la llamada desde el servidor.
     """
     try:
-        # Coordenadas GPS de los edificios (deben coincidir con las del frontend)
+        # Coordenadas GPS de los edificios
         building_gps = {
-            1: {"lat": 40.44162251912561, "lng": -3.8336784343565533, "name": "EPS"},
+            1: {"lat": 40.44162251912561, "lng": -3.8336784343565533, "name": "G"},
             2: {"lat": 40.44139393985062, "lng": -3.833504032472637, "name": "CD"},
             3: {"lat": 40.44188587337159, "lng": -3.83444151925449, "name": "Edificio H"}
         }
@@ -1309,18 +1779,21 @@ async def get_gps_route(request: GPSRouteRequest):
                 success=False,
                 error=f"No GPS coordinates available for buildings: {request.from_building} -> {request.to_building}"
             )
-        
-        # API Key de Google Maps (debe estar configurada)
-        # IMPORTANTE: Esta API Key NO debe tener restricciones de referer (sitios web)
-        # porque se llama desde el servidor, no desde el navegador
-        # Opción 1: Usar la misma API Key pero sin restricciones de referer
-        # Opción 2: Crear una API Key separada sin restricciones para el backend
-        GOOGLE_MAPS_API_KEY = "***REMOVED***"
-        
+
+        maps_key = (os.getenv("GOOGLE_MAPS_API_KEY") or "").strip()
+        if not maps_key:
+            return GPSRouteResponse(
+                success=False,
+                error="GOOGLE_MAPS_API_KEY no configurada. Añádela al entorno o al fichero .env en la raíz del proyecto.",
+            )
+
         origin = f"{origin_gps['lat']},{origin_gps['lng']}"
         destination = f"{goal_gps['lat']},{goal_gps['lng']}"
-        
-        directions_url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&key={GOOGLE_MAPS_API_KEY}&mode=walking&language=en"
+
+        directions_url = (
+            f"https://maps.googleapis.com/maps/api/directions/json?"
+            f"origin={origin}&destination={destination}&key={maps_key}&mode=walking&language=en"
+        )
         
         response = requests.get(directions_url, timeout=10)
         data = response.json()
@@ -1328,7 +1801,12 @@ async def get_gps_route(request: GPSRouteRequest):
         if data.get("status") == "OK" and data.get("routes") and len(data["routes"]) > 0:
             route = data["routes"][0]
             leg = route["legs"][0]
-            
+
+            print(f"\n[GPS Route] {leg['distance']['text']} — {leg['duration']['text']}")
+            for idx, step in enumerate(leg["steps"]):
+                instruction = re.sub(r'<[^>]+>', '', step["html_instructions"])
+                print(f"  Step {idx + 1}: {instruction} ({step['distance']['text']})")
+
             return GPSRouteResponse(
                 success=True,
                 distance=leg["distance"]["text"],
@@ -1361,40 +1839,47 @@ async def get_gps_route(request: GPSRouteRequest):
 @app.post("/api/conversation", response_model=ConversationResponse)
 async def conversation(request: ConversationRequest):
     """
-    Endpoint para conversación con el agente inteligente.
-    El agente decide qué hacer según el contexto y el mensaje del usuario.
-    
-    Args:
-        request: ConversationRequest con session_id, user_message y opcionalmente image_analysis
-        
-    Returns:
-        ConversationResponse con la respuesta del sistema, acción a tomar y contexto actualizado
+    Unified conversation endpoint. All state routing is handled inside
+    ConversationAgent.process_turn().
     """
     try:
         agent = get_conversation_agent()
-        # Asegurar que image_analysis sea un dict o None
-        image_analysis = request.image_analysis if isinstance(request.image_analysis, dict) else None
-        result = agent.process_user_message(
-            session_id=request.session_id,
-            user_message=request.user_message,
-            image_analysis=image_analysis
+        image_analysis = (
+            request.image_analysis
+            if isinstance(request.image_analysis, dict)
+            else None
         )
-        
-        # Si la acción es generar plan, incluir el request de planificación
-        plan_request = None
-        if result.get("action") == "generate_plan":
-            plan_request = agent.generate_plan_request(request.session_id)
-            result["plan_request"] = plan_request
-        
-        return ConversationResponse(**result)
-    
+        user_message = request.user_message or ""
+
+        result = agent.process_turn(
+            session_id=request.session_id,
+            user_message=user_message if user_message else None,
+            image_analysis=image_analysis,
+        )
+
+        ctx = result.get("context", {})
+        return ConversationResponse(
+            response=result.get("tts_message", ""),
+            action=result.get("action", ""),
+            needs_input=result.get("next_input", "voice") != "none",
+            context=ctx,
+            tts_message=result.get("tts_message"),
+            next_input=result.get("next_input"),
+            plan_request=result.get("plan_request"),
+            location_partial=result.get("location_partial"),
+        )
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return ConversationResponse(
             response=f"Sorry, I encountered an error: {str(e)}",
             action="error",
             needs_input=True,
             context={},
-            error=str(e)
+            error=str(e),
+            tts_message=f"Sorry, I encountered an error: {str(e)}",
+            next_input="voice",
         )
 
 
@@ -1412,26 +1897,74 @@ async def transcribe_audio(file: UploadFile = File(...)):
     try:
         # Leer el audio
         audio_data = await file.read()
+        audio_size = len(audio_data)
+        print(f"\n[TRANSCRIBE] Received audio: filename={file.filename}, "
+              f"content_type={file.content_type}, size={audio_size} bytes")
+
+        if audio_size < 1000:
+            print(f"[TRANSCRIBE] WARNING: Audio too small ({audio_size} bytes), likely empty recording")
+            return TranscribeResponse(
+                success=False,
+                text="",
+                error=f"Audio file too small ({audio_size} bytes). Microphone may not be capturing."
+            )
         
         # Intentar usar Colab primero (más rápido con GPU)
         if COLAB_API_URL:
             try:
                 # Enviar el audio al servidor de Colab
-                files = {"file": (file.filename, audio_data, file.content_type)}
+                send_filename = file.filename or "audio.wav"
+                # Force WAV MIME when filename indicates WAV to avoid
+                # intermittent decoding issues in remote endpoints.
+                if send_filename.lower().endswith(".wav"):
+                    send_content_type = "audio/wav"
+                else:
+                    send_content_type = file.content_type or "application/octet-stream"
+
+                files = {"file": (send_filename, audio_data, send_content_type)}
+                print(f"[TRANSCRIBE] Sending to Colab: {COLAB_API_URL}/transcribe (mime={send_content_type})")
                 response = requests.post(
                     f"{COLAB_API_URL}/transcribe",
                     files=files,
                     timeout=30
                 )
                 
+                print(f"[TRANSCRIBE] Colab response status: {response.status_code}")
                 if response.status_code == 200:
                     data = response.json()
+                    print(f"[TRANSCRIBE] Colab response data: {data}")
                     if data.get("success"):
                         # Corregir transcripción con post-procesamiento
                         transcribed_text = data.get("text", "")
+                        # Retry once when text is empty but audio is large enough.
+                        if not transcribed_text.strip() and audio_size > 120000:
+                            print("[TRANSCRIBE] Empty text with large audio, retrying once...")
+                            retry_files = {"file": ("audio.wav", audio_data, "audio/wav")}
+                            retry_response = requests.post(
+                                f"{COLAB_API_URL}/transcribe",
+                                files=retry_files,
+                                timeout=30
+                            )
+                            print(f"[TRANSCRIBE] Retry status: {retry_response.status_code}")
+                            if retry_response.status_code == 200:
+                                retry_data = retry_response.json()
+                                print(f"[TRANSCRIBE] Retry data: {retry_data}")
+                                if retry_data.get("success"):
+                                    transcribed_text = retry_data.get("text", "")
+
                         campus_graph = load_campus_graph()
                         corrected_text = correct_whisper_transcription(transcribed_text, campus_graph)
-                        
+
+                        print(f"[TRANSCRIBE] Raw:      '{transcribed_text}'")
+                        if corrected_text != transcribed_text:
+                            print(f"[TRANSCRIBE] Corrected: '{corrected_text}'")
+
+                        if not corrected_text.strip():
+                            return TranscribeResponse(
+                                success=False,
+                                text="",
+                                error="No speech detected. Please speak clearly and try again."
+                            )
                         return TranscribeResponse(
                             success=True,
                             text=corrected_text,
@@ -1444,7 +1977,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             
             except requests.exceptions.RequestException as e:
                 error_msg = f"Error de conexión con Colab: {str(e)}"
-                print(f"⚠️ {error_msg}")
+                print(f"{error_msg}")
                 return TranscribeResponse(
                     success=False,
                     text="",
@@ -1454,7 +1987,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             return TranscribeResponse(
                 success=False,
                 text="",
-                error="Colab API URL no configurada. Configura COLAB_API_URL en planning_api.py"
+                error="COLAB_API_URL no configurada. Defínela en el entorno o en .env (URL base del túnel, sin barra final).",
             )
     
     except Exception as e:

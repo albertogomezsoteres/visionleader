@@ -109,7 +109,7 @@ El sistema expone una API FastAPI en `src/api/planning_api.py`:
 
 ```bash
 # Iniciar API
-python run_api.py
+python scripts/run_api.py
 
 # Generar plan (POST /api/plan)
 curl -X POST http://localhost:8000/api/plan \

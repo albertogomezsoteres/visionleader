@@ -1,70 +1,114 @@
-# TFG Alberto Gomez
+# VisionLeaderUFV
 
-TFG (Trabajo Fin de Grado) project repository.
+VisionLeaderUFV is a TFG project that combines vision-language models, speech interaction, and symbolic planning to assist indoor campus navigation (UFV).
 
-## Project: PaliGemma Evaluation for Indoor Navigation Assistance
+## Repository structure
 
-This project evaluates PaliGemma vision-language models for assisting visually impaired users with indoor navigation.
-
-## Project Structure
-
-```
+```text
 tfg/
-├── data/
-│   ├── corridors/      # Corridor images
-│   ├── doors/          # Door images
-│   ├── stairs/         # Staircase images
-│   ├── obstacles/      # Obstacle images
-│   ├── signs/          # Signage images
-│   ├── vizwiz/         # VizWiz filtered images (generated)
-│   └── dataset.json    # Dataset metadata
-├── evaluation/
-│   └── PaliGemma_Evaluation.ipynb   # Main evaluation notebook
-├── scripts/
-│   └── download_vizwiz.py           # VizWiz dataset downloader
-└── docs/
-    └── Project_Proposal_AlbertoGomezSoteres.pdf
+├── .github/             # CI / GitHub metadata
+├── config/              # Runtime config (campus graph, model registry, etc.)
+├── data/                # Campus images + evaluation annotations (JSON, etc.)
+├── dashboard/           # Streamlit app to explore experiment results
+├── docker/              # Docker assets (e.g. Fast Downward)
+├── mobile_app/          # Flutter client (Android / iOS)
+├── notebooks/           # Jupyter / Colab experiments
+├── pddl/                # PDDL domain and generated problem files area
+├── report/              # LaTeX thesis sources (optional in Git; see .gitignore)
+├── results/             # Generated experiment outputs (CSVs, plots); ignored by Git by default
+├── scripts/             # `run_api`, `run_dashboard`, `validate_models`, `detener_api`
+├── env.example          # Template for `.env` (safe to commit)
+└── src/                 # Python backend (FastAPI, navigation, `evaluation/`)
 ```
 
-## Scripts
+## Prerequisites
 
-### Download VizWiz Dataset
+- Python 3.10+
+- Flutter SDK
+- Docker Desktop (for the Fast Downward planner container)
 
-Downloads and filters the VizWiz VQA validation set for navigation-relevant images.
+## Installation
 
-**Option 1: Direct Download** (no dependencies)
 ```bash
-python scripts/download_vizwiz.py
+pip install -r requirements.txt
+pip install -r dashboard/requirements.txt
 ```
 
-**Option 2: Hugging Face** (recommended - more reliable)
+## Environment variables
+
+Secrets and optional service URLs are **not** stored in source code. Copy the template and fill in locally:
+
 ```bash
-pip install datasets pillow
-python scripts/download_vizwiz_hf.py
+# Linux / macOS
+cp env.example .env
+
+# Windows (PowerShell or CMD)
+copy env.example .env
 ```
 
-**What it does:**
-1. Downloads VizWiz VQA validation annotations
-2. Filters for navigation keywords (door, stairs, corridor, exit, elevator, sign, etc.)
-3. Downloads and extracts relevant images
-4. Saves filtered results to `data/vizwiz/` and `data/vizwiz_filtered.json`
+| Variable | Purpose |
+|----------|---------|
+| `HF_TOKEN` | Hugging Face token for downloading / using gated PaliGemma weights when running local inference. |
+| `GOOGLE_MAPS_API_KEY` | Google Maps Directions API key for outdoor routes between campus buildings. |
+| `COLAB_API_URL` | Optional base URL of your ngrok (or similar) tunnel to Colab for remote vision / transcription. |
 
-**Navigation keywords:** door, stairs, hallway, corridor, obstacle, exit, elevator, sign, room, floor, wall, wheelchair, accessible, ramp, entrance, bathroom, railing, etc.
+`python-dotenv` loads `.env` from the project root when you start the API (`load_dotenv` in `planning_api` and `scripts/run_api.py`). The file `.env` is listed in `.gitignore` and must not be committed.
 
-## Running the Evaluation
+## Run backend API
 
-1. Open `evaluation/PaliGemma_Evaluation.ipynb` in Google Colab
-2. Add your Hugging Face token (required for PaliGemma access)
-3. Add your GitHub token (for private repo access)
-4. Run all cells
+From the repository root:
 
-## Dataset
+```bash
+python scripts/run_api.py
+```
 
-The dataset includes:
-- **18 custom images** across 5 categories (corridors, doors, stairs, obstacles, signs)
-- **VizWiz images** (10-12 selected from filtered validation set)
+- API: http://localhost:8000  
+- Docs: http://localhost:8000/docs  
 
-Each image has:
-- Category and description
-- Suggested questions for VQA
-- Expected answers for evaluation
+Stop the API (interactive, Windows):
+
+```bash
+python scripts/detener_api.py
+```
+
+## Run evaluation dashboard
+
+```bash
+python scripts/run_dashboard.py
+```
+
+Or:
+
+```bash
+streamlit run dashboard/app.py
+```
+
+The dashboard reads experiment exports under `results/` (see `dashboard/README_dashboard.md` for the expected layout).
+
+## Validate PaliGemma models (optional)
+
+Loads each model entry in `config/models.json` (heavy; requires GPU/VRAM for larger checkpoints):
+
+```bash
+python scripts/validate_models.py
+```
+
+## Run mobile app (Flutter)
+
+```bash
+cd mobile_app
+flutter pub get
+flutter run
+```
+
+Configure the API base URL in `mobile_app/lib/services/api_service.dart` (e.g. emulator uses `10.0.2.2` to reach the host).
+
+## Data and results
+
+- **`data/`** — versioned dataset and question / expected-answer JSON used for evaluation.
+- **`results/`** — generated by experiments; listed in `.gitignore` so the repo stays small. Regenerate locally after running notebooks or batch evaluation.
+
+## Notes
+
+- **Fast Downward** runs via Docker; see `docker/fast-downward/README.md`.
+- **Thesis (`report/`)** may be excluded from Git depending on `.gitignore`; keep a local backup if needed.

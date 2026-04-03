@@ -1,6 +1,3 @@
-# Data files (too large for Git)
-data/
-
 # Results (generated during evaluation)
 results/
 
@@ -22,6 +19,8 @@ __pycache__/
 venv/
 env/
 .env
+
+# Local assistant notes (not for remote)
 
 # IDE
 .idea/
@@ -59,3 +58,6 @@ macos/Flutter/Flutter-Debug.xcconfig
 macos/Flutter/Flutter-Release.xcconfig
 macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/ephemeral/
+
+# LaTeX report 
+report/

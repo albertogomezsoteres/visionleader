@@ -72,6 +72,10 @@ class ImageAnalysisResponse(BaseModel):
     clarification_question: Optional[str] = Field(None, description="Pregunta que hace el sistema para clarificar")
     landmarks: Optional[List[str]] = Field(None, description="Landmarks detectados en la imagen (Agente 1)")
     resources: Optional[List[str]] = Field(None, description="Recursos detectados (elevator, stairs, etc.)")
+    confidence: str = Field("none", description="Confidence level: high, medium, low, none")
+    image_type: Optional[str] = Field(None, description="Type of image: sign, door, elevator, stairs, corridor, other")
+    elevator_state: Optional[str] = Field(None, description="Elevator door state: open or closed")
+    stairs_direction: Optional[str] = Field(None, description="Stairs direction: up, down, or both")
 
 
 class ClarificationRequest(BaseModel):
@@ -131,6 +135,11 @@ class ConversationResponse(BaseModel):
     action: str = Field(..., description="Acción a tomar (ask_location, ask_goal, search_goal, generate_plan, etc.)")
     needs_input: bool = Field(..., description="Si necesita más información del usuario")
     context: Dict[str, Any] = Field(..., description="Contexto de la conversación actualizado")
-    goal_location: Optional[Dict[str, int]] = Field(None, description="Ubicación del objetivo encontrado (si aplica)")
+    goal_location: Optional[Dict[str, Any]] = Field(None, description="Ubicación del objetivo encontrado (si aplica)")
     plan_request: Optional[Dict[str, Any]] = Field(None, description="Request para generar plan (si action=generate_plan)")
     error: Optional[str] = Field(None, description="Mensaje de error si falla")
+    tts_message: Optional[str] = Field(None, description="Message to speak via TTS")
+    next_input: Optional[str] = Field(None, description="What input to ask next: photo, voice, confirm, none")
+    location_partial: Optional[Dict[str, Any]] = Field(None, description="Partial location detected so far")
+    auto_fill: Optional[Dict[str, Any]] = Field(None, description="Auto-fill data for form")
+    auto_fill_goal: Optional[Dict[str, Any]] = Field(None, description="Auto-fill goal data")

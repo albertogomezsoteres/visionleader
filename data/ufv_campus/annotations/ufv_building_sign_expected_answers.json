@@ -1,0 +1,79 @@
+{
+    "_comment": "Expected building and floor for Experiment 2 - State Extraction from building signs.",
+    "_instructions": "building: código del edificio (EPS, H) o null si solo hay planta. floor: número de planta como string. Para evaluar: Building Accuracy (cuando building != null), Floor Accuracy (siempre), Location Accuracy (building AND floor correctos cuando building != null).",
+    
+    "ufv_building_sign_01.JPEG": {
+        "building": null,
+        "floor": "-1",
+        "_note": "Solo planta visible (-1). Contiene landmarks: Cafetería, Biblioteca, Aulas, etc."
+    },
+    "ufv_building_sign_02.JPEG": {
+        "building": "EPS",
+        "floor": "0",
+        "_note": "Edificio EPS, planta 0. Contiene landmarks: Aulas, Laboratorios."
+    },
+    "ufv_building_sign_03.JPEG": {
+        "building": "EPS",
+        "floor": "1",
+        "_note": "Edificio EPS, planta 1. Contiene landmarks: Aulas, Mentorías, Tutorías."
+    },
+    "ufv_building_sign_04.JPEG": {
+        "building": "EPS",
+        "floor": "2",
+        "_note": "Edificio EPS, planta 2. Contiene landmarks: Aula, Mentorías, Tutorías, Pastoral."
+    },
+    "ufv_building_sign_05.JPEG": {
+        "building": null,
+        "floor": "1",
+        "_note": "Solo planta visible (1). Contiene landmarks: Aulas Educación Ejecutiva, Atrio, Graderío."
+    },
+    "ufv_building_sign_06.JPEG": {
+        "building": null,
+        "floor": "2",
+        "_note": "Solo planta visible (2). Contiene landmarks: Aulas, Sala Estudio, Facultad Derecho, Biblioteca."
+    },
+    "ufv_building_sign_07.JPEG": {
+        "building": "H",
+        "floor": null,
+        "_note": "Solo edificio visible (H). Aceptar: H, Edificio H, Building H, h building.",
+        "building_acceptable": ["H", "h", "edificio h", "building h", "h building", "h edificio"]
+    },
+    "ufv_building_sign_08.JPEG": {
+        "building": null,
+        "floor": "2",
+        "_note": "Solo planta visible (2). Número grande en la pared."
+    },
+    "ufv_building_sign_09.JPEG": {
+        "building": null,
+        "floor": "-2",
+        "_note": "Solo planta visible (-2). Número grande en la pared."
+    },
+    "ufv_building_sign_10.JPEG": {
+        "building": null,
+        "floor": "1",
+        "_note": "Solo planta visible (1). Número grande en la pared."
+    },
+
+    "_prompts": {
+        "_comment_legacy": "Prompt anterior (solo edificio/planta): 'Extract all the information from the top right corner. Tell me the text next to EDIFICIO and the number next to PLANTA. Format it as: Building: [name], Floor: [number].'",
+        "building_and_floor": "Extract from the top right: building (EDIFICIO) and floor (PLANTA) as Building: X, Floor: Y. Then list the main facilities or areas shown on the sign.",
+        "building_only": "Which building am I in? Answer with only the building code (one or two letters).",
+        "floor_only": "Identify the floor number shown in the image. Answer with only the number (e.g. -2, -1, 0, 1, 2).",
+        "landmarks": "List the main facilities or areas shown on this sign (e.g. cafeteria, library, classrooms, meeting rooms, auditorium). Do not include room numbers or building/floor codes.",
+        "_usage": {
+            "01-06": "building_and_floor",
+            "07": "building_only",
+            "08-10": "floor_only"
+        }
+    },
+
+    "_landmarks_reference": {
+        "_comment": "Keywords para landmarks (con sinonimos/variantes para mejorar recall).",
+        "ufv_building_sign_01.JPEG": ["cafeteria", "cafetería", "biblioteca", "library", "aulas", "classrooms", "rooms", "mentorías", "menterias", "meeting rooms", "mentors", "alfonso lópez quintas", "alfonso lopez quintas", "sala lectura", "sala de lectura", "graderío", "graderio", "auditorio", "auditorium", "reading room"],
+        "ufv_building_sign_02.JPEG": ["aulas", "classrooms", "rooms", "laboratorio", "laboratory", "computer lab", "computers", "fabricación aditiva", "additive manufacturing", "fabricacion aditiva", "subtractive", "subtractiva"],
+        "ufv_building_sign_03.JPEG": ["aulas", "classrooms", "mentorías", "mentors", "tutorías", "tutoring", "tutorials", "pastoral", "meeting rooms", "reuniones"],
+        "ufv_building_sign_04.JPEG": ["aula", "classroom", "mentorías", "mentors", "tutorías", "tutorials", "pastoral", "reuniones", "meeting rooms", "office"],
+        "ufv_building_sign_05.JPEG": ["aulas", "classrooms", "educación ejecutiva", "executive education", "atrio", "atrium", "graderío", "graderio", "tribune"],
+        "ufv_building_sign_06.JPEG": ["aulas", "classrooms", "estudio", "study room", "study", "facultad derecho", "law", "empresa", "business", "governance", "investigación", "investigacion", "research", "biblioteca", "library", "juntas", "board"]
+    }
+}

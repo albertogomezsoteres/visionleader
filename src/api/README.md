@@ -17,7 +17,7 @@ docker images | grep fast-downward
 ## Ejecutar la API
 
 ```bash
-python run_api.py
+python scripts/run_api.py
 ```
 
 La API estará disponible en:
