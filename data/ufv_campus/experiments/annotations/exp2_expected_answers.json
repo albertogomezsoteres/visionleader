@@ -1,0 +1,160 @@
+{
+    "_comment": "Expected answers for Experiment 2 - Location State Extraction. Covers 2 categories: building_sign (12 images) and door_room (10 images). BERTScore only applied to building_sign images of type 'complete' (building + floor visible).",
+
+    "building_sign": {
+        "ufv_building_sign_01.jpg": {
+            "_note": "Complete sign: EPS floor 0. Contains landmarks: classrooms, laboratories.",
+            "type": "complete",
+            "building": "EPS",
+            "floor": "0",
+            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "bertscore_reference": "EPS 0"
+        },
+        "ufv_building_sign_02.jpg": {
+            "_note": "Complete sign: EPS floor 1. Contains landmarks: classrooms, mentoring rooms.",
+            "type": "complete",
+            "building": "EPS",
+            "floor": "1",
+            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "bertscore_reference": "EPS 1"
+        },
+        "ufv_building_sign_03.jpg": {
+            "_note": "Complete sign: EPS floor 2. Contains landmarks: classrooms, tutoring, pastoral.",
+            "type": "complete",
+            "building": "EPS",
+            "floor": "2",
+            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "bertscore_reference": "EPS 2"
+        },
+        "ufv_building_sign_04.jpg": {
+            "_note": "Complete sign: G floor 0.",
+            "type": "complete",
+            "building": "G",
+            "floor": "0",
+            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "bertscore_reference": "G 0"
+        },
+        "ufv_building_sign_05.jpg": {
+            "_note": "Complete sign: G floor 1.",
+            "type": "complete",
+            "building": "G",
+            "floor": "1",
+            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "bertscore_reference": "G 1"
+        },
+        "ufv_building_sign_06.jpg": {
+            "_note": "Complete sign: G floor 1.",
+            "type": "complete",
+            "building": "G",
+            "floor": "1",
+            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "bertscore_reference": "G 1"
+        },
+        "ufv_building_sign_07.jpg": {
+            "_note": "Sign only showing floor -1. No building code visible.",
+            "type": "sign_only",
+            "building": null,
+            "floor": "-1",
+            "bertscore_reference": null
+        },
+        "ufv_building_sign_08.jpg": {
+            "_note": "Sign only showing floor 1. No building code visible.",
+            "type": "sign_only",
+            "building": null,
+            "floor": "1",
+            "bertscore_reference": null
+        },
+        "ufv_building_sign_09.jpg": {
+            "_note": "Sign only showing floor 2. No building code visible.",
+            "type": "sign_only",
+            "building": null,
+            "floor": "2",
+            "bertscore_reference": null
+        },
+        "ufv_building_sign_10.jpg": {
+            "_note": "Large floor number on wall: -2. No building code visible.",
+            "type": "wall_number",
+            "building": null,
+            "floor": "-2",
+            "bertscore_reference": null
+        },
+        "ufv_building_sign_11.jpg": {
+            "_note": "Large floor number on wall: 2. No building code visible.",
+            "type": "wall_number",
+            "building": null,
+            "floor": "2",
+            "bertscore_reference": null
+        },
+        "ufv_building_sign_12.jpg": {
+            "_note": "Large floor number on wall: 1. No building code visible.",
+            "type": "wall_number",
+            "building": null,
+            "floor": "1",
+            "bertscore_reference": null
+        }
+    },
+
+    "door_room": {
+        "ufv_door_room_01.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "1.2",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["1.2", "room 1.2", "1.2 is", "number 1.2"]
+        },
+        "ufv_door_room_02.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "1.5",
+            "doorroom_state": "open",
+            "room_code_acceptable": ["1.5", "room 1.5", "1.5 is", "number 1.5"]
+        },
+        "ufv_door_room_03.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "1.6",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["1.6", "room 1.6", "1.6 is", "number 1.6"]
+        },
+        "ufv_door_room_04.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "1.4",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["1.4", "room 1.4", "1.4 is", "number 1.4", "14", "room 14"]
+        },
+        "ufv_door_room_05.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "0.3",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["0.3", "room 0.3", "0.3 is", "number 0.3", "03", "room 03"]
+        },
+        "ufv_door_room_06.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "0.2",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["0.2", "room 0.2", "0.2 is", "number 0.2"]
+        },
+        "ufv_door_room_07.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "0.4",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["0.4", "room 0.4", "0.4 is", "number 0.4", "04", "room 04"]
+        },
+        "ufv_door_room_08.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "0.4",
+            "doorroom_state": "open",
+            "room_code_acceptable": ["0.4", "room 0.4", "0.4 is", "number 0.4", "04", "room 04"]
+        },
+        "ufv_door_room_09.jpg": {
+            "doorroom_detection": "yes",
+            "room_code": "0.1",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["0.1", "room 0.1", "0.1 is", "number 0.1"]
+        },
+        "ufv_door_room_10.jpg": {
+            "_note": "Special case: AI lab door, no standard room number. Adjust acceptable answers after seeing model responses.",
+            "doorroom_detection": "yes",
+            "room_code": "IA",
+            "doorroom_state": "closed",
+            "room_code_acceptable": ["IA", "AI", "laboratorio IA", "AI lab", "laboratory", "lab", "inteligencia artificial"]
+        }
+    }
+}
