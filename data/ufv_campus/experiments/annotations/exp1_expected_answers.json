@@ -1,0 +1,377 @@
+{
+    "_comment": "Expected answers for Experiment 1 - Navigation Element Recognition. Covers 5 categories: staircase, elevator, door, door_sign, obstacle. Negative images marked with _neg_ in filename.",
+
+    "staircase": {
+        "ufv_staircase_01.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_02.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_03.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_04.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_05.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_06.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_07.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_08.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_09.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_10.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_11.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_12.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "up",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_13.jpg": {
+            "staircase_detection": "yes",
+            "staircase_direction": "down",
+            "staircase_handrails": "yes",
+            "staircase_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_staircase_neg_01.jpg": {
+            "_note": "Negative: elevator image",
+            "staircase_detection": "no",
+            "staircase_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_staircase_neg_02.jpg": {
+            "_note": "Negative: door with room number",
+            "staircase_detection": "no",
+            "staircase_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        }
+    },
+
+    "elevator": {
+        "ufv_elevator_01.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_02.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_03.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_04.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "open",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_05.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "open",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_06.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_07.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_08.jpg": {
+            "elevator_detection": "yes",
+            "elevator_doors": "closed",
+            "elevator_element": "elevator",
+            "element_keywords": ["elevator", "lift"],
+            "bertscore_reference": "elevator"
+        },
+        "ufv_elevator_neg_01.jpg": {
+            "_note": "Negative: staircase going up with handrails",
+            "elevator_detection": "no",
+            "elevator_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_elevator_neg_02.jpg": {
+            "_note": "Negative: door with room number 0.3",
+            "elevator_detection": "no",
+            "elevator_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        }
+    },
+
+    "door": {
+        "ufv_door_01.jpg": {
+            "door_detection": "yes",
+            "door_state": "closed",
+            "door_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_door_02.jpg": {
+            "door_detection": "yes",
+            "door_state": "closed",
+            "door_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_door_03.jpg": {
+            "door_detection": "yes",
+            "door_state": "open",
+            "door_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_door_04.jpg": {
+            "door_detection": "yes",
+            "door_state": "closed",
+            "door_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_door_05.jpg": {
+            "door_detection": "yes",
+            "door_state": "open",
+            "door_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_door_neg_01.jpg": {
+            "_note": "Negative: staircase going up with handrails",
+            "door_detection": "no",
+            "door_element": "staircase",
+            "element_keywords": ["staircase", "stairs"],
+            "bertscore_reference": "staircase"
+        },
+        "ufv_door_neg_02.jpg": {
+            "_note": "Negative: straight corridor",
+            "door_detection": "no",
+            "door_element": "corridor",
+            "element_keywords": ["corridor", "hallway", "path"],
+            "bertscore_reference": "corridor"
+        }
+    },
+
+    "door_sign": {
+        "ufv_doorSign_01.jpg": {
+            "doorsign_bathroom": "yes",
+            "doorsign_exit": "no",
+            "doorsign_state": "closed",
+            "doorsign_element": "bathroom",
+            "element_keywords": ["bathroom", "restroom", "toilet"],
+            "bertscore_reference": "bathroom"
+        },
+        "ufv_doorSign_02.jpg": {
+            "doorsign_bathroom": "yes",
+            "doorsign_exit": "no",
+            "doorsign_state": "closed",
+            "doorsign_element": "bathroom",
+            "element_keywords": ["bathroom", "restroom", "toilet"],
+            "bertscore_reference": "bathroom"
+        },
+        "ufv_doorSign_03.jpg": {
+            "doorsign_bathroom": "yes",
+            "doorsign_exit": "no",
+            "doorsign_state": "open",
+            "doorsign_element": "bathroom",
+            "element_keywords": ["bathroom", "restroom", "toilet"],
+            "bertscore_reference": "bathroom"
+        },
+        "ufv_doorSign_04.jpg": {
+            "doorsign_bathroom": "no",
+            "doorsign_exit": "yes",
+            "doorsign_state": "closed",
+            "doorsign_element": "exit",
+            "element_keywords": ["exit"],
+            "bertscore_reference": "exit"
+        },
+        "ufv_doorSign_05.jpg": {
+            "doorsign_bathroom": "yes",
+            "doorsign_exit": "no",
+            "doorsign_state": "closed",
+            "doorsign_element": "bathroom",
+            "element_keywords": ["bathroom", "restroom", "toilet"],
+            "bertscore_reference": "bathroom"
+        },
+        "ufv_doorSign_neg_01.jpg": {
+            "_note": "Negative: plain door with no sign",
+            "doorsign_bathroom": "no",
+            "doorsign_exit": "no",
+            "doorsign_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        },
+        "ufv_doorSign_neg_02.jpg": {
+            "_note": "Negative: door with room number 1.2, no bathroom or exit sign",
+            "doorsign_bathroom": "no",
+            "doorsign_exit": "no",
+            "doorsign_element": "door",
+            "element_keywords": ["door"],
+            "bertscore_reference": "door"
+        }
+    },
+
+    "obstacle": {
+        "ufv_obstacle_01.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "plant",
+            "element_keywords": ["plant"],
+            "bertscore_reference": "plant"
+        },
+        "ufv_obstacle_02.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "chair",
+            "element_keywords": ["chair"],
+            "bertscore_reference": "chair"
+        },
+        "ufv_obstacle_03.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "stone",
+            "element_keywords": ["stone", "block", "obstacle"],
+            "bertscore_reference": "obstacle"
+        },
+        "ufv_obstacle_04.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "chair",
+            "element_keywords": ["chair"],
+            "bertscore_reference": "chair"
+        },
+        "ufv_obstacle_05.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "chairs",
+            "element_keywords": ["chair", "chairs"],
+            "bertscore_reference": "chair"
+        },
+        "ufv_obstacle_06.jpg": {
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "chair",
+            "element_keywords": ["chair"],
+            "bertscore_reference": "chair"
+        },
+        "ufv_obstacle_07.jpg": {
+            "_note": "Difficult image: cleaning cart blocking path",
+            "obstacle_detection": "yes",
+            "obstacle_safety": "no",
+            "obstacle_object": "cart",
+            "element_keywords": ["cart", "trolley", "cleaning cart", "obstacle"],
+            "bertscore_reference": "cart"
+        },
+        "ufv_obstacle_neg_01.jpg": {
+            "_note": "Negative: clear corridor, safe to walk",
+            "obstacle_detection": "no",
+            "obstacle_safety": "yes",
+            "obstacle_object": "none",
+            "element_keywords": ["corridor", "path", "hallway"],
+            "bertscore_reference": "corridor"
+        },
+        "ufv_obstacle_neg_02.jpg": {
+            "_note": "Negative: clear corridor, safe to walk",
+            "obstacle_detection": "no",
+            "obstacle_safety": "yes",
+            "obstacle_object": "none",
+            "element_keywords": ["corridor", "path", "hallway"],
+            "bertscore_reference": "corridor"
+        }
+    }
+}

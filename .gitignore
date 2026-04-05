@@ -1,6 +1,13 @@
 # Results (generated during evaluation)
 results/
 
+# Local experiment outputs / scratch (not for remote)
+test/
+
+# Large dataset archives (upload separately, e.g. Colab)
+data/ufv_campus/images.zip
+data/ufv_campus/experiments/annotations.zip
+
 # Python
 __pycache__/
 *.py[cod]
