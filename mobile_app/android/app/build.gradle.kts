@@ -42,3 +42,14 @@ android {
 flutter {
     source = "../.."
 }
+
+configurations.all {
+    resolutionStrategy {
+        // Keep a single AndroidX Lifecycle line to avoid duplicate classes in dex merge.
+        force("androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.7")
+        force("androidx.lifecycle:lifecycle-viewmodel:2.8.7")
+        force("androidx.lifecycle:lifecycle-livedata-core:2.8.7")
+        force("androidx.lifecycle:lifecycle-runtime:2.8.7")
+        force("androidx.savedstate:savedstate:1.2.1")
+    }
+}

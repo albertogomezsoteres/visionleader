@@ -25,7 +25,11 @@ class PlanningRequest(BaseModel):
     )
     humano_disponible: bool = Field(
         True,
-        description="Si hay humano disponible para ayudar con ascensores"
+        description="Whether a bystander is available to help with elevators"
+    )
+    hurry_mode: bool = Field(
+        False,
+        description="When true the planner prefers stairs over elevator (faster but less safe)"
     )
 
 
@@ -143,3 +147,4 @@ class ConversationResponse(BaseModel):
     location_partial: Optional[Dict[str, Any]] = Field(None, description="Partial location detected so far")
     auto_fill: Optional[Dict[str, Any]] = Field(None, description="Auto-fill data for form")
     auto_fill_goal: Optional[Dict[str, Any]] = Field(None, description="Auto-fill goal data")
+    gps_route: Optional[Dict[str, Any]] = Field(None, description="GPS route data for outdoor steps (from_building, to_building)")

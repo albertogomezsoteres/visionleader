@@ -15,7 +15,7 @@ project_root = Path(__file__).resolve().parent.parent
 load_dotenv(project_root / ".env")
 sys.path.insert(0, str(project_root / "src"))
 
-from api.planning_api import app
+from api.app import app
 
 if __name__ == "__main__":
     print("=" * 60)

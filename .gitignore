@@ -29,6 +29,13 @@ env/
 
 # Local assistant notes (not for remote)
 
+# Personal demo and local docs (not for remote)
+demo.ps1
+demo-Alberto-Asus.ps1
+experiments.md
+appMovil.md
+mobile_app/android/build.gradle-Alberto-Asus.kts
+
 # IDE
 .idea/
 .vscode/

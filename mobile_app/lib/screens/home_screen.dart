@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'conversation_screen.dart';
+import 'conversation/conversation_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -35,7 +35,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withOpacity(0.35),
+                        color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
                         blurRadius: 40,
                         spreadRadius: 8,
                       ),

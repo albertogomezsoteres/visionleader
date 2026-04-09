@@ -9,6 +9,7 @@ States:
 """
 
 from typing import Dict, List, Optional, Any
+from collections import deque
 from enum import Enum
 from pathlib import Path
 import re
@@ -48,8 +49,8 @@ _BUILDING_MAP = {
 }
 _BUILDING_NAMES = {1: "G", 2: "CD", 3: "H"}
 _BUILDING_FULL = {
-    1: "Building G (Escuela Politécnica Superior)",
-    2: "Sports Centre (Centro Deportivo)",
+    1: "Building G",
+    2: "Building CD",
     3: "Building H",
 }
 
@@ -100,6 +101,7 @@ class ConversationContext:
         self.photo_attempts: int = 0
         self.voice_retries: int = 0
         self.history: List[Dict[str, str]] = []
+        self.hurry_mode: bool = False
 
         # Partial location accumulation (building known but floor unknown, etc.)
         self.partial_building: Optional[int] = None
@@ -120,6 +122,7 @@ class ConversationContext:
             "state": self.state.value,
             "current_location": self.origin,
             "goal": self.destination,
+            "hurry_mode": self.hurry_mode,
             "conversation_history": self.history,
             "plan_steps": [s.get("instruction", "") for s in self.route_steps],
             "current_step_idx": self.current_step_idx,
@@ -137,9 +140,13 @@ class ConversationAgent:
 
         # Pre-index local connections for fast lookup
         self._local_idx: Dict[str, List[str]] = {}
+        # Adjacency list per (building, floor) for BFS fallback
+        self._local_adj: Dict[str, Dict[str, List[str]]] = {}
         for lc in self.graph.get("local_connections", []):
             key = f"{lc['building']}_{lc['floor']}_{lc['from']}_{lc['to']}"
             self._local_idx[key] = lc["instructions"]
+            bf_key = f"{lc['building']}_{lc['floor']}"
+            self._local_adj.setdefault(bf_key, {}).setdefault(lc["from"], []).append(lc["to"])
 
         # Location index  {building_name -> {floor_str -> [loc_dicts]}}
         self._locations = self.graph.get("locations", {})
@@ -184,6 +191,7 @@ class ConversationAgent:
         self, origin_building: int, origin_floor: int,
         dest_building: int, dest_floor: int,
         goal_functional: Optional[str] = None,
+        hurry_mode: bool = False,
     ) -> Optional[List[str]]:
         """
         Call Fast Downward to generate a PDDL plan.
@@ -209,6 +217,7 @@ class ConversationAgent:
                     goal_functional=goal_functional,
                     problem_name="conv-problem",
                     output_path=problem_path,
+                    hurry_mode=hurry_mode,
                 )
 
             result = self._planner.plan(
@@ -379,7 +388,7 @@ class ConversationAgent:
                     instr = self._get_local_instructions(bname, from_floor, o_loc, "ascensor")
                     if instr:
                         steps.append({
-                            "instruction": " ".join(instr),
+                            "instruction": self._normalize_instruction(" ".join(instr)),
                             "type": "local_walk",
                             "verification": "voice",
                             "expected_photo_type": None,
@@ -397,7 +406,7 @@ class ConversationAgent:
                     )
                 )
                 steps.append({
-                    "instruction": instr_text,
+                    "instruction": self._normalize_instruction(instr_text),
                     "type": "elevator",
                     "verification": "photo",
                     "expected_photo_type": "elevator",
@@ -416,18 +425,19 @@ class ConversationAgent:
                 last_arrival_loc = "ascensor"
                 first_movement = False
 
-            elif name in ("subir_escaleras", "bajar_escaleras"):
+            elif name in ("subir_escaleras", "bajar_escaleras",
+                         "subir_escaleras_rapido", "bajar_escaleras_rapido"):
                 bld_id = self._edificio_to_int(params[1])
                 from_floor = self._planta_to_int(params[2])
                 to_floor = self._planta_to_int(params[3])
                 bname = _BUILDING_NAMES.get(bld_id, "G")
-                direction = "up" if name == "subir_escaleras" else "down"
+                direction = "up" if "subir" in name else "down"
 
                 if first_movement and o_loc and o_loc != "escaleras":
                     instr = self._get_local_instructions(bname, from_floor, o_loc, "escaleras")
                     if instr:
                         steps.append({
-                            "instruction": " ".join(instr),
+                            "instruction": self._normalize_instruction(" ".join(instr)),
                             "type": "local_walk",
                             "verification": "voice",
                             "expected_photo_type": None,
@@ -436,21 +446,38 @@ class ConversationAgent:
                 conn_instr = self._get_connection_instructions(
                     bld_id, from_floor, bld_id, to_floor, "stairs"
                 )
-                instr_text = (
-                    " ".join(conn_instr) if conn_instr
-                    else (
-                        f"Go {direction} the stairs from {_floor_text(from_floor)} "
-                        f"to {_floor_text(to_floor)}. Use the handrail for safety."
+                is_hurry = "rapido" in name
+                safety_msg = (
+                    f"Go {direction} the stairs from {_floor_text(from_floor)} "
+                    f"to {_floor_text(to_floor)}. "
+                )
+                if is_hurry:
+                    safety_msg += "Take the stairs quickly, but be careful."
+                else:
+                    safety_msg += (
+                        "Hold the handrail firmly with one hand. "
+                        "Take it one step at a time."
                     )
+                instr_text = " ".join(conn_instr) if conn_instr else safety_msg
+
+                photo_confirm_msg = (
+                    f"I can see the stairs going {direction}. " + safety_msg
+                    if not is_hurry
+                    else f"I can see the stairs going {direction}. Go ahead carefully."
                 )
                 steps.append({
-                    "instruction": instr_text,
+                    "instruction": self._normalize_instruction(instr_text),
                     "type": "stairs",
                     "verification": "photo",
                     "expected_photo_type": "stairs",
                     "two_phase_photo": True,
-                    "pre_photo_instruction": f"Locate the stairs on {_floor_text(from_floor)}.",
-                    "post_photo_instruction": instr_text,
+                    "pre_photo_instruction": (
+                        f"Locate the stairs on {_floor_text(from_floor)}. "
+                        "Please take a photo so I can confirm they go "
+                        f"{'up' if direction == 'up' else 'down'} and have a handrail."
+                    ),
+                    "post_photo_instruction": photo_confirm_msg,
+                    "stairs_direction": direction,
                 })
                 last_arrival_loc = "escaleras"
                 first_movement = False
@@ -460,37 +487,51 @@ class ConversationAgent:
                 to_bld = self._edificio_to_int(params[2])
                 floor = self._planta_to_int(params[3])
 
-                if first_movement and o_loc:
+                from_entrance = self._entrance_id(from_bld)
+                to_entrance = self._entrance_id(to_bld)
+
+                added_walk_to_entrance = False
+                if first_movement and o_loc and o_loc != from_entrance:
                     bname = _BUILDING_NAMES.get(from_bld, "G")
                     instr = self._get_local_instructions(
-                        bname, floor, o_loc, "entrada_principal"
+                        bname, floor, o_loc, from_entrance
                     )
                     if instr:
                         steps.append({
-                            "instruction": " ".join(instr),
+                            "instruction": self._normalize_instruction(" ".join(instr)),
                             "type": "local_walk",
                             "verification": "voice",
                             "expected_photo_type": None,
                         })
+                        added_walk_to_entrance = True
 
+                to_name = _BUILDING_FULL.get(to_bld, "the destination building")
                 hallway_instr = self._get_connection_instructions(
                     from_bld, floor, to_bld, floor, "hallway"
                 )
-                instr_text = (
-                    " ".join(hallway_instr) if hallway_instr
-                    else (
-                        f"Exit {_BUILDING_FULL.get(from_bld, 'the building')} "
-                        f"and walk outdoors to "
-                        f"{_BUILDING_FULL.get(to_bld, 'the destination building')}."
+                if hallway_instr:
+                    instr_text = " ".join(hallway_instr)
+                elif added_walk_to_entrance:
+                    instr_text = (
+                        "Push through the two glass doors to exit the building. "
+                        f"Google Maps will guide you walking to {to_name}."
                     )
-                )
+                else:
+                    instr_text = (
+                        f"Head to the main entrance of {_BUILDING_FULL.get(from_bld, 'the building')}. "
+                        "Push through the two glass doors to exit the building. "
+                        f"Google Maps will guide you walking to {to_name}."
+                    )
                 steps.append({
-                    "instruction": instr_text,
+                    "instruction": self._normalize_instruction(instr_text),
                     "type": "outdoor",
                     "verification": "voice",
                     "expected_photo_type": None,
+                    "outdoor_from_building": from_bld,
+                    "outdoor_to_building": to_bld,
+                    "use_gps": True,
                 })
-                last_arrival_loc = "entrada_principal"
+                last_arrival_loc = to_entrance
                 first_movement = False
 
         # Final local walk: from arrival point to destination location
@@ -503,7 +544,7 @@ class ConversationAgent:
                 instr = self._get_local_instructions(bname, d_flr, "ascensor", d_loc)
             if instr:
                 steps.append({
-                    "instruction": " ".join(instr),
+                    "instruction": self._normalize_instruction(" ".join(instr)),
                     "type": "local_walk",
                     "verification": "voice",
                     "expected_photo_type": None,
@@ -578,8 +619,7 @@ class ConversationAgent:
 
     def _handle_welcome(self, ctx: ConversationContext) -> Dict:
         tts = (
-            "Hello! I am VisionLeader, your campus navigation assistant. "
-            "I will help you find your way around the UFV campus. "
+            "Hello! I am your campus navigation assistant. "
             "Do you know where you are right now?"
         )
         ctx.state = ConversationState.ASK_KNOWS_LOCATION
@@ -587,19 +627,16 @@ class ConversationAgent:
 
     def _handle_ask_knows_location(self, ctx: ConversationContext, msg: str) -> Dict:
         if _is_yes(msg):
-            tts = (
-                "Great! Please tell me your location. "
-                "For example, you can say: classroom 0.3 in building G, "
-                "or main entrance of building G."
-            )
+            tts = "Tell me your location. For example: classroom 0.3, building G."
             ctx.state = ConversationState.ASK_LOCATION_VOICE
             return self._reply(ctx, tts, "voice", "ask_location")
 
         if _is_no(msg):
             tts = (
                 "No problem, I will help you figure out your location. "
-                "Are you near a classroom door where you can see a room number sign? "
-                "Or are you near the elevator or stairs area, where there is usually a floor directory sign?"
+                "Let me ask you a few questions. "
+                "Have you just come out of a classroom, or have you just exited "
+                "an elevator or walked up the stairs?"
             )
             ctx.state = ConversationState.ASK_SITUATION
             return self._reply(ctx, tts, "voice", "ask_situation")
@@ -661,35 +698,70 @@ class ConversationAgent:
 
     def _handle_ask_situation(self, ctx: ConversationContext, msg: str) -> Dict:
         low = msg.lower()
+
         if any(w in low for w in ("classroom", "door", "aula", "puerta", "room", "clase")):
             tts = (
-                "Please take a photo of the classroom door. "
-                "Try to capture the room number sign clearly, from about 3 meters away."
+                "Perfect. Please take a photo of the classroom door so I can "
+                "read the room number. Try to capture the sign clearly, "
+                "from about 2 to 3 metres away."
             )
             ctx.state = ConversationState.WAITING_PHOTO_DOOR
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_door")
 
-        if any(w in low for w in ("elevator", "lift", "stairs", "stair", "escalera",
-                                   "ascensor", "directory", "directorio", "sign")):
+        if any(w in low for w in ("elevator", "lift", "ascensor")):
             tts = (
-                "Please take a photo of the floor directory sign on the wall. "
-                "These signs are usually located right next to the elevator or the stairs."
+                "If you just exited the elevator, the floor directory sign "
+                "is usually on the wall right next to it. Turn to your left and "
+                "walk about 2 metres. You should see a sign showing the building "
+                "letter and floor number, like G 0. Please take a photo of it."
             )
             ctx.state = ConversationState.WAITING_PHOTO_SIGN
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_sign")
 
-        # User might have directly told their location by voice
+        if any(w in low for w in ("stairs", "stair", "escalera")):
+            tts = (
+                "If you just came up or down the stairs, look for a floor "
+                "directory sign nearby. It is usually on the wall right next "
+                "to the staircase. It shows the building letter and floor number, "
+                "like G 1. Please take a photo of it."
+            )
+            ctx.state = ConversationState.WAITING_PHOTO_SIGN
+            ctx.photo_attempts = 0
+            return self._reply(ctx, tts, "photo", "request_photo_sign")
+
+        if any(w in low for w in ("directory", "directorio", "sign", "cartel", "panel")):
+            tts = (
+                "Great. Please take a photo of the directory sign so I can "
+                "read the building and floor information."
+            )
+            ctx.state = ConversationState.WAITING_PHOTO_SIGN
+            ctx.photo_attempts = 0
+            return self._reply(ctx, tts, "photo", "request_photo_sign")
+
+        if any(w in low for w in ("don't know", "dont know", "no idea", "not sure",
+                                   "no sé", "no se", "ni idea")):
+            tts = (
+                "That is okay. Can you see any doors near you? If you are "
+                "near a classroom, the door should have a room number on it. "
+                "If not, try to find the elevator or stairs area, where there "
+                "is always a directory sign on the wall. "
+                "Just tell me what you see around you."
+            )
+            return self._reply(ctx, tts, "voice", "ask_situation")
+
         loc = self._parse_location(msg)
         if loc and loc.get("building") and loc.get("floor") is not None:
             ctx.origin = loc
             return self._confirm_origin(ctx)
 
         tts = (
-            "I need a bit more detail. Are you near a classroom door, "
-            "or near the elevator and stairs area? "
-            "You can also just tell me your location by voice."
+            "I need a bit more detail to find you. "
+            "Are you near a classroom door where you can see a room number? "
+            "Or are you near the elevator or stairs area? "
+            "You can also just tell me your location by voice, for example: "
+            "classroom 0.3 in building G."
         )
         return self._reply(ctx, tts, "voice", "ask_situation")
 
@@ -805,20 +877,45 @@ class ConversationAgent:
     def _confirm_origin(self, ctx: ConversationContext) -> Dict:
         loc = ctx.origin
         loc_text = self._location_text(loc)
-        tts = f"I understand you are at {loc_text}. Is that correct?"
-        ctx.state = ConversationState.CONFIRMING_ORIGIN
-        return self._reply(ctx, tts, "confirm", "confirm_origin")
+
+        # Demo-optimised flow: skip explicit yes/no origin confirmation.
+        # If we already had a destination (e.g. after "I'm lost"), reroute directly.
+        if ctx.destination:
+            route = self._compute_route(ctx.origin, ctx.destination)
+            if route:
+                ctx.route_steps = route
+                ctx.current_step_idx = 0
+                tts = (
+                    f"Got it: {loc_text}. "
+                    f"I still have your destination as {self._location_text(ctx.destination)}. "
+                    "Recalculating the route now."
+                )
+                ctx.add("system", tts)
+                return self._present_plan(ctx)
+
+        tts = f"Got it: {loc_text}. Where do you want to go?"
+        ctx.state = ConversationState.ASK_DESTINATION
+        return self._reply(ctx, tts, "voice", "ask_destination")
 
     def _handle_confirming_origin(self, ctx: ConversationContext, msg: str) -> Dict:
         if _is_yes(msg):
             loc_text = self._location_text(ctx.origin)
-            tts = (
-                f"Your location is confirmed: {loc_text}. "
-                "Now, where would you like to go? "
-                "You can say a classroom number like 1.4, "
-                "the cafeteria, the gym, the nearest restroom, "
-                "or any other location on campus."
-            )
+
+            if ctx.destination:
+                dest_text = self._location_text(ctx.destination)
+                route = self._compute_route(ctx.origin, ctx.destination)
+                if route:
+                    ctx.route_steps = route
+                    ctx.current_step_idx = 0
+                    tts = (
+                        f"Your location is confirmed: {loc_text}. "
+                        f"I still have your destination as {dest_text}. "
+                        "Let me recalculate the route."
+                    )
+                    ctx.add("system", tts)
+                    return self._present_plan(ctx)
+
+            tts = f"Confirmed: {loc_text}. Where do you want to go?"
             ctx.state = ConversationState.ASK_DESTINATION
             return self._reply(ctx, tts, "voice", "ask_destination")
 
@@ -844,6 +941,11 @@ class ConversationAgent:
         return self._reply(ctx, tts, "voice", "confirm_origin")
 
     def _handle_ask_destination(self, ctx: ConversationContext, msg: str) -> Dict:
+        low = msg.lower()
+        if any(w in low for w in ("hurry", "rush", "fast", "quick", "prisa",
+                                   "rápido", "rapido", "deprisa", "urgente")):
+            ctx.hurry_mode = True
+
         dest = self._parse_destination(msg)
         if dest:
             ctx.destination = dest
@@ -866,28 +968,37 @@ class ConversationAgent:
         return self._reply(ctx, tts, "voice", "ask_destination")
 
     def _present_plan(self, ctx: ConversationContext) -> Dict:
-        origin_text = self._location_text(ctx.origin)
         dest_text = self._location_text(ctx.destination)
         n = len(ctx.route_steps)
 
         overview_parts = []
+        seen = set()
         for s in ctx.route_steps:
-            if s["type"] == "local_walk":
-                overview_parts.append("walk")
-            elif s["type"] == "elevator":
-                overview_parts.append("take the elevator")
-            elif s["type"] == "stairs":
-                overview_parts.append("use the stairs")
-            elif s["type"] == "outdoor":
-                overview_parts.append("walk outdoors")
-        overview = ", then ".join(overview_parts) if overview_parts else "walk"
+            label = {"local_walk": "walk", "elevator": "elevator",
+                     "stairs": "stairs", "outdoor": "outdoor walk"}.get(s["type"], s["type"])
+            if label not in seen:
+                overview_parts.append(label)
+                seen.add(label)
+        overview = ", ".join(overview_parts) if overview_parts else "walk"
+
+        hurry_note = " Hurry mode on." if ctx.hurry_mode else ""
+
+        needs_elevator = "elevator" in overview_parts
+        needs_stairs = "stairs" in overview_parts
+        needs_outdoor = "outdoor walk" in overview_parts
+        if needs_elevator:
+            requirement = "You will need to use the elevator."
+        elif needs_stairs:
+            requirement = "You will need to use the stairs."
+        elif needs_outdoor:
+            requirement = "You will need to walk outdoors."
+        else:
+            requirement = f"There {'is' if n == 1 else 'are'} {n} step{'s' if n != 1 else ''} required: {overview}."
 
         tts = (
-            f"I will guide you from {origin_text} to {dest_text}. "
-            f"The route has {n} step{'s' if n != 1 else ''}. "
-            f"You will need to: {overview}. "
-            "Shall I start the navigation? "
-            "You can also say 'change destination' to pick a different place."
+            f"Perfect. I will guide you to {dest_text}. "
+            f"{requirement} "
+            f"Click Start Navigation or say start.{hurry_note}"
         )
         ctx.state = ConversationState.CONFIRMING_PLAN
         return self._reply(ctx, tts, "confirm", "confirm_plan")
@@ -903,14 +1014,13 @@ class ConversationAgent:
             ctx.route_steps = []
             return self._reply(ctx, tts, "voice", "ask_destination")
 
-        if _is_yes(msg):
+        if _is_yes(msg) or any(w in low for w in ("start", "begin", "go", "vamos", "empezar")):
             ctx.state = ConversationState.EXECUTING
             return self._deliver_step(ctx)
 
         if _is_no(msg):
             tts = (
-                "Navigation cancelled. Would you like to choose a different destination? "
-                "Just tell me where you want to go, or say cancel to end."
+                "Navigation cancelled. Tell me a new destination, or say cancel to end."
             )
             ctx.state = ConversationState.ASK_DESTINATION
             return self._reply(ctx, tts, "voice", "ask_destination")
@@ -946,7 +1056,7 @@ class ConversationAgent:
             ctx.state = ConversationState.EXECUTING
             return self._deliver_step(ctx)
 
-        tts = "Let me know when you are ready. Say 'done' or 'next' to continue."
+        tts = "Let me know when you are ready. Tap Next or say done to continue."
         return self._reply(ctx, tts, "voice", "awaiting_step_done")
 
     def _handle_step_photo(
@@ -970,13 +1080,13 @@ class ConversationAgent:
         if not analysis:
             if step.get("elevator_photo_flow") and elevator_stage == 2:
                 tts = (
-                    "Please send a photo of the elevator doors when they are open. "
-                    "Or say 'done' if you want to continue without a photo."
+                    "Please take a photo of the elevator doors when they are open. "
+                    "You can use the Photo button, or say done to continue without a photo."
                 )
                 return self._reply(ctx, tts, "photo", "waiting_elevator_open_photo")
             tts = (
                 f"Please take a photo of the {expected or 'area'} to verify your position. "
-                "Or say 'done' if you want to continue without a photo."
+                "Use the Photo button, or say done to continue without a photo."
             )
             return self._reply(ctx, tts, "photo", "waiting_step_photo")
 
@@ -1018,7 +1128,8 @@ class ConversationAgent:
                 tts = (
                     "Confirmed! The elevator doors are open. "
                     f"{post_tts} "
-                    "Say 'done' or 'next' when you have completed this step."
+                    f"{self._next_local_walk_hint(ctx)}"
+                    "Tap Next when you have completed this step."
                 )
                 ctx.state = ConversationState.AWAITING_STEP_DONE
                 return self._reply(ctx, tts, "voice", "elevator_ready_to_board")
@@ -1061,7 +1172,7 @@ class ConversationAgent:
                 tts = (
                     f"Confirmed! I can see the {expected}. "
                     f"{post_tts} "
-                    "Say 'done' or 'next' when you have completed this step."
+                    "Tap Next when you have completed this step."
                 )
                 ctx.state = ConversationState.AWAITING_STEP_DONE
                 return self._reply(ctx, tts, "voice", "step_after_photo_confirm")
@@ -1085,6 +1196,18 @@ class ConversationAgent:
 
     def _handle_nav_complete(self, ctx: ConversationContext, msg: str) -> Dict:
         low = msg.lower()
+
+        # Allow direct destination after arrival (without requiring a separate "yes")
+        dest = self._parse_destination(msg)
+        if dest:
+            ctx.destination = dest
+            route = self._compute_route(ctx.origin, dest)
+            if route:
+                ctx.route_steps = route
+                ctx.current_step_idx = 0
+                ctx.state = ConversationState.CONFIRMING_PLAN
+                return self._present_plan(ctx)
+
         if any(w in low for w in ("yes", "new", "another", "sí", "si", "otra", "new route")):
             tts = "Where would you like to go next?"
             ctx.destination = None
@@ -1116,12 +1239,33 @@ class ConversationAgent:
 
         tts = f"{prefix}Step {idx} of {total}. {instruction}"
 
+        extra: Dict = {}
+
+        if step.get("use_gps"):
+            from_bld = step.get("outdoor_from_building")
+            to_bld = step.get("outdoor_to_building")
+            if from_bld and to_bld:
+                extra["gps_route"] = {
+                    "from_building": from_bld,
+                    "to_building": to_bld,
+                    "auto_open": True,
+                }
+            tts += (
+                " Tap I've arrived when you reach the building."
+            )
+            ctx.state = ConversationState.AWAITING_STEP_DONE
+            return self._reply(ctx, tts, "voice", "navigation_step_outdoor", **extra)
+
         if step.get("verification") == "photo":
             expected = step.get("expected_photo_type", "area")
             if step.get("arrival_strict_photo"):
                 rc = step.get("expected_room_code")
                 aula_txt = f"classroom {rc}" if rc else "your classroom"
-                tts = f"{prefix}Step {idx} of {total}. Please take a photo of the {expected} to confirm {aula_txt}."
+                tts = (
+                    f"{prefix}Step {idx} of {total}. {instruction} "
+                    f"When you arrive, please take a photo of the {expected} "
+                    f"to confirm {aula_txt}."
+                )
                 ctx.state = ConversationState.WAITING_STEP_PHOTO
                 next_input = "photo"
                 return self._reply(ctx, tts, next_input, "navigation_step")
@@ -1140,7 +1284,7 @@ class ConversationAgent:
             ctx.state = ConversationState.WAITING_STEP_PHOTO
             next_input = "photo"
         else:
-            tts += " Say 'done' or 'next' when you have completed this step."
+            tts += " Tap Next when you have completed this step."
             ctx.state = ConversationState.AWAITING_STEP_DONE
             next_input = "voice"
 
@@ -1148,6 +1292,13 @@ class ConversationAgent:
 
     def _navigation_complete(self, ctx: ConversationContext) -> Dict:
         dest_text = self._location_text(ctx.destination)
+        # Persist final destination as new current location for a fluent next route.
+        if ctx.destination:
+            ctx.origin = {
+                "building": ctx.destination.get("building"),
+                "floor": ctx.destination.get("floor"),
+                "location_id": ctx.destination.get("location_id"),
+            }
         tts = (
             f"You have arrived at {dest_text}! "
             "Would you like to navigate somewhere else?"
@@ -1156,16 +1307,20 @@ class ConversationAgent:
         return self._reply(ctx, tts, "voice", "navigation_complete")
 
     def _handle_lost(self, ctx: ConversationContext) -> Dict:
+        dest_text = self._location_text(ctx.destination) if ctx.destination else "your destination"
         tts = (
             "No worries, I will help you get back on track. "
-            "Do you know where you are right now? You can tell me by voice, "
-            "or take a photo of a door or a directory sign."
+            "I still remember you want to go to " + dest_text + ". "
+            "First, let me figure out where you are now. "
+            "Have you just come out of a classroom, or are you near "
+            "the elevator or stairs area? You can also take a photo "
+            "of a door sign or directory sign."
         )
-        ctx.state = ConversationState.ASK_KNOWS_LOCATION
+        ctx.state = ConversationState.ASK_SITUATION
         ctx.origin = None
         ctx.route_steps = []
         ctx.current_step_idx = 0
-        return self._reply(ctx, tts, "voice", "replanning")
+        return self._reply(ctx, tts, "voice_or_photo", "replanning")
 
     def _cancel_navigation(self, ctx: ConversationContext) -> Dict:
         tts = (
@@ -1208,8 +1363,13 @@ class ConversationAgent:
 
         # Different floor or different building → call Fast Downward
         goal_functional = destination.get("functional")
+        ctx_hurry = False
+        for ctx in self.contexts.values():
+            if ctx.origin == origin and ctx.destination == destination:
+                ctx_hurry = ctx.hurry_mode
+                break
         fd_actions = self._run_fast_downward(
-            o_bld, o_flr, d_bld, d_flr, goal_functional
+            o_bld, o_flr, d_bld, d_flr, goal_functional, hurry_mode=ctx_hurry
         )
         if fd_actions:
             steps = self._fd_plan_to_steps(fd_actions, origin, destination)
@@ -1233,7 +1393,7 @@ class ConversationAgent:
             instr = self._get_local_instructions(bname, flr, o_loc, d_loc)
             if instr:
                 return [{
-                    "instruction": " ".join(instr),
+                    "instruction": self._normalize_instruction(" ".join(instr)),
                     "type": "local_walk",
                     "verification": "voice",
                     "expected_photo_type": None,
@@ -1262,9 +1422,15 @@ class ConversationAgent:
 
         steps: List[Dict] = []
 
+        ctx_hurry = False
+        for ctx in self.contexts.values():
+            if ctx.origin == origin and ctx.destination == destination:
+                ctx_hurry = ctx.hurry_mode
+                break
+
         if o_bld == d_bld:
             bname = _BUILDING_NAMES.get(o_bld, "G")
-            use_elevator = self._has_elevator(o_bld)
+            use_elevator = self._has_elevator(o_bld) and not ctx_hurry
             mobility = "ascensor" if use_elevator else "escaleras"
             mobility_type = "elevator" if use_elevator else "stairs"
 
@@ -1272,7 +1438,7 @@ class ConversationAgent:
                 instr = self._get_local_instructions(bname, o_flr, o_loc, mobility)
                 if instr:
                     steps.append({
-                        "instruction": " ".join(instr),
+                        "instruction": self._normalize_instruction(" ".join(instr)),
                         "type": "local_walk",
                         "verification": "voice",
                         "expected_photo_type": None,
@@ -1290,12 +1456,17 @@ class ConversationAgent:
                     f"{_floor_text(d_flr)}. Press the button and wait."
                 )
             else:
+                safety = (
+                    "Take it one step at a time and hold the handrail firmly."
+                    if not ctx_hurry else "Take the stairs quickly, but be careful."
+                )
                 instr_text = (
                     f"Go {direction} the stairs from {_floor_text(o_flr)} to "
-                    f"{_floor_text(d_flr)}. Use the handrail for safety."
+                    f"{_floor_text(d_flr)}. {safety}"
                 )
-            steps.append({
-                "instruction": instr_text,
+
+            step_data = {
+                "instruction": self._normalize_instruction(instr_text),
                 "type": mobility_type,
                 "verification": "photo",
                 "expected_photo_type": mobility_type,
@@ -1304,23 +1475,30 @@ class ConversationAgent:
                     f"Locate the {'elevator' if mobility_type == 'elevator' else 'stairs'} "
                     f"on {_floor_text(o_flr)}."
                 ),
-                "post_photo_instruction": (
+                "elevator_photo_flow": mobility_type == "elevator",
+            }
+            if mobility_type == "elevator":
+                step_data["post_photo_instruction"] = (
                     f"Enter the elevator, press floor {d_flr}, "
                     "wait until you arrive, and exit the elevator."
-                ) if mobility_type == "elevator" else instr_text,
-                "elevator_photo_flow": mobility_type == "elevator",
-                "_elevator_stage": 1 if mobility_type == "elevator" else None,
-                "elevator_stage2_instruction": (
+                )
+                step_data["_elevator_stage"] = 1
+                step_data["elevator_stage2_instruction"] = (
                     "Press the button to call the elevator. "
                     "When the doors are open, send me a photo so I can confirm."
-                ) if mobility_type == "elevator" else None,
-            })
+                )
+            else:
+                step_data["post_photo_instruction"] = (
+                    f"I can see the stairs going {direction}. {safety}"
+                )
+                step_data["stairs_direction"] = direction
+            steps.append(step_data)
 
             if d_loc and d_loc != mobility:
                 instr = self._get_local_instructions(bname, d_flr, mobility, d_loc)
                 if instr:
                     steps.append({
-                        "instruction": " ".join(instr),
+                        "instruction": self._normalize_instruction(" ".join(instr)),
                         "type": "local_walk",
                         "verification": "voice",
                         "expected_photo_type": None,
@@ -1338,7 +1516,7 @@ class ConversationAgent:
                 instr = self._get_local_instructions(bname_o, o_flr, o_loc, mobility)
                 if instr:
                     steps.append({
-                        "instruction": " ".join(instr),
+                        "instruction": self._normalize_instruction(" ".join(instr)),
                         "type": "local_walk",
                         "verification": "voice",
                         "expected_photo_type": None,
@@ -1349,7 +1527,7 @@ class ConversationAgent:
                 else f"Take the {mtype} from {_floor_text(o_flr)} to the ground floor."
             )
             steps.append({
-                "instruction": instr_text,
+                "instruction": self._normalize_instruction(instr_text),
                 "type": mtype,
                 "verification": "photo",
                 "expected_photo_type": mtype,
@@ -1370,19 +1548,29 @@ class ConversationAgent:
                 ) if mtype == "elevator" else None,
             })
 
+        to_name = _BUILDING_FULL.get(d_bld, "the destination building")
         hallway_instr = self._get_connection_instructions(o_bld, 0, d_bld, 0, "hallway")
-        instr_text = (
-            " ".join(hallway_instr) if hallway_instr
-            else (
-                f"Exit {_BUILDING_FULL.get(o_bld, 'the building')} and walk outdoors "
-                f"to {_BUILDING_FULL.get(d_bld, 'the destination building')}."
+        if hallway_instr:
+            instr_text = " ".join(hallway_instr)
+        elif o_flr != 0:
+            instr_text = (
+                "Push through the two glass doors to exit the building. "
+                f"Google Maps will guide you walking to {to_name}."
             )
-        )
+        else:
+            instr_text = (
+                f"Head to the main entrance of {_BUILDING_FULL.get(o_bld, 'the building')}. "
+                "Push through the two glass doors to exit the building. "
+                f"Google Maps will guide you walking to {to_name}."
+            )
         steps.append({
-            "instruction": instr_text,
+            "instruction": self._normalize_instruction(instr_text),
             "type": "outdoor",
             "verification": "voice",
             "expected_photo_type": None,
+            "outdoor_from_building": o_bld,
+            "outdoor_to_building": d_bld,
+            "use_gps": True,
         })
 
         if d_flr != 0:
@@ -1397,7 +1585,7 @@ class ConversationAgent:
                 )
             )
             steps.append({
-                "instruction": instr_text,
+                "instruction": self._normalize_instruction(instr_text),
                 "type": mtype,
                 "verification": "photo",
                 "expected_photo_type": mtype,
@@ -1419,12 +1607,18 @@ class ConversationAgent:
             })
 
         if d_loc:
-            instr = self._get_local_instructions(bname_d, d_flr, "ascensor", d_loc)
+            dest_entrance = self._entrance_id(d_bld)
+            arrival_point = "ascensor" if d_flr != 0 else dest_entrance
+            instr = self._get_local_instructions(bname_d, d_flr, arrival_point, d_loc)
+            if not instr:
+                instr = self._get_local_instructions(bname_d, d_flr, "ascensor", d_loc)
             if not instr:
                 instr = self._get_local_instructions(bname_d, d_flr, "escaleras", d_loc)
+            if not instr:
+                instr = self._get_local_instructions(bname_d, d_flr, dest_entrance, d_loc)
             if instr:
                 steps.append({
-                    "instruction": " ".join(instr),
+                    "instruction": self._normalize_instruction(" ".join(instr)),
                     "type": "local_walk",
                     "verification": "voice",
                     "expected_photo_type": None,
@@ -1437,8 +1631,43 @@ class ConversationAgent:
     def _get_local_instructions(
         self, building_name: str, floor: int, from_loc: str, to_loc: str
     ) -> Optional[List[str]]:
+        """Return walking instructions between two POIs on the same floor.
+        Falls back to BFS through intermediate nodes when no direct edge exists."""
         key = f"{building_name}_{floor}_{from_loc}_{to_loc}"
-        return self._local_idx.get(key)
+        direct = self._local_idx.get(key)
+        if direct:
+            return direct
+        return self._bfs_local_instructions(building_name, floor, from_loc, to_loc)
+
+    def _bfs_local_instructions(
+        self, building_name: str, floor: int, from_loc: str, to_loc: str
+    ) -> Optional[List[str]]:
+        """BFS across local_connections to chain instructions when no direct link exists."""
+        bf_key = f"{building_name}_{floor}"
+        adjacency = self._local_adj.get(bf_key, {})
+        if from_loc not in adjacency:
+            return None
+
+        visited = {from_loc}
+        queue: deque = deque([(from_loc, [from_loc])])
+
+        while queue:
+            current, path = queue.popleft()
+            for neighbor in adjacency.get(current, []):
+                if neighbor in visited:
+                    continue
+                new_path = path + [neighbor]
+                if neighbor == to_loc:
+                    instructions: List[str] = []
+                    for i in range(len(new_path) - 1):
+                        k = f"{building_name}_{floor}_{new_path[i]}_{new_path[i+1]}"
+                        seg = self._local_idx.get(k, [])
+                        instructions.extend(seg)
+                    return instructions if instructions else None
+                visited.add(neighbor)
+                queue.append((neighbor, new_path))
+
+        return None
 
     def _get_connection_instructions(
         self, from_bld: int, from_flr: int, to_bld: int, to_flr: int, conn_type: str
@@ -1458,6 +1687,36 @@ class ConversationAgent:
                 if conn_type == ctype:
                     return c.get("instructions")
         return None
+
+    def _normalize_instruction(self, text: str) -> str:
+        """Normalize instruction wording to concise, English-only phrasing."""
+        if not text:
+            return text
+        out = text
+        out = out.replace("ascensor", "elevator").replace("escaleras", "stairs")
+        out = out.replace("entrada_principal", "main entrance").replace("entrada principal", "main entrance")
+        out = out.replace("directorio_0", "directory sign").replace("directorio_1", "directory sign").replace("directorio_2", "directory sign")
+        out = out.replace("lab_ia", "AI laboratory").replace("lab ia", "AI laboratory")
+        out = out.replace("bano", "restroom")
+        out = out.replace("despachos_eps", "EPS faculty offices").replace("despachos eps", "EPS faculty offices")
+        out = out.replace("sala_mentorias", "mentoring room").replace("sala mentorias", "mentoring room")
+        out = re.sub(r"\baula[_\s]+(\d+)[_\s]+(\d+)\b", r"room \1.\2", out, flags=re.IGNORECASE)
+        out = re.sub(r"\s+", " ", out).strip()
+        return out
+
+    def _next_local_walk_hint(self, ctx: ConversationContext) -> str:
+        """Return a short hint about the immediate next walking step, if available."""
+        next_idx = ctx.current_step_idx + 1
+        if next_idx < len(ctx.route_steps):
+            nxt = ctx.route_steps[next_idx]
+            if nxt.get("type") == "local_walk":
+                return f" After you arrive, {nxt.get('instruction', '').strip()} "
+        return ""
+
+    def _entrance_id(self, building_id: int) -> str:
+        """Return the entrance location_id for a building."""
+        entrances = {1: "entrada_principal", 2: "entrada_cd", 3: "entrada_principal"}
+        return entrances.get(building_id, "entrada_principal")
 
     def _has_elevator(self, building_id: int) -> bool:
         for b in self.graph.get("buildings", []):
@@ -1527,6 +1786,38 @@ class ConversationAgent:
                 result["location_id"] = "escaleras"
             elif any(w in low for w in ("restroom", "bathroom", "baño", "aseo", "toilet")):
                 result["location_id"] = "bano"
+            elif any(w in low for w in ("ai lab", "laboratorio ia", "laboratorio de ia",
+                                         "lab ia", "ia lab", "ai laboratory")):
+                result["location_id"] = "lab_ia"
+                if result["building"] is None:
+                    result["building"] = 1
+                if result["floor"] is None:
+                    result["floor"] = 0
+            elif any(w in low for w in ("office", "despacho", "faculty", "profesor")):
+                result["location_id"] = "despachos"
+                if result["building"] is None:
+                    result["building"] = 1
+                if result["floor"] is None:
+                    result["floor"] = 1
+            elif any(w in low for w in ("secretary", "secretar")):
+                result["location_id"] = "secretaria"
+                if result["building"] is None:
+                    result["building"] = 1
+                if result["floor"] is None:
+                    result["floor"] = 2
+            elif any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
+                result["location_id"] = "sala_mentorias"
+                if result["building"] is None:
+                    result["building"] = 1
+                if result["floor"] is None:
+                    result["floor"] = 2
+            elif any(w in low for w in ("eps office", "eps faculty", "despacho eps",
+                                         "despachos eps")):
+                result["location_id"] = "despachos_eps"
+                if result["building"] is None:
+                    result["building"] = 1
+                if result["floor"] is None:
+                    result["floor"] = 2
 
         # Default building to G if we found a room code in G
         if result["building"] is None and result["floor"] is not None and result["location_id"]:
@@ -1548,7 +1839,7 @@ class ConversationAgent:
             return {
                 "building": fl.get("building", 2),
                 "floor": fl.get("floor", 0),
-                "location_id": None,
+                "location_id": "cafeteria",
                 "label": "the cafeteria",
                 "functional": "cafeteria",
             }
@@ -1557,9 +1848,43 @@ class ConversationAgent:
             return {
                 "building": fl.get("building", 2),
                 "floor": fl.get("floor", -1),
-                "location_id": None,
+                "location_id": "gimnasio",
                 "label": "the gym",
                 "functional": "gimnasio",
+            }
+
+        # Named locations in Building G
+        if any(w in low for w in ("ai lab", "laboratorio ia", "laboratorio de ia",
+                                   "lab ia", "ia lab", "ai laboratory")):
+            return {
+                "building": 1, "floor": 0, "location_id": "lab_ia",
+                "label": "the AI Laboratory",
+            }
+        if any(w in low for w in ("eps office", "eps faculty", "despacho eps",
+                                   "despachos eps", "eps professor")):
+            return {
+                "building": 1, "floor": 2, "location_id": "despachos_eps",
+                "label": "the EPS Faculty Offices",
+            }
+        if any(w in low for w in ("faculty office", "despacho", "profesor")):
+            return {
+                "building": 1, "floor": 1, "location_id": "despachos",
+                "label": "the faculty offices",
+            }
+        if any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
+            return {
+                "building": 1, "floor": 2, "location_id": "sala_mentorias",
+                "label": "the Mentoring Room",
+            }
+        if any(w in low for w in ("secretary", "secretar")):
+            return {
+                "building": 1, "floor": 2, "location_id": "secretaria",
+                "label": "the Secretary Office",
+            }
+        if any(w in low for w in ("main entrance", "entrance", "entrada")):
+            return {
+                "building": 1, "floor": 0, "location_id": "entrada_principal",
+                "label": "the main entrance",
             }
 
         # Nearest restroom
@@ -1641,9 +1966,17 @@ class ConversationAgent:
     def _nice_location_name(self, loc_id: str) -> str:
         mapping = {
             "entrada_principal": "the main entrance",
+            "entrada_cd": "the Sports Centre entrance",
             "ascensor": "the elevator",
             "escaleras": "the stairs",
             "bano": "the restroom",
+            "lab_ia": "the AI Laboratory",
+            "despachos": "the faculty offices",
+            "despachos_eps": "the EPS Faculty Offices",
+            "secretaria": "the Secretary Office",
+            "sala_mentorias": "the Mentoring Room",
+            "cafeteria": "the cafeteria",
+            "gimnasio": "the gym",
         }
         if loc_id in mapping:
             return mapping[loc_id]
@@ -1663,16 +1996,19 @@ class ConversationAgent:
         tts: str,
         next_input: str,
         action: str,
+        **extra: Any,
     ) -> Dict[str, Any]:
         ctx.last_tts = tts
         ctx.add("system", tts)
-        return {
+        result = {
             "tts_message": tts,
             "next_input": next_input,
             "state": ctx.state.value,
             "action": action,
             "context": ctx.to_dict(),
         }
+        result.update(extra)
+        return result
 
     # ── Backwards-compatible methods (called by planning_api.py) ───────
 

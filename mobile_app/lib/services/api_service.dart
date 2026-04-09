@@ -2,20 +2,21 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../core/app_config.dart';
+
 class ApiService {
-  // 10.0.2.2 maps to localhost on the host machine from Android emulator
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static String get _base => AppConfig.baseUrl;
 
   static Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/api/analyze-image'),
+      Uri.parse('$_base/api/analyze-image'),
     );
     request.files.add(
       await http.MultipartFile.fromPath('file', imageFile.path),
     );
     final response =
-        await request.send().timeout(const Duration(seconds: 60));
+        await request.send().timeout(AppConfig.analyzeImageTimeout);
     final body = await response.stream.bytesToString();
     return jsonDecode(body) as Map<String, dynamic>;
   }
@@ -23,13 +24,13 @@ class ApiService {
   static Future<Map<String, dynamic>> transcribeAudio(File audioFile) async {
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$baseUrl/api/transcribe-audio'),
+      Uri.parse('$_base/api/transcribe-audio'),
     );
     request.files.add(
       await http.MultipartFile.fromPath('file', audioFile.path),
     );
     final response =
-        await request.send().timeout(const Duration(seconds: 45));
+        await request.send().timeout(AppConfig.transcribeTimeout);
     final body = await response.stream.bytesToString();
     return jsonDecode(body) as Map<String, dynamic>;
   }
@@ -41,10 +42,12 @@ class ApiService {
     int? goalFloor,
     String? goalFunctional,
     bool humanoDisponible = true,
+    bool hurryMode = false,
   }) async {
     final body = <String, dynamic>{
       'initial_state': {'building': initialBuilding, 'floor': initialFloor},
       'humano_disponible': humanoDisponible,
+      'hurry_mode': hurryMode,
     };
     if (goalFunctional != null) {
       body['goal_functional'] = goalFunctional;
@@ -53,11 +56,11 @@ class ApiService {
     }
     final response = await http
         .post(
-          Uri.parse('$baseUrl/api/plan'),
+          Uri.parse('$_base/api/plan'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 60));
+        .timeout(AppConfig.planTimeout);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -75,11 +78,11 @@ class ApiService {
     }
     final response = await http
         .post(
-          Uri.parse('$baseUrl/api/conversation'),
+          Uri.parse('$_base/api/conversation'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 30));
+        .timeout(AppConfig.conversationTimeout);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
@@ -89,12 +92,12 @@ class ApiService {
   }) async {
     final response = await http
         .post(
-          Uri.parse('$baseUrl/api/gps-route'),
+          Uri.parse('$_base/api/gps-route'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(
               {'from_building': fromBuilding, 'to_building': toBuilding}),
         )
-        .timeout(const Duration(seconds: 15));
+        .timeout(AppConfig.gpsRouteTimeout);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 }

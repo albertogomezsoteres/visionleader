@@ -1,32 +1,37 @@
 {
-    "_comment": "Campus graph for UFV - Demo buildings G, CD, H with location-level detail in G.",
-    "_description": "Reduced campus with 3 buildings. G has detailed locations (classrooms, entrance, restrooms). CD and H are minimal.",
+    "_comment": "Campus graph for UFV navigation demo. Building G has full location detail; CD and H are minimal.",
     "metadata": {
-        "version": "3.0",
-        "last_updated": "2025-03-04",
-        "coverage": "Demo: G (detailed), CD, H (minimal)",
+        "version": "5.0",
+        "last_updated": "2026-04-06",
+        "coverage": "G (3 floors, all-to-all), CD (cafeteria, gym), H (minimal)",
         "total_buildings": 3,
-        "data_source": "Manual mapping for TFG demo",
-        "validation_status": "validated"
+        "data_source": "Manual mapping for TFG demo"
     },
     "buildings": [
         {
             "id": 1,
             "name": "G",
             "full_name": "Edificio G (Escuela Politécnica Superior)",
-            "floors": [0, 1, 2],
+            "floors": [
+                0,
+                1,
+                2
+            ],
             "elevators": true,
             "stairs": true,
-            "description": "Escuela Politécnica Superior. Entrada principal en planta 0. Ascensor y escaleras disponibles."
+            "description": "Main engineering school. Entrance on floor 0. Elevator and stairs at the end of the corridor."
         },
         {
             "id": 2,
             "name": "CD",
             "full_name": "Centro Deportivo",
-            "floors": [-1, 0],
+            "floors": [
+                -1,
+                0
+            ],
             "elevators": true,
             "stairs": true,
-            "description": "Centro Deportivo. Cafetería en planta 0, gimnasio en planta -1.",
+            "description": "Sports centre. Cafeteria on floor 0, gym on floor -1.",
             "cafeteria_floor": 0,
             "gimnasio_floor": -1
         },
@@ -34,459 +39,1093 @@
             "id": 3,
             "name": "H",
             "full_name": "Edificio H",
-            "floors": [0, 1],
+            "floors": [
+                0,
+                1
+            ],
             "elevators": true,
             "stairs": true,
-            "description": "Edificio H. Entrada en planta 0."
+            "description": "Building H. Entrance on floor 0."
         }
     ],
     "connections": [
         {
-            "from": {"building": 1, "floor": 0},
-            "to": {"building": 1, "floor": 1},
+            "from": {
+                "building": 1,
+                "floor": 0
+            },
+            "to": {
+                "building": 1,
+                "floor": 1
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 0 → planta 1",
-            "instructions": [
-                "Localiza el ascensor en la planta 0",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 1",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 1},
-            "to": {"building": 1, "floor": 0},
+            "from": {
+                "building": 1,
+                "floor": 1
+            },
+            "to": {
+                "building": 1,
+                "floor": 0
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 1 → planta 0",
-            "instructions": [
-                "Localiza el ascensor en la planta 1",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 0",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 0},
-            "to": {"building": 1, "floor": 2},
+            "from": {
+                "building": 1,
+                "floor": 0
+            },
+            "to": {
+                "building": 1,
+                "floor": 2
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 0 → planta 2",
-            "instructions": [
-                "Localiza el ascensor en la planta 0",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 2",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 2},
-            "to": {"building": 1, "floor": 0},
+            "from": {
+                "building": 1,
+                "floor": 2
+            },
+            "to": {
+                "building": 1,
+                "floor": 0
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 2 → planta 0",
-            "instructions": [
-                "Localiza el ascensor en la planta 2",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 0",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 1},
-            "to": {"building": 1, "floor": 2},
+            "from": {
+                "building": 1,
+                "floor": 1
+            },
+            "to": {
+                "building": 1,
+                "floor": 2
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 1 → planta 2",
-            "instructions": [
-                "Localiza el ascensor en la planta 1",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 2",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 2},
-            "to": {"building": 1, "floor": 1},
+            "from": {
+                "building": 1,
+                "floor": 2
+            },
+            "to": {
+                "building": 1,
+                "floor": 1
+            },
             "type": "elevator",
-            "description": "Ascensor G: planta 2 → planta 1",
-            "instructions": [
-                "Localiza el ascensor en la planta 2",
-                "Pulsa el botón para llamar al ascensor",
-                "Cuando se abran las puertas, entra",
-                "Pulsa el botón de la planta 1",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 0},
-            "to": {"building": 1, "floor": 1},
+            "from": {
+                "building": 1,
+                "floor": 0
+            },
+            "to": {
+                "building": 1,
+                "floor": 1
+            },
             "type": "stairs_up",
-            "description": "Escaleras G: planta 0 → planta 1",
-            "instructions": [
-                "Localiza las escaleras en la planta 0",
-                "Sube las escaleras hasta la planta 1",
-                "Usa el pasamanos si está disponible"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 1, "floor": 1},
-            "to": {"building": 1, "floor": 0},
+            "from": {
+                "building": 1,
+                "floor": 1
+            },
+            "to": {
+                "building": 1,
+                "floor": 0
+            },
             "type": "stairs_down",
-            "description": "Escaleras G: planta 1 → planta 0",
-            "instructions": [
-                "Localiza las escaleras en la planta 1",
-                "Baja las escaleras hasta la planta 0",
-                "Usa el pasamanos si está disponible"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 1, "floor": 1},
-            "to": {"building": 1, "floor": 2},
+            "from": {
+                "building": 1,
+                "floor": 1
+            },
+            "to": {
+                "building": 1,
+                "floor": 2
+            },
             "type": "stairs_up",
-            "description": "Escaleras G: planta 1 → planta 2",
-            "instructions": [
-                "Localiza las escaleras en la planta 1",
-                "Sube las escaleras hasta la planta 2",
-                "Usa el pasamanos si está disponible"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 1, "floor": 2},
-            "to": {"building": 1, "floor": 1},
+            "from": {
+                "building": 1,
+                "floor": 2
+            },
+            "to": {
+                "building": 1,
+                "floor": 1
+            },
             "type": "stairs_down",
-            "description": "Escaleras G: planta 2 → planta 1",
-            "instructions": [
-                "Localiza las escaleras en la planta 2",
-                "Baja las escaleras hasta la planta 1",
-                "Usa el pasamanos si está disponible"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 2, "floor": 0},
-            "to": {"building": 2, "floor": -1},
+            "from": {
+                "building": 2,
+                "floor": 0
+            },
+            "to": {
+                "building": 2,
+                "floor": -1
+            },
             "type": "elevator",
-            "description": "Ascensor CD: planta 0 → planta -1",
-            "instructions": [
-                "Localiza el ascensor en la planta 0 del Centro Deportivo",
-                "Pulsa el botón de la planta -1",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 2, "floor": -1},
-            "to": {"building": 2, "floor": 0},
+            "from": {
+                "building": 2,
+                "floor": -1
+            },
+            "to": {
+                "building": 2,
+                "floor": 0
+            },
             "type": "elevator",
-            "description": "Ascensor CD: planta -1 → planta 0",
-            "instructions": [
-                "Localiza el ascensor en la planta -1 del Centro Deportivo",
-                "Pulsa el botón de la planta 0",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 2, "floor": 0},
-            "to": {"building": 2, "floor": -1},
+            "from": {
+                "building": 2,
+                "floor": 0
+            },
+            "to": {
+                "building": 2,
+                "floor": -1
+            },
             "type": "stairs_down",
-            "description": "Escaleras CD: planta 0 → planta -1",
-            "instructions": [
-                "Localiza las escaleras en la planta 0 del Centro Deportivo",
-                "Baja las escaleras hasta la planta -1"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 2, "floor": -1},
-            "to": {"building": 2, "floor": 0},
+            "from": {
+                "building": 2,
+                "floor": -1
+            },
+            "to": {
+                "building": 2,
+                "floor": 0
+            },
             "type": "stairs_up",
-            "description": "Escaleras CD: planta -1 → planta 0",
-            "instructions": [
-                "Localiza las escaleras en la planta -1 del Centro Deportivo",
-                "Sube las escaleras hasta la planta 0"
-            ],
             "cost": 1.5,
             "accessibility": "limited"
         },
         {
-            "from": {"building": 3, "floor": 0},
-            "to": {"building": 3, "floor": 1},
+            "from": {
+                "building": 3,
+                "floor": 0
+            },
+            "to": {
+                "building": 3,
+                "floor": 1
+            },
             "type": "elevator",
-            "description": "Ascensor H: planta 0 → planta 1",
-            "instructions": [
-                "Localiza el ascensor en la planta 0 del edificio H",
-                "Pulsa el botón de la planta 1",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 3, "floor": 1},
-            "to": {"building": 3, "floor": 0},
+            "from": {
+                "building": 3,
+                "floor": 1
+            },
+            "to": {
+                "building": 3,
+                "floor": 0
+            },
             "type": "elevator",
-            "description": "Ascensor H: planta 1 → planta 0",
-            "instructions": [
-                "Localiza el ascensor en la planta 1 del edificio H",
-                "Pulsa el botón de la planta 0",
-                "Espera a llegar y sal del ascensor"
-            ],
             "cost": 1.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 0},
-            "to": {"building": 2, "floor": 0},
+            "from": {
+                "building": 3,
+                "floor": 0
+            },
+            "to": {
+                "building": 3,
+                "floor": 1
+            },
+            "type": "stairs_up",
+            "cost": 1.5,
+            "accessibility": "limited"
+        },
+        {
+            "from": {
+                "building": 3,
+                "floor": 1
+            },
+            "to": {
+                "building": 3,
+                "floor": 0
+            },
+            "type": "stairs_down",
+            "cost": 1.5,
+            "accessibility": "limited"
+        },
+        {
+            "from": {
+                "building": 1,
+                "floor": 0
+            },
+            "to": {
+                "building": 2,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior G → CD",
-            "instructions": [
-                "Sal del edificio G por la entrada principal",
-                "Sigue el camino exterior hacia el Centro Deportivo",
-                "Entra al Centro Deportivo por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 2, "floor": 0},
-            "to": {"building": 1, "floor": 0},
+            "from": {
+                "building": 2,
+                "floor": 0
+            },
+            "to": {
+                "building": 1,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior CD → G",
-            "instructions": [
-                "Sal del Centro Deportivo por la entrada principal",
-                "Sigue el camino exterior hacia el edificio G",
-                "Entra al edificio G por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 1, "floor": 0},
-            "to": {"building": 3, "floor": 0},
+            "from": {
+                "building": 1,
+                "floor": 0
+            },
+            "to": {
+                "building": 3,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior G → H",
-            "instructions": [
-                "Sal del edificio G por la entrada principal",
-                "Sigue el camino exterior hacia el edificio H",
-                "Entra al edificio H por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 3, "floor": 0},
-            "to": {"building": 1, "floor": 0},
+            "from": {
+                "building": 3,
+                "floor": 0
+            },
+            "to": {
+                "building": 1,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior H → G",
-            "instructions": [
-                "Sal del edificio H por la entrada principal",
-                "Sigue el camino exterior hacia el edificio G",
-                "Entra al edificio G por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 2, "floor": 0},
-            "to": {"building": 3, "floor": 0},
+            "from": {
+                "building": 2,
+                "floor": 0
+            },
+            "to": {
+                "building": 3,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior CD → H",
-            "instructions": [
-                "Sal del Centro Deportivo por la entrada principal",
-                "Sigue el camino exterior hacia el edificio H",
-                "Entra al edificio H por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         },
         {
-            "from": {"building": 3, "floor": 0},
-            "to": {"building": 2, "floor": 0},
+            "from": {
+                "building": 3,
+                "floor": 0
+            },
+            "to": {
+                "building": 2,
+                "floor": 0
+            },
             "type": "hallway",
-            "description": "Camino exterior H → CD",
-            "instructions": [
-                "Sal del edificio H por la entrada principal",
-                "Sigue el camino exterior hacia el Centro Deportivo",
-                "Entra al Centro Deportivo por la entrada principal"
-            ],
             "cost": 2.0,
             "accessibility": "full"
         }
     ],
     "functional_locations": {
-        "cafeteria": {"building": 2, "floor": 0, "description": "Cafetería del Centro Deportivo"},
-        "gimnasio": {"building": 2, "floor": -1, "description": "Gimnasio del Centro Deportivo"}
+        "cafeteria": {
+            "building": 2,
+            "floor": 0,
+            "description": "Cafeteria in the Sports Centre"
+        },
+        "gimnasio": {
+            "building": 2,
+            "floor": -1,
+            "description": "Gym in the Sports Centre basement"
+        }
     },
     "locations": {
         "G": {
             "0": [
-                {"id": "entrada_principal", "name": "Main Entrance", "name_es": "Entrada Principal", "type": "entrance"},
-                {"id": "aula_0_3", "name": "Classroom 0.3", "name_es": "Aula 0.3", "type": "classroom", "room_code": "0.3"},
-                {"id": "ascensor", "name": "Elevator", "name_es": "Ascensor", "type": "elevator"},
-                {"id": "escaleras", "name": "Stairs", "name_es": "Escaleras", "type": "stairs"},
-                {"id": "bano", "name": "Restroom", "name_es": "Baño", "type": "restroom"}
+                {
+                    "id": "entrada_principal",
+                    "name": "Main Entrance",
+                    "name_es": "Entrada Principal",
+                    "type": "entrance"
+                },
+                {
+                    "id": "aula_0_1",
+                    "name": "Classroom 0.1",
+                    "name_es": "Aula 0.1",
+                    "type": "classroom",
+                    "room_code": "0.1"
+                },
+                {
+                    "id": "aula_0_3",
+                    "name": "Classroom 0.3",
+                    "name_es": "Aula 0.3",
+                    "type": "classroom",
+                    "room_code": "0.3"
+                },
+                {
+                    "id": "lab_ia",
+                    "name": "AI Laboratory",
+                    "name_es": "Laboratorio de IA",
+                    "type": "laboratory",
+                    "room_code": "0.5"
+                },
+                {
+                    "id": "directorio_0",
+                    "name": "Floor Directory",
+                    "name_es": "Directorio Planta",
+                    "type": "directory_sign"
+                },
+                {
+                    "id": "ascensor",
+                    "name": "Elevator",
+                    "name_es": "Ascensor",
+                    "type": "elevator"
+                },
+                {
+                    "id": "escaleras",
+                    "name": "Stairs",
+                    "name_es": "Escaleras",
+                    "type": "stairs"
+                },
+                {
+                    "id": "bano",
+                    "name": "Restroom",
+                    "name_es": "Baño",
+                    "type": "restroom"
+                }
             ],
             "1": [
-                {"id": "aula_1_4", "name": "Classroom 1.4", "name_es": "Aula 1.4", "type": "classroom", "room_code": "1.4"},
-                {"id": "ascensor", "name": "Elevator", "name_es": "Ascensor", "type": "elevator"},
-                {"id": "escaleras", "name": "Stairs", "name_es": "Escaleras", "type": "stairs"},
-                {"id": "bano", "name": "Restroom", "name_es": "Baño", "type": "restroom"}
+                {
+                    "id": "aula_1_1",
+                    "name": "Classroom 1.1",
+                    "name_es": "Aula 1.1",
+                    "type": "classroom",
+                    "room_code": "1.1"
+                },
+                {
+                    "id": "aula_1_4",
+                    "name": "Classroom 1.4",
+                    "name_es": "Aula 1.4",
+                    "type": "classroom",
+                    "room_code": "1.4"
+                },
+                {
+                    "id": "despachos",
+                    "name": "Faculty Offices",
+                    "name_es": "Despachos Profesores",
+                    "type": "office"
+                },
+                {
+                    "id": "directorio_1",
+                    "name": "Floor Directory",
+                    "name_es": "Directorio Planta",
+                    "type": "directory_sign"
+                },
+                {
+                    "id": "ascensor",
+                    "name": "Elevator",
+                    "name_es": "Ascensor",
+                    "type": "elevator"
+                },
+                {
+                    "id": "escaleras",
+                    "name": "Stairs",
+                    "name_es": "Escaleras",
+                    "type": "stairs"
+                },
+                {
+                    "id": "bano",
+                    "name": "Restroom",
+                    "name_es": "Baño",
+                    "type": "restroom"
+                }
             ],
             "2": [
-                {"id": "aula_2_1", "name": "Classroom 2.1", "name_es": "Aula 2.1", "type": "classroom", "room_code": "2.1"},
-                {"id": "ascensor", "name": "Elevator", "name_es": "Ascensor", "type": "elevator"},
-                {"id": "escaleras", "name": "Stairs", "name_es": "Escaleras", "type": "stairs"},
-                {"id": "bano", "name": "Restroom", "name_es": "Baño", "type": "restroom"}
+                {
+                    "id": "aula_2_1",
+                    "name": "Classroom 2.1",
+                    "name_es": "Aula 2.1",
+                    "type": "classroom",
+                    "room_code": "2.1"
+                },
+                {
+                    "id": "sala_mentorias",
+                    "name": "Mentoring Room",
+                    "name_es": "Sala de Mentorías",
+                    "type": "office"
+                },
+                {
+                    "id": "despachos_eps",
+                    "name": "EPS Faculty Offices",
+                    "name_es": "Despachos Profesores EPS",
+                    "type": "office"
+                },
+                {
+                    "id": "secretaria",
+                    "name": "Secretary Office",
+                    "name_es": "Secretaría",
+                    "type": "office"
+                },
+                {
+                    "id": "directorio_2",
+                    "name": "Floor Directory",
+                    "name_es": "Directorio Planta",
+                    "type": "directory_sign"
+                },
+                {
+                    "id": "ascensor",
+                    "name": "Elevator",
+                    "name_es": "Ascensor",
+                    "type": "elevator"
+                },
+                {
+                    "id": "escaleras",
+                    "name": "Stairs",
+                    "name_es": "Escaleras",
+                    "type": "stairs"
+                },
+                {
+                    "id": "bano",
+                    "name": "Restroom",
+                    "name_es": "Baño",
+                    "type": "restroom"
+                }
+            ]
+        },
+        "CD": {
+            "0": [
+                {
+                    "id": "entrada_cd",
+                    "name": "CD Entrance",
+                    "name_es": "Entrada CD",
+                    "type": "entrance"
+                },
+                {
+                    "id": "cafeteria",
+                    "name": "Cafeteria",
+                    "name_es": "Cafetería",
+                    "type": "cafeteria"
+                },
+                {
+                    "id": "ascensor",
+                    "name": "Elevator",
+                    "name_es": "Ascensor",
+                    "type": "elevator"
+                },
+                {
+                    "id": "escaleras",
+                    "name": "Stairs",
+                    "name_es": "Escaleras",
+                    "type": "stairs"
+                }
+            ],
+            "-1": [
+                {
+                    "id": "gimnasio",
+                    "name": "Gym",
+                    "name_es": "Gimnasio",
+                    "type": "gym"
+                },
+                {
+                    "id": "ascensor",
+                    "name": "Elevator",
+                    "name_es": "Ascensor",
+                    "type": "elevator"
+                },
+                {
+                    "id": "escaleras",
+                    "name": "Stairs",
+                    "name_es": "Escaleras",
+                    "type": "stairs"
+                }
             ]
         }
     },
     "local_connections": [
         {
-            "building": "G", "floor": 0,
-            "from": "entrada_principal", "to": "aula_0_3",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "aula_0_1",
             "instructions": [
-                "From the main entrance, walk straight down the main corridor.",
-                "Classroom 0.3 is the third door on your right."
+                "Walk 24 meters from entrada principal to aula 0 1."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "aula_0_3", "to": "entrada_principal",
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "entrada_principal",
             "instructions": [
-                "Exit classroom 0.3 and turn left.",
-                "Walk straight down the corridor to the main entrance."
+                "Walk 24 meters from aula 0 1 to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "entrada_principal", "to": "ascensor",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "aula_0_3",
             "instructions": [
-                "From the main entrance, walk straight ahead down the main corridor.",
-                "The elevator is at the end of the corridor on your left."
+                "Walk 6 meters from entrada principal to aula 0 3."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "ascensor", "to": "entrada_principal",
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "entrada_principal",
             "instructions": [
-                "From the elevator, walk straight down the corridor.",
-                "The main entrance is at the end."
+                "Walk 6 meters from aula 0 3 to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "entrada_principal", "to": "escaleras",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "lab_ia",
             "instructions": [
-                "From the main entrance, walk straight ahead down the main corridor.",
-                "The stairs are at the end of the corridor on your right."
+                "Walk 18 meters from entrada principal to lab ia."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "escaleras", "to": "entrada_principal",
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "entrada_principal",
             "instructions": [
-                "From the stairs, walk straight down the corridor.",
-                "The main entrance is at the end."
+                "Walk 18 meters from lab ia to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "aula_0_3", "to": "ascensor",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "ascensor",
             "instructions": [
-                "Exit classroom 0.3 and turn left.",
-                "Walk to the end of the corridor.",
-                "The elevator is on your left."
+                "Walk 20 meters from entrada principal to ascensor."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "ascensor", "to": "aula_0_3",
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "entrada_principal",
             "instructions": [
-                "From the elevator, turn right.",
-                "Walk down the corridor.",
-                "Classroom 0.3 is the third door on your left."
+                "Walk 20 meters from ascensor to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "aula_0_3", "to": "escaleras",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "escaleras",
             "instructions": [
-                "Exit classroom 0.3 and turn left.",
-                "Walk to the end of the corridor.",
-                "The stairs are on your right."
+                "Walk 25 meters from entrada principal to escaleras."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "escaleras", "to": "aula_0_3",
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "entrada_principal",
             "instructions": [
-                "From the stairs, turn left.",
-                "Walk down the corridor.",
-                "Classroom 0.3 is the third door on your left."
+                "Walk 25 meters from escaleras to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "aula_0_3", "to": "bano",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "bano",
             "instructions": [
-                "Exit classroom 0.3 and turn right.",
-                "The restroom is the second door on your left."
+                "Walk 14 meters from entrada principal to bano."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "bano", "to": "aula_0_3",
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "entrada_principal",
             "instructions": [
-                "Exit the restroom and turn right.",
-                "Classroom 0.3 is the second door on your right."
+                "Walk 14 meters from bano to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "bano", "to": "ascensor",
+            "building": "G",
+            "floor": 0,
+            "from": "entrada_principal",
+            "to": "directorio_0",
             "instructions": [
-                "Exit the restroom and turn left.",
-                "Walk to the end of the corridor.",
-                "The elevator is on your left."
+                "Walk 17 meters from entrada principal to directorio 0."
             ]
         },
         {
-            "building": "G", "floor": 0,
-            "from": "bano", "to": "escaleras",
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "entrada_principal",
             "instructions": [
-                "Exit the restroom and turn left.",
-                "Walk to the end of the corridor.",
-                "The stairs are on your right."
+                "Walk 17 meters from directorio 0 to entrada principal."
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "ascensor", "to": "aula_1_4",
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 20 meters from aula 0 1 to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 20 meters from aula 0 3 to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 12 meters from aula 0 1 to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 12 meters from lab ia to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 14 meters from aula 0 1 to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 14 meters from ascensor to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 19 meters from aula 0 1 to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 19 meters from escaleras to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "bano",
+            "instructions": [
+                "Walk 8 meters from aula 0 1 to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 8 meters from bano to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_1",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 11 meters from aula 0 1 to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 14 meters from aula 0 3 to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 14 meters from lab ia to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 16 meters from aula 0 3 to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 16 meters from ascensor to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 21 meters from aula 0 3 to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 21 meters from escaleras to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "bano",
+            "instructions": [
+                "Walk 10 meters from aula 0 3 to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 10 meters from bano to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "aula_0_3",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 13 meters from aula 0 3 to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 8 meters from lab ia to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 8 meters from ascensor to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 13 meters from lab ia to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 13 meters from escaleras to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "bano",
+            "instructions": [
+                "Walk 22 meters from lab ia to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 22 meters from bano to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "lab_ia",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 25 meters from lab ia to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 15 meters from ascensor to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 15 meters from escaleras to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "bano",
+            "instructions": [
+                "Walk 24 meters from ascensor to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "bano",
+            "instructions": [
+                "Walk 9 meters from escaleras to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 24 meters from bano to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 9 meters from bano to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "bano",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 21 meters from bano to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 7 meters from directorio 0 to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 7 meters from ascensor to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 12 meters from directorio 0 to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "directorio_0",
+            "instructions": [
+                "Walk 12 meters from escaleras to directorio 0."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "aula_0_1",
+            "instructions": [
+                "Walk 11 meters from directorio 0 to aula 0 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "aula_0_3",
+            "instructions": [
+                "Walk 13 meters from directorio 0 to aula 0 3."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "lab_ia",
+            "instructions": [
+                "Walk 25 meters from directorio 0 to lab ia."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 0,
+            "from": "directorio_0",
+            "to": "bano",
+            "instructions": [
+                "Walk 21 meters from directorio 0 to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "aula_1_1",
+            "instructions": [
+                "Exit the elevator and turn right.",
+                "Walk down the corridor. Classroom 1.1 is the first door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "ascensor",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
+                "Walk to the end of the corridor. The elevator is on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "aula_1_1",
+            "instructions": [
+                "At the top of the stairs, turn left.",
+                "Classroom 1.1 is the first door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "escaleras",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
+                "Walk to the end of the corridor. The stairs are on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "aula_1_4",
             "instructions": [
                 "Exit the elevator and turn right.",
                 "Walk down the corridor.",
@@ -494,8 +1133,10 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "aula_1_4", "to": "ascensor",
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "ascensor",
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
@@ -503,8 +1144,10 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "escaleras", "to": "aula_1_4",
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "aula_1_4",
             "instructions": [
                 "At the top of the stairs, turn left.",
                 "Walk down the corridor.",
@@ -512,8 +1155,10 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "aula_1_4", "to": "escaleras",
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "escaleras",
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
@@ -521,24 +1166,164 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "aula_1_4", "to": "bano",
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "aula_1_4",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
+                "Walk about 20 metres. Classroom 1.4 is on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "aula_1_1",
+            "instructions": [
+                "Exit classroom 1.4 and turn right.",
+                "Walk about 20 metres. Classroom 1.1 is on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "despachos",
+            "instructions": [
+                "Exit the elevator and turn left.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "ascensor",
+            "instructions": [
+                "Exit the offices and turn left.",
+                "Walk to the end of the corridor. The elevator is on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "despachos",
+            "instructions": [
+                "At the top of the stairs, turn right.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "escaleras",
+            "instructions": [
+                "Exit the offices and turn left.",
+                "Walk to the end of the corridor. The stairs are on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "despachos",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
+                "Walk to the end of the corridor and turn left.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "aula_1_1",
+            "instructions": [
+                "Exit the offices and turn left.",
+                "Walk down the corridor. Classroom 1.1 is the first door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "despachos",
+            "instructions": [
+                "Exit classroom 1.4 and turn right.",
+                "Walk to the end of the corridor and turn left.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "aula_1_4",
+            "instructions": [
+                "Exit the offices and turn left.",
+                "Walk down the corridor.",
+                "Classroom 1.4 is the fourth door on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "bano",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
+                "Walk down the corridor. The restroom is at the end on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "aula_1_1",
+            "instructions": [
+                "Exit the restroom and turn left.",
+                "Classroom 1.1 is at the far end of the corridor, on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "bano",
             "instructions": [
                 "Exit classroom 1.4 and turn left.",
                 "The restroom is at the end of the corridor on your right."
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "bano", "to": "aula_1_4",
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "aula_1_4",
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Classroom 1.4 is the fourth door on your right."
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "bano", "to": "ascensor",
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "bano",
+            "instructions": [
+                "Exit the elevator and turn right.",
+                "Walk down the corridor.",
+                "The restroom is at the end on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "ascensor",
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -546,8 +1331,21 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "bano", "to": "escaleras",
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "bano",
+            "instructions": [
+                "From the stairs, turn left.",
+                "Walk down the corridor.",
+                "The restroom is at the end on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "escaleras",
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -555,103 +1353,841 @@
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "ascensor", "to": "escaleras",
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "bano",
+            "instructions": [
+                "Exit the offices and turn left.",
+                "Walk down the corridor.",
+                "The restroom is at the end on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "despachos",
+            "instructions": [
+                "Exit the restroom and turn left.",
+                "Walk to the end of the corridor.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "ascensor",
+            "instructions": [
+                "The elevator is right next to the directory sign, on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "directorio_1",
+            "instructions": [
+                "The floor directory sign is on the wall right next to the elevator."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "escaleras",
+            "instructions": [
+                "The stairs are right next to the directory sign, on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "directorio_1",
+            "instructions": [
+                "The floor directory sign is on the wall right next to the stairs."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "ascensor",
+            "to": "escaleras",
             "instructions": [
                 "From the elevator, turn right.",
                 "The stairs are right next to you on the opposite side."
             ]
         },
         {
-            "building": "G", "floor": 1,
-            "from": "escaleras", "to": "ascensor",
+            "building": "G",
+            "floor": 1,
+            "from": "escaleras",
+            "to": "ascensor",
             "instructions": [
                 "From the stairs, turn left.",
                 "The elevator is right next to you on the opposite side."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "ascensor", "to": "aula_2_1",
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "aula_1_1",
             "instructions": [
-                "Exit the elevator and turn left.",
-                "Classroom 2.1 is the first door on your right."
+                "From the directory sign, walk down the corridor.",
+                "Classroom 1.1 is the first door on your right."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "aula_2_1", "to": "ascensor",
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "aula_1_4",
             "instructions": [
-                "Exit classroom 2.1 and turn left.",
+                "From the directory sign, walk down the corridor.",
+                "Classroom 1.4 is the fourth door on your left."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "despachos",
+            "instructions": [
+                "From the directory sign, turn around.",
+                "The faculty offices are the second door on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "directorio_1",
+            "to": "bano",
+            "instructions": [
+                "From the directory sign, walk down the corridor.",
+                "The restroom is at the end on your right."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_1",
+            "to": "directorio_1",
+            "instructions": [
+                "Exit classroom 1.1 and turn left.",
                 "Walk to the end of the corridor.",
-                "The elevator is on your right."
+                "The floor directory sign is on the wall next to the elevator."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "escaleras", "to": "aula_2_1",
+            "building": "G",
+            "floor": 1,
+            "from": "aula_1_4",
+            "to": "directorio_1",
             "instructions": [
-                "At the top of the stairs, turn right.",
-                "Classroom 2.1 is the first door on your right."
-            ]
-        },
-        {
-            "building": "G", "floor": 2,
-            "from": "aula_2_1", "to": "escaleras",
-            "instructions": [
-                "Exit classroom 2.1 and turn left.",
+                "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
-                "The stairs are on your left."
+                "The floor directory sign is on the wall next to the elevator."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "aula_2_1", "to": "bano",
+            "building": "G",
+            "floor": 1,
+            "from": "despachos",
+            "to": "directorio_1",
             "instructions": [
-                "Exit classroom 2.1 and turn right.",
-                "The restroom is the second door on your left."
+                "Exit the offices and turn right.",
+                "The floor directory sign is on the wall next to the elevator."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "bano", "to": "aula_2_1",
-            "instructions": [
-                "Exit the restroom and turn right.",
-                "Classroom 2.1 is the second door on your right."
-            ]
-        },
-        {
-            "building": "G", "floor": 2,
-            "from": "bano", "to": "ascensor",
+            "building": "G",
+            "floor": 1,
+            "from": "bano",
+            "to": "directorio_1",
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
-                "The elevator is on your right."
+                "The floor directory sign is on the wall next to the elevator."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "bano", "to": "escaleras",
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "aula_2_1",
             "instructions": [
-                "Exit the restroom and turn left.",
-                "Walk to the end of the corridor.",
-                "The stairs are on your left."
+                "Walk 16 meters from ascensor to aula 2 1."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "ascensor", "to": "escaleras",
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "ascensor",
             "instructions": [
-                "From the elevator, turn right.",
-                "The stairs are right next to you on the opposite side."
+                "Walk 16 meters from aula 2 1 to ascensor."
             ]
         },
         {
-            "building": "G", "floor": 2,
-            "from": "escaleras", "to": "ascensor",
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "aula_2_1",
             "instructions": [
-                "From the stairs, turn left.",
-                "The elevator is right next to you on the opposite side."
+                "Walk 21 meters from escaleras to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 21 meters from aula 2 1 to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 18 meters from ascensor to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 18 meters from sala mentorias to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 23 meters from escaleras to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 23 meters from sala mentorias to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 25 meters from ascensor to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 25 meters from despachos eps to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 10 meters from escaleras to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 10 meters from despachos eps to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 7 meters from ascensor to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 7 meters from secretaria to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 12 meters from escaleras to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 12 meters from secretaria to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "bano",
+            "instructions": [
+                "Walk 24 meters from ascensor to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 24 meters from bano to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "bano",
+            "instructions": [
+                "Walk 9 meters from escaleras to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 9 meters from bano to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 15 meters from ascensor to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 15 meters from escaleras to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 24 meters from aula 2 1 to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "aula_2_1",
+            "instructions": [
+                "Walk 24 meters from sala mentorias to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 11 meters from aula 2 1 to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "aula_2_1",
+            "instructions": [
+                "Walk 11 meters from despachos eps to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 13 meters from aula 2 1 to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "aula_2_1",
+            "instructions": [
+                "Walk 13 meters from secretaria to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "bano",
+            "instructions": [
+                "Walk 10 meters from aula 2 1 to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "aula_2_1",
+            "instructions": [
+                "Walk 10 meters from bano to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "aula_2_1",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 15 meters from aula 2 1 to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 13 meters from sala mentorias to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 13 meters from despachos eps to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 15 meters from sala mentorias to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 15 meters from secretaria to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "bano",
+            "instructions": [
+                "Walk 12 meters from sala mentorias to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 12 meters from bano to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "sala_mentorias",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 17 meters from sala mentorias to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 22 meters from despachos eps to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 22 meters from secretaria to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "bano",
+            "instructions": [
+                "Walk 19 meters from despachos eps to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 19 meters from bano to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "despachos_eps",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 24 meters from despachos eps to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "bano",
+            "instructions": [
+                "Walk 21 meters from secretaria to bano."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 21 meters from bano to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "secretaria",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 6 meters from secretaria to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "bano",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 23 meters from bano to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "ascensor",
+            "instructions": [
+                "Walk 9 meters from directorio 2 to ascensor."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "ascensor",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 9 meters from ascensor to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "escaleras",
+            "instructions": [
+                "Walk 14 meters from directorio 2 to escaleras."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "escaleras",
+            "to": "directorio_2",
+            "instructions": [
+                "Walk 14 meters from escaleras to directorio 2."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "aula_2_1",
+            "instructions": [
+                "Walk 15 meters from directorio 2 to aula 2 1."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "sala_mentorias",
+            "instructions": [
+                "Walk 17 meters from directorio 2 to sala mentorias."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "despachos_eps",
+            "instructions": [
+                "Walk 24 meters from directorio 2 to despachos eps."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "secretaria",
+            "instructions": [
+                "Walk 6 meters from directorio 2 to secretaria."
+            ]
+        },
+        {
+            "building": "G",
+            "floor": 2,
+            "from": "directorio_2",
+            "to": "bano",
+            "instructions": [
+                "Walk 23 meters from directorio 2 to bano."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "entrada_cd",
+            "to": "cafeteria",
+            "instructions": [
+                "After entering Building CD, walk straight ahead and push the second glass door.",
+                "Continue straight for about 10 metres.",
+                "The cafeteria entrance is on your left."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "cafeteria",
+            "to": "entrada_cd",
+            "instructions": [
+                "Exit the cafeteria and turn right.",
+                "Walk straight, pass through the glass door, and continue to the main entrance."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "entrada_cd",
+            "to": "ascensor",
+            "instructions": [
+                "From the entrance, walk straight ahead past the cafeteria.",
+                "The elevator is at the end of the corridor on your left."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "entrada_cd",
+            "instructions": [
+                "From the elevator, walk straight down the corridor to the entrance."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "entrada_cd",
+            "to": "escaleras",
+            "instructions": [
+                "From the entrance, walk straight ahead past the cafeteria.",
+                "The stairs are at the end of the corridor on your right."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "entrada_cd",
+            "instructions": [
+                "From the stairs, walk straight down the corridor to the entrance."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "cafeteria",
+            "to": "ascensor",
+            "instructions": [
+                "Exit the cafeteria and turn left.",
+                "Walk to the end of the corridor. The elevator is on your left."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "cafeteria",
+            "to": "escaleras",
+            "instructions": [
+                "Exit the cafeteria and turn left.",
+                "Walk to the end of the corridor. The stairs are on your right."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "escaleras",
+            "instructions": [
+                "From the elevator, the stairs are right next to you on the opposite side."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "ascensor",
+            "instructions": [
+                "From the stairs, the elevator is right next to you on the opposite side."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "ascensor",
+            "to": "cafeteria",
+            "instructions": [
+                "From the elevator, walk straight down the corridor.",
+                "The cafeteria is on your right."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": 0,
+            "from": "escaleras",
+            "to": "cafeteria",
+            "instructions": [
+                "From the stairs, walk straight down the corridor.",
+                "The cafeteria is on your right."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "ascensor",
+            "to": "gimnasio",
+            "instructions": [
+                "Exit the elevator and turn right.",
+                "The gym entrance is straight ahead."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "gimnasio",
+            "to": "ascensor",
+            "instructions": [
+                "Exit the gym and walk straight. The elevator is ahead on your left."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "escaleras",
+            "to": "gimnasio",
+            "instructions": [
+                "At the bottom of the stairs, turn right.",
+                "The gym entrance is straight ahead."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "gimnasio",
+            "to": "escaleras",
+            "instructions": [
+                "Exit the gym and walk straight. The stairs are on your right."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "ascensor",
+            "to": "escaleras",
+            "instructions": [
+                "From the elevator, the stairs are right next to you on the opposite side."
+            ]
+        },
+        {
+            "building": "CD",
+            "floor": -1,
+            "from": "escaleras",
+            "to": "ascensor",
+            "instructions": [
+                "From the stairs, the elevator is right next to you on the opposite side."
             ]
         }
     ]

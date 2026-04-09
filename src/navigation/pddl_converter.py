@@ -1,274 +1,242 @@
 """
-Conversor de JSON del Campus a PDDL
+Campus Graph to PDDL converter.
 
-Convierte:
-- campus_graph.json → domain.pddl (estructura estática)
-- Estados inicial/final → problem.pddl (dinámico)
+Reads campus_graph.json and generates a PDDL problem file that Fast
+Downward can solve against the domain defined in pddl/domain.pddl.
+
+The generated problem includes:
+  - Typed objects (robot, buildings, floors, connection types)
+  - Init state (robot position, facilities, connections, type tags, costs)
+  - Goal state (explicit building+floor or functional like "cafeteria")
+  - Metric (minimize total-cost)
+  - Hurry-mode flag when the user is in a rush
 """
 
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Set
+from typing import Dict, List, Tuple, Optional
+
+
+def _floor_str(floor: int) -> str:
+    """Convert a floor number to a valid PDDL identifier (e.g. -1 -> planta_m1)."""
+    if floor < 0:
+        return f"planta_m{abs(floor)}"
+    return f"planta_{floor}"
 
 
 class CampusGraphToPDDL:
-    """Convierte el grafo del campus desde JSON a proposiciones PDDL."""
-    
+    """Turns the campus JSON graph into PDDL problem files."""
+
     def __init__(self, json_path: str):
-        """Carga el grafo del campus desde JSON."""
-        with open(json_path, 'r', encoding='utf-8') as f:
+        with open(json_path, "r", encoding="utf-8") as f:
             self.data = json.load(f)
-    
+
     def get_buildings(self) -> List[Dict]:
-        """Obtiene la lista de edificios."""
         return self.data.get("buildings", [])
-    
+
     def get_connections(self) -> List[Dict]:
-        """Obtiene la lista de conexiones."""
         return self.data.get("connections", [])
-    
+
     def _find_functional_goal(self, goal_functional: str) -> Tuple[Optional[int], Optional[int]]:
-        """
-        Busca un objetivo funcional (cafetería, gimnasio) en el JSON.
-        
-        Args:
-            goal_functional: "cafeteria" o "gimnasio"
-            
-        Returns:
-            (building_id, floor) o (None, None) si no se encuentra
-        """
+        """Look up a named facility (cafeteria, gym) and return (building_id, floor)."""
         goal_lower = goal_functional.lower()
-        
-        for building in self.get_buildings():
+        for b in self.get_buildings():
             if goal_lower == "cafeteria":
-                cafeteria_floor = building.get('cafeteria_floor')
-                if cafeteria_floor is not None:
-                    return (building['id'], cafeteria_floor)
-            elif goal_lower == "gimnasio":
-                gimnasio_floor = building.get('gimnasio_floor')
-                if gimnasio_floor is not None:
-                    return (building['id'], gimnasio_floor)
-        
+                f = b.get("cafeteria_floor")
+                if f is not None:
+                    return (b["id"], f)
+            elif goal_lower in ("gimnasio", "gym"):
+                f = b.get("gimnasio_floor")
+                if f is not None:
+                    return (b["id"], f)
         return (None, None)
-    
-    def generate_problem_objects(self) -> Dict[str, List[str]]:
-        """
-        Genera los objetos PDDL desde el JSON.
-        
-        Returns:
-            Dict con claves: 'robots', 'edificios', 'plantas', 'tipos_conexion'
-        """
-        objects = {
-            'robots': ['robot1'],
-            'edificios': [],
-            'plantas': set(),
-            'tipos_conexion': ['elevator', 'stairs_up', 'stairs_down', 'hallway']
+
+    # ── Object generation ────────────────────────────────────────────────
+
+    def _generate_objects(self) -> Dict[str, List[str]]:
+        """Collect every PDDL object from the campus graph."""
+        objects: Dict[str, list] = {
+            "robots": ["robot1"],
+            "edificios": [],
+            "plantas": set(),
+            "tipos_conexion": {"elevator", "stairs_up", "stairs_down", "hallway"},
         }
-        
-        # Obtener edificios
-        for building in self.get_buildings():
-            edificio_id = building['id']
-            objects['edificios'].append(f"edificio_{edificio_id}")
-            
-            # Obtener plantas (usar 'm1' para -1, 'm2' para -2, etc.)
-            for planta in building.get('floors', []):
-                if planta < 0:
-                    planta_str = f"planta_m{abs(planta)}"
-                else:
-                    planta_str = f"planta_{planta}"
-                objects['plantas'].add(planta_str)
-        
-        objects['plantas'] = sorted(list(objects['plantas']))
-        
+        for b in self.get_buildings():
+            objects["edificios"].append(f"edificio_{b['id']}")
+            for floor in b.get("floors", []):
+                objects["plantas"].add(_floor_str(floor))
+
+        objects["plantas"] = sorted(objects["plantas"])
+        objects["tipos_conexion"] = sorted(objects["tipos_conexion"])
         return objects
-    
-    def generate_problem_init(self, 
-                             robot_location: Optional[Tuple[int, int]] = None,
-                             humano_disponible: bool = True) -> List[str]:
-        """
-        Genera las proposiciones INIT desde el JSON.
-        
-        Args:
-            robot_location: (edificio, planta) donde está el robot inicialmente
-            humano_disponible: Si hay humano disponible para ayudar
-        
-        Returns:
-            Lista de proposiciones PDDL para :init
-        """
-        init = []
-        
-        # Ubicación inicial del robot
+
+    # ── Init generation ──────────────────────────────────────────────────
+
+    def _generate_init(
+        self,
+        robot_location: Optional[Tuple[int, int]] = None,
+        humano_disponible: bool = True,
+        hurry_mode: bool = False,
+    ) -> List[str]:
+        """Build the list of PDDL init propositions."""
+        init: List[str] = []
+
+        # Cost function starts at zero
+        init.append("    (= (total-cost) 0)")
+
+        # Robot position
         if robot_location:
-            edificio, planta = robot_location
-            planta_str = f"planta_m{abs(planta)}" if planta < 0 else f"planta_{planta}"
-            init.append(f"    (en robot1 edificio_{edificio} {planta_str})")
-        
-        # Humano disponible
+            bid, floor = robot_location
+            init.append(f"    (en robot1 edificio_{bid} {_floor_str(floor)})")
+
+        # Global flags
         if humano_disponible:
             init.append("    (humano_disponible)")
-        
-        # Recursos por edificio (ascensores, escaleras, cafeterías)
-        for building in self.get_buildings():
-            edificio_id = building['id']
-            has_elevator = building.get('elevators', False)
-            has_stairs = building.get('stairs', False)
-            
-            for planta in building.get('floors', []):
-                if planta < 0:
-                    planta_str = f"planta_m{abs(planta)}"
-                else:
-                    planta_str = f"planta_{planta}"
-                
-                if has_elevator:
-                    init.append(f"    (hay_ascensor edificio_{edificio_id} {planta_str})")
-                
+        if hurry_mode:
+            init.append("    (modo_rapido)")
+
+        # Connection-type tags (set once, read by every action precondition)
+        init.append("    (es_ascensor elevator)")
+        init.append("    (es_escalera_subir stairs_up)")
+        init.append("    (es_escalera_bajar stairs_down)")
+        init.append("    (es_pasillo hallway)")
+
+        # Per-building facilities and connections
+        for b in self.get_buildings():
+            bid = b["id"]
+            has_elev = b.get("elevators", False)
+            has_stairs = b.get("stairs", False)
+            caf_floor = b.get("cafeteria_floor")
+            gym_floor = b.get("gimnasio_floor")
+
+            for floor in b.get("floors", []):
+                fs = _floor_str(floor)
+                if has_elev:
+                    init.append(f"    (hay_ascensor edificio_{bid} {fs})")
                 if has_stairs:
-                    init.append(f"    (hay_escalera edificio_{edificio_id} {planta_str})")
-                
-                # Cafetería: leer del JSON en lugar de hardcodeado
-                cafeteria_floor = building.get('cafeteria_floor')
-                if cafeteria_floor is not None and planta == cafeteria_floor:
-                    init.append(f"    (hay_cafeteria edificio_{edificio_id} {planta_str})")
-                
-                # Gimnasio: leer del JSON en lugar de hardcodeado
-                gimnasio_floor = building.get('gimnasio_floor')
-                if gimnasio_floor is not None and planta == gimnasio_floor:
-                    init.append(f"    (hay_gimnasio edificio_{edificio_id} {planta_str})")
-        
-        # Conexiones
+                    init.append(f"    (hay_escalera edificio_{bid} {fs})")
+                if caf_floor is not None and floor == caf_floor:
+                    init.append(f"    (hay_cafeteria edificio_{bid} {fs})")
+                if gym_floor is not None and floor == gym_floor:
+                    init.append(f"    (hay_gimnasio edificio_{bid} {fs})")
+
         for conn in self.get_connections():
-            from_b = conn['from']['building']
-            from_p = conn['from']['floor']
-            to_b = conn['to']['building']
-            to_p = conn['to']['floor']
-            tipo = conn['type']
-            
-            # Formatear plantas (negativas como m1, m2, etc.)
-            from_p_str = f"planta_m{abs(from_p)}" if from_p < 0 else f"planta_{from_p}"
-            to_p_str = f"planta_m{abs(to_p)}" if to_p < 0 else f"planta_{to_p}"
-            
+            fb, ff = conn["from"]["building"], conn["from"]["floor"]
+            tb, tf = conn["to"]["building"],   conn["to"]["floor"]
+            ctype = conn["type"]
             init.append(
-                f"    (conectado edificio_{from_b} {from_p_str} "
-                f"edificio_{to_b} {to_p_str} {tipo})"
+                f"    (conectado edificio_{fb} {_floor_str(ff)} "
+                f"edificio_{tb} {_floor_str(tf)} {ctype})"
             )
-        
+
         return init
-    
-    def generate_problem(self,
-                        initial_state: Tuple[int, int],
-                        goal_state: Optional[Tuple[int, int]] = None,
-                        goal_functional: Optional[str] = None,
-                        problem_name: str = "campus-problem",
-                        output_path: Optional[str] = None) -> str:
+
+    # ── Full problem file ────────────────────────────────────────────────
+
+    def generate_problem(
+        self,
+        initial_state: Tuple[int, int],
+        goal_state: Optional[Tuple[int, int]] = None,
+        goal_functional: Optional[str] = None,
+        problem_name: str = "campus-problem",
+        output_path: Optional[str] = None,
+        hurry_mode: bool = False,
+    ) -> str:
         """
-        Genera un archivo problem.pddl completo.
-        
-        Args:
-            initial_state: (edificio, planta) estado inicial
-            goal_state: (edificio, planta) estado objetivo
-            problem_name: Nombre del problema
-            output_path: Ruta donde guardar el archivo (opcional)
-        
-        Returns:
-            Contenido del archivo problem.pddl como string
+        Generate a complete PDDL problem file.
+
+        Either goal_state (building, floor) or goal_functional ("cafeteria",
+        "gimnasio") must be provided.  When hurry_mode is True the problem
+        includes the (modo_rapido) flag so the planner prefers stairs.
         """
-        objects = self.generate_problem_objects()
-        init = self.generate_problem_init(robot_location=initial_state)
-        
-        # Goal
+        objects = self._generate_objects()
+        init = self._generate_init(
+            robot_location=initial_state,
+            hurry_mode=hurry_mode,
+        )
+
+        # Build the goal clause
         if goal_functional:
-            # Goal funcional: buscar en JSON en lugar de hardcodeado
-            goal_building_id, goal_floor = self._find_functional_goal(goal_functional)
-            if goal_building_id is None or goal_floor is None:
-                raise ValueError(f"Goal funcional '{goal_functional}' no encontrado en campus_graph.json")
-            
-            goal_floor_str = f"planta_m{abs(goal_floor)}" if goal_floor < 0 else f"planta_{goal_floor}"
-            
-            if goal_functional.lower() == "cafeteria":
-                goal = f"    (and\n      (en robot1 edificio_{goal_building_id} {goal_floor_str})\n      (hay_cafeteria edificio_{goal_building_id} {goal_floor_str})\n    )"
-            elif goal_functional.lower() == "gimnasio":
-                goal = f"    (and\n      (en robot1 edificio_{goal_building_id} {goal_floor_str})\n      (hay_gimnasio edificio_{goal_building_id} {goal_floor_str})\n    )"
-            else:
-                raise ValueError(f"Goal funcional desconocido: {goal_functional}. Usa 'cafeteria' o 'gimnasio'")
+            gbid, gfloor = self._find_functional_goal(goal_functional)
+            if gbid is None or gfloor is None:
+                raise ValueError(f"Functional goal '{goal_functional}' not found in campus_graph.json")
+            gfs = _floor_str(gfloor)
+            facility_pred = "hay_cafeteria" if goal_functional.lower() == "cafeteria" else "hay_gimnasio"
+            goal = (
+                f"    (and\n"
+                f"      (en robot1 edificio_{gbid} {gfs})\n"
+                f"      ({facility_pred} edificio_{gbid} {gfs})\n"
+                f"    )"
+            )
         elif goal_state:
-            # Goal por ubicación
-            goal_edificio, goal_planta = goal_state
-            goal_planta_str = f"planta_m{abs(goal_planta)}" if goal_planta < 0 else f"planta_{goal_planta}"
-            goal = f"    (en robot1 edificio_{goal_edificio} {goal_planta_str})"
+            gbid, gfloor = goal_state
+            goal = f"    (en robot1 edificio_{gbid} {_floor_str(gfloor)})"
         else:
-            raise ValueError("Debe especificar goal_state o goal_functional")
-        
-        # Construir el archivo
-        problem_content = f"""(define (problem {problem_name})
-  (:domain campus-navigation)
-  
-  (:objects
-    {' '.join(objects['robots'])} - robot
-    {' '.join(objects['edificios'])} - edificio
-    {' '.join(objects['plantas'])} - planta
-    {' '.join(objects['tipos_conexion'])} - tipo_conexion
-  )
-  
-  (:init
-{chr(10).join(init)}
-  )
-  
-  (:goal
-    (and
-      {goal}
-    )
-  )
-)
-"""
-        
-        # Guardar si se especifica ruta
+            raise ValueError("Provide goal_state or goal_functional")
+
+        content = (
+            f"(define (problem {problem_name})\n"
+            f"  (:domain campus-navigation)\n"
+            f"\n"
+            f"  (:objects\n"
+            f"    {' '.join(objects['robots'])} - robot\n"
+            f"    {' '.join(objects['edificios'])} - edificio\n"
+            f"    {' '.join(objects['plantas'])} - planta\n"
+            f"    {' '.join(objects['tipos_conexion'])} - tipo_conexion\n"
+            f"  )\n"
+            f"\n"
+            f"  (:init\n"
+            + "\n".join(init) + "\n"
+            f"  )\n"
+            f"\n"
+            f"  (:goal\n"
+            f"    (and\n"
+            f"  {goal}\n"
+            f"    )\n"
+            f"  )\n"
+            f"\n"
+            f"  (:metric minimize (total-cost))\n"
+            f")\n"
+        )
+
         if output_path:
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(problem_content)
-        
-        return problem_content
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+        return content
 
 
-def create_problem_from_states(json_path: str,
-                               initial_state: Tuple[int, int],
-                               goal_state: Optional[Tuple[int, int]] = None,
-                               goal_functional: Optional[str] = None,
-                               output_path: str = None) -> str:
-    """
-    Función helper para crear un problema PDDL desde estados.
-    
-    Args:
-        json_path: Ruta al campus_graph.json
-        initial_state: (edificio, planta) inicial
-        goal_state: (edificio, planta) objetivo
-        output_path: Donde guardar el problem.pddl
-    
-    Returns:
-        Ruta al archivo generado
-    """
+def create_problem_from_states(
+    json_path: str,
+    initial_state: Tuple[int, int],
+    goal_state: Optional[Tuple[int, int]] = None,
+    goal_functional: Optional[str] = None,
+    output_path: Optional[str] = None,
+    hurry_mode: bool = False,
+) -> str:
+    """Helper to create a PDDL problem in one call."""
     converter = CampusGraphToPDDL(json_path)
     converter.generate_problem(
         initial_state=initial_state,
         goal_state=goal_state,
         goal_functional=goal_functional,
-        output_path=output_path
+        output_path=output_path,
+        hurry_mode=hurry_mode,
     )
     return output_path
 
 
 if __name__ == "__main__":
-    # Ejemplo de uso
-    json_path = "config/campus_graph.json"
-    converter = CampusGraphToPDDL(json_path)
-    
-    # Generar problema de ejemplo: EPS planta 0 → EPS planta 2
-    problem_content = converter.generate_problem(
-        initial_state=(1, 0),  # EPS planta 0
-        goal_state=(1, 2),      # EPS planta 2
-        problem_name="ejemplo-eps-0-a-2",
-        output_path="pddl/problem_ejemplo.pddl"
-    )
-    
-    print("Problema generado en pddl/problem_ejemplo.pddl")
-    print("\nContenido:")
-    print(problem_content)
+    converter = CampusGraphToPDDL("config/campus_graph.json")
+
+    print("=== Accessible mode (G floor 0 -> G floor 2) ===")
+    print(converter.generate_problem(
+        initial_state=(1, 0), goal_state=(1, 2),
+        problem_name="g0-to-g2-accessible",
+    ))
+
+    print("\n=== Hurry mode (G floor 0 -> G floor 2) ===")
+    print(converter.generate_problem(
+        initial_state=(1, 0), goal_state=(1, 2),
+        problem_name="g0-to-g2-hurry", hurry_mode=True,
+    ))
