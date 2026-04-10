@@ -5,13 +5,15 @@ allprojects {
     }
 }
 
-// Build output lives OUTSIDE OneDrive to avoid file-lock / sync errors.
-val externalBuild = file("C:/tmp/tfg-build")
-rootProject.layout.buildDirectory.set(externalBuild)
+// ESTA ES LA PIEZA QUE FALTA:
+// Le dice a todos los módulos que usen la carpeta /build de la raíz del proyecto
+rootProject.layout.buildDirectory.set(file("${project.projectDir}/../build"))
 
 subprojects {
-    project.layout.buildDirectory.set(externalBuild.resolve(project.name))
+    val newSubprojectBuildDir = rootProject.layout.buildDirectory.dir(project.name)
+    project.layout.buildDirectory.set(newSubprojectBuildDir)
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
 }

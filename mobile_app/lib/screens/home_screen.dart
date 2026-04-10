@@ -83,12 +83,29 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 const Text(
-                  'AI-Powered Campus Navigation\nfor Everyone',
+                  'AI-powered campus navigation\nfor visually impaired users',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF94A3B8),
+                    fontSize: 15,
+                    color: Color(0xFF64748B),
                     height: 1.6,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFF1E293B)),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'TFG · Universidad Francisco de Vitoria · 2025',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF475569),
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
 

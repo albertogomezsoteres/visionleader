@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Row of quick-action buttons shown during active navigation:
-/// Repeat, Lost, and Cancel.
+/// Row of quick-action chips shown during active navigation.
 class NavQuickActions extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onPhoto;
@@ -22,46 +21,67 @@ class NavQuickActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
-      child: Wrap(
-        spacing: 10,
-        runSpacing: 10,
+      child: Row(
         children: [
-          _QuickChip(
-            icon: Icons.skip_next_rounded,
-            label: 'Next',
-            color: const Color(0xFF22C55E),
-            onTap: onNext,
-            semanticLabel: 'Go to next step',
+          // Next — primary action, most prominent
+          Expanded(
+            flex: 3,
+            child: _NavChip(
+              icon: Icons.skip_next_rounded,
+              label: 'Next step',
+              color: const Color(0xFF3B82F6),
+              filled: true,
+              onTap: onNext,
+              semanticLabel: 'Go to next navigation step',
+            ),
           ),
-          _QuickChip(
-            icon: Icons.photo_camera_rounded,
-            label: 'Photo',
-            color: const Color(0xFF8B5CF6),
-            onTap: onPhoto,
-            semanticLabel: 'Take a verification photo',
+          const SizedBox(width: 8),
+          // Photo — secondary
+          Expanded(
+            flex: 2,
+            child: _NavChip(
+              icon: Icons.photo_camera_outlined,
+              label: 'Photo',
+              color: const Color(0xFF6366F1),
+              onTap: onPhoto,
+              semanticLabel: 'Take a verification photo',
+            ),
           ),
-          _QuickChip(
-            icon: Icons.replay_rounded,
-            label: 'Repeat',
-            color: const Color(0xFF3B82F6),
-            onTap: onRepeat,
-            semanticLabel: 'Repeat the last instruction',
+          const SizedBox(width: 8),
+          // Repeat — utility
+          Expanded(
+            flex: 2,
+            child: _NavChip(
+              icon: Icons.replay_rounded,
+              label: 'Repeat',
+              color: const Color(0xFF64748B),
+              onTap: onRepeat,
+              semanticLabel: 'Repeat the last instruction',
+            ),
           ),
-          const SizedBox(width: 10),
-          _QuickChip(
-            icon: Icons.help_outline_rounded,
-            label: "I'm lost",
-            color: const Color(0xFFF59E0B),
-            onTap: onLost,
-            semanticLabel: 'Tell the assistant you are lost',
+          const SizedBox(width: 8),
+          // Lost — warning
+          Expanded(
+            flex: 2,
+            child: _NavChip(
+              icon: Icons.help_outline_rounded,
+              label: 'Lost',
+              color: const Color(0xFFD97706),
+              onTap: onLost,
+              semanticLabel: 'Tell the assistant you are lost',
+            ),
           ),
-          const SizedBox(width: 10),
-          _QuickChip(
-            icon: Icons.close_rounded,
-            label: 'Cancel',
-            color: const Color(0xFFEF4444),
-            onTap: onCancel,
-            semanticLabel: 'Cancel the current navigation',
+          const SizedBox(width: 8),
+          // Cancel — destructive, least prominent
+          Expanded(
+            flex: 2,
+            child: _NavChip(
+              icon: Icons.close_rounded,
+              label: 'Cancel',
+              color: const Color(0xFFEF4444),
+              onTap: onCancel,
+              semanticLabel: 'Cancel the current navigation',
+            ),
           ),
         ],
       ),
@@ -69,51 +89,62 @@ class NavQuickActions extends StatelessWidget {
   }
 }
 
-class _QuickChip extends StatelessWidget {
+class _NavChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final bool filled;
   final VoidCallback onTap;
   final String semanticLabel;
 
-  const _QuickChip({
+  const _NavChip({
     required this.icon,
     required this.label,
     required this.color,
     required this.onTap,
     required this.semanticLabel,
+    this.filled = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 104,
-      child: Semantics(
-        button: true,
-        label: semanticLabel,
-        child: Material(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(12),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 16, color: color),
-                  const SizedBox(width: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: Material(
+        color: filled
+            ? color.withValues(alpha: 0.20)
+            : const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: filled
+                    ? color.withValues(alpha: 0.50)
+                    : const Color(0xFF334155),
+                width: 1,
               ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 15, color: color),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: filled ? color : const Color(0xFF94A3B8),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

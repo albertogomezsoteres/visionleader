@@ -41,12 +41,10 @@ class ApiService {
     int? goalBuilding,
     int? goalFloor,
     String? goalFunctional,
-    bool humanoDisponible = true,
     bool hurryMode = false,
   }) async {
     final body = <String, dynamic>{
       'initial_state': {'building': initialBuilding, 'floor': initialFloor},
-      'humano_disponible': humanoDisponible,
       'hurry_mode': hurryMode,
     };
     if (goalFunctional != null) {

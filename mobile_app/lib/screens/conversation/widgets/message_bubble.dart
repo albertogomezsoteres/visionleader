@@ -34,70 +34,74 @@ class MessageBubble extends StatelessWidget {
     return Semantics(
       liveRegion: true,
       label: message.isEmpty ? 'Starting navigation assistant' : message,
-      child: Center(
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFF1E293B)),
+          border: Border.all(color: const Color(0xFF1E293B), width: 1),
         ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: iconColor.withValues(alpha: 0.12),
+                  color: iconColor.withValues(alpha: 0.10),
+                  border: Border.all(
+                    color: iconColor.withValues(alpha: 0.20),
+                    width: 1,
+                  ),
                 ),
-                child: Icon(iconData, color: iconColor, size: 28),
+                child: Icon(iconData, color: iconColor, size: 24),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               Text(
                 message.isEmpty
                     ? 'Starting navigation assistant...'
                     : message,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFFF1F5F9),
                   fontSize: 16,
-                  height: 1.55,
+                  height: 1.6,
                   fontWeight: FontWeight.w400,
+                  letterSpacing: 0.1,
                 ),
                 textAlign: TextAlign.center,
               ),
               if (message.isNotEmpty) ...[
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
                 Semantics(
                   button: true,
                   label: 'Replay the assistant message',
                   child: GestureDetector(
-                  onTap: onTapReplay,
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.volume_up_outlined,
-                          size: 16, color: Color(0xFF475569)),
-                      SizedBox(width: 6),
-                      Text(
-                        'Tap to hear again',
-                        style: TextStyle(
-                          color: Color(0xFF475569),
-                          fontSize: 12,
+                    onTap: onTapReplay,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.volume_up_outlined,
+                            size: 14, color: const Color(0xFF3B82F6).withValues(alpha: 0.6)),
+                        const SizedBox(width: 5),
+                        const Text(
+                          'Tap to hear again',
+                          style: TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 12,
+                            letterSpacing: 0.2,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 ),
               ],
             ],
           ),
         ),
-      ),
       ),
     );
   }

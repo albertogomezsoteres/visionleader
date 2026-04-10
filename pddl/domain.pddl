@@ -1,4 +1,12 @@
-;; Campus Navigation Domain for Visually Impaired Users
+;; Campus navigation domain — symbolic layer (building + floor only)
+;;
+;; State abstraction: the planner reasons about (edificio, planta), not individual
+;; classrooms. Fine-grained walking text ("turn left", corridor detail) lives in
+;; campus_graph.json under local_connections and is merged by the conversation agent
+;; after each PDDL action is interpreted.
+;;
+;; Intended users: people with low vision using voice + photo assistance; elevator
+;; and stairs are validated autonomously with camera guidance before movement.
 ;;
 ;; Two navigation profiles controlled by the (modo_rapido) predicate:
 ;;
@@ -45,13 +53,11 @@
     (es_escalera_bajar  ?t - tipo_conexion)
     (es_pasillo         ?t - tipo_conexion)
 
-    ;; Elevator readiness (requires human assistance)
+    ;; Elevator readiness (validated through app guidance + VLM)
     (ascensor_disponible ?b - edificio ?p - planta)
-    (humano_disponible)
 
     ;; Stair safety state machine (accessible mode only)
     (escaleras_verificadas ?b - edificio ?p - planta)
-    (escaleras_preparadas  ?b - edificio ?p - planta)
 
     ;; User preference flag
     (modo_rapido)
@@ -82,12 +88,11 @@
   ;; Elevator path (2 actions, total cost 3)
   ;; ═══════════════════════════════════════════════════════════════════════
 
-  (:action pedir_ayuda_ascensor
+  (:action verificar_ascensor
     :parameters (?r - robot ?b - edificio ?p - planta)
     :precondition (and
       (en ?r ?b ?p)
       (hay_ascensor ?b ?p)
-      (humano_disponible)
     )
     :effect (and
       (ascensor_disponible ?b ?p)
@@ -116,10 +121,10 @@
   )
 
   ;; ═══════════════════════════════════════════════════════════════════════
-  ;; Stairs path  accessible mode (3 actions, total cost 6 up / 5 down)
+  ;; Stairs path  accessible mode (2 actions, total cost 6 up / 5 down)
   ;; ═══════════════════════════════════════════════════════════════════════
 
-  (:action verificar_seguridad_escaleras
+  (:action validar_escaleras
     :parameters (?r - robot ?b - edificio ?p - planta)
     :precondition (and
       (en ?r ?b ?p)
@@ -128,21 +133,7 @@
     )
     :effect (and
       (escaleras_verificadas ?b ?p)
-      (increase (total-cost) 2)
-    )
-  )
-
-  (:action preparar_escaleras
-    :parameters (?r - robot ?b - edificio ?p - planta)
-    :precondition (and
-      (en ?r ?b ?p)
-      (hay_escalera ?b ?p)
-      (escaleras_verificadas ?b ?p)
-    )
-    :effect (and
-      (escaleras_preparadas ?b ?p)
-      (not (escaleras_verificadas ?b ?p))
-      (increase (total-cost) 1)
+      (increase (total-cost) 3)
     )
   )
 
@@ -154,14 +145,14 @@
     :precondition (and
       (en ?r ?b ?po)
       (hay_escalera ?b ?po)
-      (escaleras_preparadas ?b ?po)
+      (escaleras_verificadas ?b ?po)
       (conectado ?b ?po ?b ?pd ?t)
       (es_escalera_subir ?t)
     )
     :effect (and
       (not (en ?r ?b ?po))
       (en ?r ?b ?pd)
-      (not (escaleras_preparadas ?b ?po))
+      (not (escaleras_verificadas ?b ?po))
       (increase (total-cost) 3)
     )
   )
@@ -174,14 +165,14 @@
     :precondition (and
       (en ?r ?b ?po)
       (hay_escalera ?b ?po)
-      (escaleras_preparadas ?b ?po)
+      (escaleras_verificadas ?b ?po)
       (conectado ?b ?po ?b ?pd ?t)
       (es_escalera_bajar ?t)
     )
     :effect (and
       (not (en ?r ?b ?po))
       (en ?r ?b ?pd)
-      (not (escaleras_preparadas ?b ?po))
+      (not (escaleras_verificadas ?b ?po))
       (increase (total-cost) 2)
     )
   )

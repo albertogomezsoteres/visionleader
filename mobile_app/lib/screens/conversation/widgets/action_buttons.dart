@@ -203,8 +203,8 @@ class ConfirmButtons extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onDeny,
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFFEF4444),
-              side: const BorderSide(color: Color(0xFFEF4444)),
+              foregroundColor: const Color(0xFF94A3B8),
+              side: const BorderSide(color: Color(0xFF334155)),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
@@ -220,11 +220,12 @@ class ConfirmButtons extends StatelessWidget {
           child: ElevatedButton(
             onPressed: onConfirm,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: const Color(0xFF3B82F6),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14)),
+              elevation: 0,
             ),
             child: Text(
                 isConfirmPlan ? 'Start navigation' : 'Yes, correct',

@@ -7,7 +7,7 @@
 class AppConfig {
   AppConfig._();
 
-  static const String defaultBaseUrl = 'http://192.168.1.126:8000';
+  static const String defaultBaseUrl = 'http://192.168.1.51:8000';
 
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',

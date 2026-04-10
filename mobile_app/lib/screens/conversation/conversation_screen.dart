@@ -84,7 +84,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   @override
   void dispose() {
     _tts.stop();
-    _recorder.closeRecorder();
+    _recorder.closeRecorder().catchError((_) {});
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -239,29 +239,25 @@ class _ConversationScreenState extends State<ConversationScreen>
     if (!mounted) return;
     setState(() => _isProcessing = false);
 
-    final routeUrl = Uri(
-      scheme: 'https',
-      host: 'www.google.com',
-      path: '/maps/dir/',
-      queryParameters: {
-        'api': '1',
-        'origin': '${fromCoords['lat']},${fromCoords['lng']}',
-        'destination': '${toCoords['lat']},${toCoords['lng']}',
-        'travelmode': 'walking',
-      },
-    ).toString();
     final rawSteps = (route['steps'] as List?) ?? const [];
-    final steps = rawSteps.map<Map<String, String>>((s) {
+    final steps = rawSteps.map<Map<String, dynamic>>((s) {
       final m = s as Map<String, dynamic>;
       return {
         'instruction': (m['instruction'] as String?) ?? '',
         'distance': (m['distance'] as String?) ?? '',
+        'startLocation': m['startLocation'],
+        'endLocation': m['endLocation'],
       };
     }).toList();
+
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => OutdoorRouteView(
-          routeUrl: routeUrl,
+          originLat: fromCoords['lat']!,
+          originLng: fromCoords['lng']!,
+          destinationLat: toCoords['lat']!,
+          destinationLng: toCoords['lng']!,
+          polylineEncoded: (route['polyline'] as String?) ?? '',
           destinationLabel: _buildingNames[dest] ?? 'destination',
           steps: steps,
           onArrived: _goNextStep,

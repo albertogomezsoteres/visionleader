@@ -41,8 +41,7 @@ Genera un plan de navegación desde un estado inicial a un objetivo.
   "goal_state": {
     "building": 1,
     "floor": 2
-  },
-  "humano_disponible": true
+  }
 }
 ```
 
@@ -51,7 +50,7 @@ Genera un plan de navegación desde un estado inicial a un objetivo.
 {
   "success": true,
   "plan": [
-    "pedir_ayuda_ascensor edificio_1 planta_0 elevator",
+    "verificar_ascensor robot1 edificio_1 planta_0",
     "usar_ascensor robot1 edificio_1 planta_0 planta_1 elevator",
     "usar_ascensor robot1 edificio_1 planta_1 planta_2 elevator"
   ],

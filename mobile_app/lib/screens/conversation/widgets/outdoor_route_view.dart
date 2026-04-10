@@ -1,16 +1,27 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class OutdoorRouteView extends StatefulWidget {
-  final String routeUrl;
+  final double originLat;
+  final double originLng;
+  final double destinationLat;
+  final double destinationLng;
+  final String polylineEncoded;
   final String destinationLabel;
-  final List<Map<String, String>> steps;
+  final List<Map<String, dynamic>> steps;
   final VoidCallback onArrived;
 
   const OutdoorRouteView({
     super.key,
-    required this.routeUrl,
+    required this.originLat,
+    required this.originLng,
+    required this.destinationLat,
+    required this.destinationLng,
+    required this.polylineEncoded,
     required this.destinationLabel,
     required this.steps,
     required this.onArrived,
@@ -21,29 +32,69 @@ class OutdoorRouteView extends StatefulWidget {
 }
 
 class _OutdoorRouteViewState extends State<OutdoorRouteView> {
-  late final WebViewController _controller;
   final FlutterTts _tts = FlutterTts();
-  bool _loading = true;
+  GoogleMapController? _mapController;
   int _currentStepIdx = 0;
+
+  late final Set<Polyline> _polylines;
+  late final Set<Marker> _markers;
+  late final LatLng _origin;
+  late final LatLng _destination;
+  late final CameraPosition _initialCamera;
 
   @override
   void initState() {
     super.initState();
+    _origin = LatLng(widget.originLat, widget.originLng);
+    _destination = LatLng(widget.destinationLat, widget.destinationLng);
+
+    // Initial camera between origin and destination
+    _initialCamera = CameraPosition(
+      target: LatLng(
+        (widget.originLat + widget.destinationLat) / 2,
+        (widget.originLng + widget.destinationLng) / 2,
+      ),
+      zoom: 17,
+    );
+
+    _markers = {
+      Marker(
+        markerId: const MarkerId('origin'),
+        position: _origin,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+        infoWindow: const InfoWindow(title: 'You are here'),
+      ),
+      Marker(
+        markerId: const MarkerId('destination'),
+        position: _destination,
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        infoWindow: InfoWindow(title: 'Building ${widget.destinationLabel}'),
+      ),
+    };
+
+    _polylines = {};
+    if (widget.polylineEncoded.isNotEmpty) {
+      final points = PolylinePoints()
+          .decodePolyline(widget.polylineEncoded)
+          .map((p) => LatLng(p.latitude, p.longitude))
+          .toList();
+      if (points.isNotEmpty) {
+        _polylines.add(Polyline(
+          polylineId: const PolylineId('route'),
+          points: points,
+          color: const Color(0xFF3B82F6),
+          width: 5,
+        ));
+      }
+    }
+
     _initTts();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (_) => setState(() => _loading = true),
-          onPageFinished: (_) => setState(() => _loading = false),
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.routeUrl));
   }
 
   @override
   void dispose() {
     _tts.stop();
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -52,25 +103,59 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
     await _tts.setSpeechRate(0.42);
     await _tts.setVolume(1.0);
     await _tts.setPitch(1.0);
-    if (widget.steps.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.steps.isNotEmpty) {
         _speakCurrentStep();
-      });
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tts.speak('Outdoor route opened. Follow the highlighted path on the map.');
-      });
-    }
+      } else {
+        _tts.speak('Follow the blue route on the map to reach Building ${widget.destinationLabel}.');
+      }
+    });
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    // Fit both markers in view with padding
+    final bounds = LatLngBounds(
+      southwest: LatLng(
+        min(widget.originLat, widget.destinationLat) - 0.0003,
+        min(widget.originLng, widget.destinationLng) - 0.0003,
+      ),
+      northeast: LatLng(
+        max(widget.originLat, widget.destinationLat) + 0.0003,
+        max(widget.originLng, widget.destinationLng) + 0.0003,
+      ),
+    );
+    Future.delayed(const Duration(milliseconds: 300), () {
+      controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
+    });
   }
 
   Future<void> _speakCurrentStep() async {
     if (widget.steps.isEmpty) return;
     final step = widget.steps[_currentStepIdx];
-    final instruction = step['instruction'] ?? '';
-    final distance = step['distance'] ?? '';
+    final instruction = (step['instruction'] as String?) ?? '';
+    final distance = (step['distance'] as String?) ?? '';
     final text = distance.isNotEmpty ? '$instruction. $distance.' : instruction;
     await _tts.stop();
     await _tts.speak('Step ${_currentStepIdx + 1}. $text');
+  }
+
+  void _goToNextStep() {
+    if (_currentStepIdx < widget.steps.length - 1) {
+      setState(() => _currentStepIdx++);
+    }
+    _speakCurrentStep();
+    // Pan map to the start location of the new step if available
+    final loc = widget.steps[_currentStepIdx]['startLocation'];
+    if (loc != null && _mapController != null) {
+      final lat = (loc['lat'] as num?)?.toDouble();
+      final lng = (loc['lng'] as num?)?.toDouble();
+      if (lat != null && lng != null) {
+        _mapController!.animateCamera(
+          CameraUpdate.newLatLng(LatLng(lat, lng)),
+        );
+      }
+    }
   }
 
   @override
@@ -80,26 +165,50 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF020817),
         title: Text(
-          'Outdoor route to ${widget.destinationLabel}',
-          style: const TextStyle(color: Colors.white, fontSize: 16),
+          'Walking to Building ${widget.destinationLabel}',
+          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.my_location_rounded, color: Color(0xFF3B82F6)),
+            tooltip: 'Center on route',
+            onPressed: () {
+              if (_mapController == null) return;
+              final bounds = LatLngBounds(
+                southwest: LatLng(
+                  min(widget.originLat, widget.destinationLat) - 0.0003,
+                  min(widget.originLng, widget.destinationLng) - 0.0003,
+                ),
+                northeast: LatLng(
+                  max(widget.originLat, widget.destinationLat) + 0.0003,
+                  max(widget.originLng, widget.destinationLng) + 0.0003,
+                ),
+              );
+              _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
+          // ── Embedded Google Map (60% height) ──────────────────────────
           Expanded(
-            flex: 3,
-            child: Stack(
-              children: [
-                WebViewWidget(controller: _controller),
-                if (_loading)
-                  const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-              ],
+            flex: 6,
+            child: GoogleMap(
+              initialCameraPosition: _initialCamera,
+              onMapCreated: _onMapCreated,
+              polylines: _polylines,
+              markers: _markers,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              zoomControlsEnabled: false,
+              mapToolbarEnabled: false,
             ),
           ),
+
+          // ── Walking guidance panel (40% height) ───────────────────────
           Expanded(
-            flex: 2,
+            flex: 4,
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
@@ -112,39 +221,66 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                 children: [
                   const Text(
                     'Walking guidance',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: widget.steps.isEmpty
                         ? const Text(
-                            'Follow the highlighted route on the map.',
+                            'Follow the blue route on the map.',
                             style: TextStyle(color: Color(0xFF94A3B8)),
                           )
-                        : ListView.separated(
+                        : ListView.builder(
                             itemCount: widget.steps.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
                             itemBuilder: (context, idx) {
                               final step = widget.steps[idx];
-                              final instruction = step['instruction'] ?? '';
-                              final distance = step['distance'] ?? '';
+                              final instruction = (step['instruction'] as String?) ?? '';
+                              final distance = (step['distance'] as String?) ?? '';
                               final isActive = idx == _currentStepIdx;
                               return GestureDetector(
                                 onTap: () {
                                   setState(() => _currentStepIdx = idx);
                                   _speakCurrentStep();
                                 },
-                                child: Text(
-                                  '${idx + 1}. $instruction${distance.isNotEmpty ? ' ($distance)' : ''}',
-                                  style: TextStyle(
-                                    color: isActive
-                                        ? const Color(0xFF22D3EE)
-                                        : const Color(0xFFE2E8F0),
-                                    fontSize: 13,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 4),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        width: 22,
+                                        height: 22,
+                                        margin: const EdgeInsets.only(top: 1, right: 10),
+                                        decoration: BoxDecoration(
+                                          color: isActive
+                                              ? const Color(0xFF3B82F6)
+                                              : const Color(0xFF1E293B),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${idx + 1}',
+                                            style: TextStyle(
+                                              color: isActive ? Colors.white : const Color(0xFF64748B),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          distance.isNotEmpty ? '$instruction ($distance)' : instruction,
+                                          style: TextStyle(
+                                            color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                                            fontSize: 13,
+                                            fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isActive)
+                                        const Icon(Icons.volume_up_rounded, color: Color(0xFF3B82F6), size: 15),
+                                    ],
                                   ),
                                 ),
                               );
@@ -152,59 +288,56 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                           ),
                   ),
                   const SizedBox(height: 8),
-                  if (widget.steps.isNotEmpty)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _speakCurrentStep,
-                            icon: const Icon(Icons.replay_rounded, size: 18),
-                            label: const Text('Repeat'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF93C5FD),
-                              side: const BorderSide(color: Color(0xFF334155)),
-                            ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _speakCurrentStep,
+                          icon: const Icon(Icons.replay_rounded, size: 16),
+                          label: const Text('Repeat', style: TextStyle(fontSize: 13)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF93C5FD),
+                            side: const BorderSide(color: Color(0xFF334155)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                _currentStepIdx =
-                                    (_currentStepIdx + 1) % widget.steps.length;
-                              });
-                              _speakCurrentStep();
-                            },
-                            icon: const Icon(Icons.skip_next_rounded, size: 18),
-                            label: const Text('Next step'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFFA7F3D0),
-                              side: const BorderSide(color: Color(0xFF334155)),
-                            ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _goToNextStep,
+                          icon: const Icon(Icons.skip_next_rounded, size: 16),
+                          label: const Text('Next', style: TextStyle(fontSize: 13)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFA7F3D0),
+                            side: const BorderSide(color: Color(0xFF334155)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
-                      ],
-                    ),
-                  if (widget.steps.isNotEmpty) const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        widget.onArrived();
-                      },
-                      icon: const Icon(Icons.check_circle_outline_rounded),
-                      label: const Text(
-                        "I've arrived",
-                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _tts.stop();
+                            Navigator.of(context).pop();
+                            widget.onArrived();
+                          },
+                          icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+                          label: const Text("Arrived", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            elevation: 0,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),

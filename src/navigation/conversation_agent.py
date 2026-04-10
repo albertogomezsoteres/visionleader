@@ -198,7 +198,7 @@ class ConversationAgent:
         Returns list of action strings or None on failure.
         """
         if not self._planner or not self._converter:
-            print("[FD] Planner not available, falling back to local routing")
+            print("[FD] Planner not available")
             return None
 
         initial_state = (origin_building, origin_floor)
@@ -372,9 +372,7 @@ class ConversationAgent:
             name = parsed["name"]
             params = parsed["params"]
 
-            if name in ("pedir_ayuda_ascensor",
-                        "verificar_seguridad_escaleras",
-                        "preparar_escaleras"):
+            if name in ("verificar_ascensor", "validar_escaleras"):
                 continue
 
             if name == "usar_ascensor":
@@ -892,6 +890,9 @@ class ConversationAgent:
                 )
                 ctx.add("system", tts)
                 return self._present_plan(ctx)
+            tts = self._macro_planner_failed_message()
+            ctx.add("system", tts)
+            return self._reply(ctx, tts, "voice", "ask_destination")
 
         tts = f"Got it: {loc_text}. Where do you want to go?"
         ctx.state = ConversationState.ASK_DESTINATION
@@ -914,6 +915,9 @@ class ConversationAgent:
                     )
                     ctx.add("system", tts)
                     return self._present_plan(ctx)
+                tts = self._macro_planner_failed_message()
+                ctx.add("system", tts)
+                return self._reply(ctx, tts, "voice", "ask_destination")
 
             tts = f"Confirmed: {loc_text}. Where do you want to go?"
             ctx.state = ConversationState.ASK_DESTINATION
@@ -951,10 +955,7 @@ class ConversationAgent:
             ctx.destination = dest
             route = self._compute_route(ctx.origin, dest)
             if not route:
-                tts = (
-                    "I could not find a route to that destination. "
-                    "Please try a different one."
-                )
+                tts = self._macro_planner_failed_message()
                 return self._reply(ctx, tts, "voice", "ask_destination")
             ctx.route_steps = route
             ctx.current_step_idx = 0
@@ -1034,6 +1035,8 @@ class ConversationAgent:
                 ctx.route_steps = route
                 ctx.current_step_idx = 0
                 return self._present_plan(ctx)
+            tts = self._macro_planner_failed_message()
+            return self._reply(ctx, tts, "voice", "confirm_plan")
 
         tts = (
             "Please say yes to start navigation, no to cancel, "
@@ -1207,6 +1210,8 @@ class ConversationAgent:
                 ctx.current_step_idx = 0
                 ctx.state = ConversationState.CONFIRMING_PLAN
                 return self._present_plan(ctx)
+            tts = self._macro_planner_failed_message()
+            return self._reply(ctx, tts, "voice", "nav_complete")
 
         if any(w in low for w in ("yes", "new", "another", "sí", "si", "otra", "new route")):
             tts = "Where would you like to go next?"
@@ -1339,12 +1344,23 @@ class ConversationAgent:
 
     # ── Route computation ──────────────────────────────────────────────────
 
+    @staticmethod
+    def _macro_planner_failed_message() -> str:
+        return (
+            "I could not compute a route with the symbolic planner. "
+            "Ensure Docker is running with the Fast Downward image "
+            "(fast-downward:latest), then try your destination again."
+        )
+
     def _compute_route(
         self, origin: Dict, destination: Dict
     ) -> Optional[List[Dict]]:
-        """Build navigation steps. Uses Fast Downward for any route that
-        requires changing floor or building; falls back to manual graph
-        traversal only when Docker / FD is unavailable."""
+        """Build navigation steps.
+
+        Same building and same floor: local graph instructions only (PDDL state
+        is floor-level). Different floor or building: Fast Downward only; there
+        is no alternate macro router so Docker must produce a valid plan.
+        """
         o_bld = origin.get("building")
         o_flr = origin.get("floor")
         o_loc = origin.get("location_id")
@@ -1376,14 +1392,16 @@ class ConversationAgent:
             if steps:
                 print(f"[Route] Built {len(steps)} navigation steps from FD plan")
                 return self._apply_arrival_strict_photo(steps, destination)
-            print("[Route] FD plan could not be converted to steps, using fallback")
-
-        # Fallback: manual graph traversal (if Docker is not running, etc.)
-        print("[Route] Using manual graph-based fallback routing")
-        return self._apply_arrival_strict_photo(
-            self._compute_route_fallback(origin, destination) or [],
-            destination,
-        )
+            print(
+                "[Route] Fast Downward returned actions but they could not be "
+                "converted to navigation steps."
+            )
+        else:
+            print(
+                "[Route] Fast Downward did not return a plan "
+                "(check Docker, domain, and problem generation)."
+            )
+        return None
 
     def _compute_same_floor(
         self, bld: int, flr: int, o_loc: Optional[str], d_loc: Optional[str]
@@ -1408,223 +1426,6 @@ class ConversationAgent:
             "verification": "voice",
             "expected_photo_type": None,
         }]
-
-    def _compute_route_fallback(
-        self, origin: Dict, destination: Dict
-    ) -> Optional[List[Dict]]:
-        """Manual graph-based routing used when Fast Downward is unavailable."""
-        o_bld = origin.get("building")
-        o_flr = origin.get("floor")
-        o_loc = origin.get("location_id")
-        d_bld = destination.get("building")
-        d_flr = destination.get("floor")
-        d_loc = destination.get("location_id")
-
-        steps: List[Dict] = []
-
-        ctx_hurry = False
-        for ctx in self.contexts.values():
-            if ctx.origin == origin and ctx.destination == destination:
-                ctx_hurry = ctx.hurry_mode
-                break
-
-        if o_bld == d_bld:
-            bname = _BUILDING_NAMES.get(o_bld, "G")
-            use_elevator = self._has_elevator(o_bld) and not ctx_hurry
-            mobility = "ascensor" if use_elevator else "escaleras"
-            mobility_type = "elevator" if use_elevator else "stairs"
-
-            if o_loc and o_loc != mobility:
-                instr = self._get_local_instructions(bname, o_flr, o_loc, mobility)
-                if instr:
-                    steps.append({
-                        "instruction": self._normalize_instruction(" ".join(instr)),
-                        "type": "local_walk",
-                        "verification": "voice",
-                        "expected_photo_type": None,
-                    })
-
-            conn_instr = self._get_connection_instructions(
-                o_bld, o_flr, o_bld, d_flr, mobility_type
-            )
-            direction = "up" if d_flr > o_flr else "down"
-            if conn_instr:
-                instr_text = " ".join(conn_instr)
-            elif use_elevator:
-                instr_text = (
-                    f"Take the elevator from {_floor_text(o_flr)} to "
-                    f"{_floor_text(d_flr)}. Press the button and wait."
-                )
-            else:
-                safety = (
-                    "Take it one step at a time and hold the handrail firmly."
-                    if not ctx_hurry else "Take the stairs quickly, but be careful."
-                )
-                instr_text = (
-                    f"Go {direction} the stairs from {_floor_text(o_flr)} to "
-                    f"{_floor_text(d_flr)}. {safety}"
-                )
-
-            step_data = {
-                "instruction": self._normalize_instruction(instr_text),
-                "type": mobility_type,
-                "verification": "photo",
-                "expected_photo_type": mobility_type,
-                "two_phase_photo": True,
-                "pre_photo_instruction": (
-                    f"Locate the {'elevator' if mobility_type == 'elevator' else 'stairs'} "
-                    f"on {_floor_text(o_flr)}."
-                ),
-                "elevator_photo_flow": mobility_type == "elevator",
-            }
-            if mobility_type == "elevator":
-                step_data["post_photo_instruction"] = (
-                    f"Enter the elevator, press floor {d_flr}, "
-                    "wait until you arrive, and exit the elevator."
-                )
-                step_data["_elevator_stage"] = 1
-                step_data["elevator_stage2_instruction"] = (
-                    "Press the button to call the elevator. "
-                    "When the doors are open, send me a photo so I can confirm."
-                )
-            else:
-                step_data["post_photo_instruction"] = (
-                    f"I can see the stairs going {direction}. {safety}"
-                )
-                step_data["stairs_direction"] = direction
-            steps.append(step_data)
-
-            if d_loc and d_loc != mobility:
-                instr = self._get_local_instructions(bname, d_flr, mobility, d_loc)
-                if instr:
-                    steps.append({
-                        "instruction": self._normalize_instruction(" ".join(instr)),
-                        "type": "local_walk",
-                        "verification": "voice",
-                        "expected_photo_type": None,
-                    })
-            return steps if steps else None
-
-        # Different buildings
-        bname_o = _BUILDING_NAMES.get(o_bld, "G")
-        bname_d = _BUILDING_NAMES.get(d_bld, "")
-
-        if o_flr != 0:
-            mobility = "ascensor" if self._has_elevator(o_bld) else "escaleras"
-            mtype = "elevator" if mobility == "ascensor" else "stairs"
-            if o_loc and o_loc != mobility:
-                instr = self._get_local_instructions(bname_o, o_flr, o_loc, mobility)
-                if instr:
-                    steps.append({
-                        "instruction": self._normalize_instruction(" ".join(instr)),
-                        "type": "local_walk",
-                        "verification": "voice",
-                        "expected_photo_type": None,
-                    })
-            conn_instr = self._get_connection_instructions(o_bld, o_flr, o_bld, 0, mtype)
-            instr_text = (
-                " ".join(conn_instr) if conn_instr
-                else f"Take the {mtype} from {_floor_text(o_flr)} to the ground floor."
-            )
-            steps.append({
-                "instruction": self._normalize_instruction(instr_text),
-                "type": mtype,
-                "verification": "photo",
-                "expected_photo_type": mtype,
-                "two_phase_photo": True,
-                "pre_photo_instruction": (
-                    f"Locate the {'elevator' if mtype == 'elevator' else 'stairs'} "
-                    f"on {_floor_text(o_flr)}."
-                ),
-                "post_photo_instruction": (
-                    "Enter the elevator, press floor 0, "
-                    "wait until you arrive, and exit the elevator."
-                ) if mtype == "elevator" else instr_text,
-                "elevator_photo_flow": mtype == "elevator",
-                "_elevator_stage": 1 if mtype == "elevator" else None,
-                "elevator_stage2_instruction": (
-                    "Press the button to call the elevator. "
-                    "When the doors are open, send me a photo so I can confirm."
-                ) if mtype == "elevator" else None,
-            })
-
-        to_name = _BUILDING_FULL.get(d_bld, "the destination building")
-        hallway_instr = self._get_connection_instructions(o_bld, 0, d_bld, 0, "hallway")
-        if hallway_instr:
-            instr_text = " ".join(hallway_instr)
-        elif o_flr != 0:
-            instr_text = (
-                "Push through the two glass doors to exit the building. "
-                f"Google Maps will guide you walking to {to_name}."
-            )
-        else:
-            instr_text = (
-                f"Head to the main entrance of {_BUILDING_FULL.get(o_bld, 'the building')}. "
-                "Push through the two glass doors to exit the building. "
-                f"Google Maps will guide you walking to {to_name}."
-            )
-        steps.append({
-            "instruction": self._normalize_instruction(instr_text),
-            "type": "outdoor",
-            "verification": "voice",
-            "expected_photo_type": None,
-            "outdoor_from_building": o_bld,
-            "outdoor_to_building": d_bld,
-            "use_gps": True,
-        })
-
-        if d_flr != 0:
-            mobility = "ascensor" if self._has_elevator(d_bld) else "escaleras"
-            mtype = "elevator" if mobility == "ascensor" else "stairs"
-            conn_instr = self._get_connection_instructions(d_bld, 0, d_bld, d_flr, mtype)
-            instr_text = (
-                " ".join(conn_instr) if conn_instr
-                else (
-                    f"In {_BUILDING_FULL.get(d_bld, 'the building')}, "
-                    f"take the {mtype} from the ground floor to {_floor_text(d_flr)}."
-                )
-            )
-            steps.append({
-                "instruction": self._normalize_instruction(instr_text),
-                "type": mtype,
-                "verification": "photo",
-                "expected_photo_type": mtype,
-                "two_phase_photo": True,
-                "pre_photo_instruction": (
-                    f"Locate the {'elevator' if mtype == 'elevator' else 'stairs'} "
-                    "on the ground floor."
-                ),
-                "post_photo_instruction": (
-                    f"Enter the elevator, press floor {d_flr}, "
-                    "wait until you arrive, and exit the elevator."
-                ) if mtype == "elevator" else instr_text,
-                "elevator_photo_flow": mtype == "elevator",
-                "_elevator_stage": 1 if mtype == "elevator" else None,
-                "elevator_stage2_instruction": (
-                    "Press the button to call the elevator. "
-                    "When the doors are open, send me a photo so I can confirm."
-                ) if mtype == "elevator" else None,
-            })
-
-        if d_loc:
-            dest_entrance = self._entrance_id(d_bld)
-            arrival_point = "ascensor" if d_flr != 0 else dest_entrance
-            instr = self._get_local_instructions(bname_d, d_flr, arrival_point, d_loc)
-            if not instr:
-                instr = self._get_local_instructions(bname_d, d_flr, "ascensor", d_loc)
-            if not instr:
-                instr = self._get_local_instructions(bname_d, d_flr, "escaleras", d_loc)
-            if not instr:
-                instr = self._get_local_instructions(bname_d, d_flr, dest_entrance, d_loc)
-            if instr:
-                steps.append({
-                    "instruction": self._normalize_instruction(" ".join(instr)),
-                    "type": "local_walk",
-                    "verification": "voice",
-                    "expected_photo_type": None,
-                })
-
-        return steps if steps else None
 
     # ── Graph lookups ──────────────────────────────────────────────────────
 

@@ -1,15 +1,18 @@
 """
-Campus Graph to PDDL converter.
+Campus graph → PDDL problem generator.
 
-Reads campus_graph.json and generates a PDDL problem file that Fast
-Downward can solve against the domain defined in pddl/domain.pddl.
+Reads campus_graph.json and emits a problem file for Fast Downward
+(pddl/domain.pddl). Only the "connections" array is used as macro topology:
+(building, floor) nodes and edge types (elevator, stairs_*, hallway).
+
+Per-edge numeric fields in JSON are not used: action costs are entirely
+defined in the PDDL domain (:action ... (increase (total-cost) N))).
 
 The generated problem includes:
-  - Typed objects (robot, buildings, floors, connection types)
-  - Init state (robot position, facilities, connections, type tags, costs)
-  - Goal state (explicit building+floor or functional like "cafeteria")
-  - Metric (minimize total-cost)
-  - Hurry-mode flag when the user is in a rush
+  - Objects: robot, edificios, plantas, tipo_conexion constants
+  - Init: position, facilities, (conectado ...), flags, (= (total-cost) 0)
+  - Goal: target (building, floor) or functional cafeteria/gym
+  - Metric: minimize (total-cost); optional (modo_rapido) in init
 """
 
 import json
@@ -75,7 +78,6 @@ class CampusGraphToPDDL:
     def _generate_init(
         self,
         robot_location: Optional[Tuple[int, int]] = None,
-        humano_disponible: bool = True,
         hurry_mode: bool = False,
     ) -> List[str]:
         """Build the list of PDDL init propositions."""
@@ -90,8 +92,6 @@ class CampusGraphToPDDL:
             init.append(f"    (en robot1 edificio_{bid} {_floor_str(floor)})")
 
         # Global flags
-        if humano_disponible:
-            init.append("    (humano_disponible)")
         if hurry_mode:
             init.append("    (modo_rapido)")
 

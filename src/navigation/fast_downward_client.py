@@ -82,10 +82,10 @@ class FastDownwardPlanner:
             subprocess.run(
                 ["docker", "rm", "-f", container_name],
                 capture_output=True,
-                timeout=5
+                timeout=5,
             )
-        except:
-            pass  # Ignorar si no existe
+        except (OSError, subprocess.SubprocessError):
+            pass
         
         # Ejecutar Fast Downward (SIN --rm para que sea visible)
         cmd = [

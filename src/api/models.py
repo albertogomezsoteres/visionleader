@@ -23,10 +23,6 @@ class PlanningRequest(BaseModel):
         description="Objetivo funcional: 'cafeteria' o 'gimnasio'. Se usa si goal_state no se especifica.",
         example="cafeteria"
     )
-    humano_disponible: bool = Field(
-        True,
-        description="Whether a bystander is available to help with elevators"
-    )
     hurry_mode: bool = Field(
         False,
         description="When true the planner prefers stairs over elevator (faster but less safe)"
