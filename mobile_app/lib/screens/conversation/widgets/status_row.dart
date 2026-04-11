@@ -2,21 +2,20 @@ import 'package:flutter/material.dart';
 
 /// Row of chips showing detected building, floor, and navigation progress.
 class StatusRow extends StatelessWidget {
-  final String? knownBuilding;
-  final int? knownFloor;
-  final String? knownLocationId;
-  final bool isNavigating;
-  final int currentStep;
-  final int totalSteps;
-
+  final String? initialBuilding;
+  final int? initialFloor;
+  final String? initialLocationId;
+  final String? goalBuilding;
+  final int? goalFloor;
+  final String? goalLocationId;
   const StatusRow({
     super.key,
-    required this.knownBuilding,
-    required this.knownFloor,
-    required this.knownLocationId,
-    required this.isNavigating,
-    required this.currentStep,
-    required this.totalSteps,
+    required this.initialBuilding,
+    required this.initialFloor,
+    required this.initialLocationId,
+    required this.goalBuilding,
+    required this.goalFloor,
+    required this.goalLocationId,
   });
 
   String _floorText(int floor) {
@@ -64,53 +63,99 @@ class StatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Wrap(
+        _StateSection(
+          title: 'Initial State',
+          titleColor: const Color(0xFF10B981),
+          chips: [
+            _StatusChip(
+              icon: Icons.business_rounded,
+              label: initialBuilding ?? '?',
+              isKnown: initialBuilding != null,
+            ),
+            _StatusChip(
+              icon: Icons.layers_rounded,
+              label: initialFloor != null ? _floorText(initialFloor!) : '?',
+              isKnown: initialFloor != null,
+            ),
+            if (initialLocationId != null && initialLocationId!.isNotEmpty)
+              _StatusChip(
+                icon: Icons.place_rounded,
+                label: _locationText(initialLocationId!),
+                isKnown: true,
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        _StateSection(
+          title: 'Goal State',
+          titleColor: const Color(0xFF3B82F6),
+          chips: [
+            _StatusChip(
+              icon: Icons.flag_rounded,
+              label: goalBuilding ?? '?',
+              isKnown: goalBuilding != null,
+            ),
+            _StatusChip(
+              icon: Icons.layers_rounded,
+              label: goalFloor != null ? _floorText(goalFloor!) : '?',
+              isKnown: goalFloor != null,
+            ),
+            if (goalLocationId != null && goalLocationId!.isNotEmpty)
+              _StatusChip(
+                icon: Icons.place_rounded,
+                label: _locationText(goalLocationId!),
+                isKnown: true,
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _StateSection extends StatelessWidget {
+  final String title;
+  final Color titleColor;
+  final List<Widget> chips;
+
+  const _StateSection({
+    required this.title,
+    required this.titleColor,
+    required this.chips,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF1E293B)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: titleColor,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              _StatusChip(
-                icon: Icons.business_rounded,
-                label: knownBuilding ?? '?',
-                isKnown: knownBuilding != null,
-              ),
-              _StatusChip(
-                icon: Icons.layers_rounded,
-                label: knownFloor != null ? _floorText(knownFloor!) : '?',
-                isKnown: knownFloor != null,
-              ),
-              if (knownLocationId != null && knownLocationId!.isNotEmpty)
-                _StatusChip(
-                  icon: Icons.place_rounded,
-                  label: _locationText(knownLocationId!),
-                  isKnown: true,
-                ),
-            ],
-          ),
-        ),
-        if (isNavigating && totalSteps > 0) ...[
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.35)),
-            ),
-            child: Text(
-              'Step $currentStep / $totalSteps',
-              style: const TextStyle(
-                color: Color(0xFF3B82F6),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            children: chips,
           ),
         ],
-      ],
+      ),
     );
   }
 }
@@ -151,7 +196,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               color: color,
-              fontSize: 13,
+              fontSize: 14,
               fontWeight: FontWeight.w500,
             ),
           ),

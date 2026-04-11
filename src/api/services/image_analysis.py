@@ -459,10 +459,7 @@ def analyze_image_via_colab(
     if image_type == "elevator":
         raw_elev = _colab(Agent1_Identifier.get_elevator_prompt(), skip_sorry_filter=True, max_tokens=DEFAULT_MAX_TOKENS)
         elevator_state = "open" if "open" in (raw_elev or "").lower() else "closed"
-        # Try to read the floor from the panel display
-        raw_panel = _colab(Agent1_Identifier.get_elevator_panel_floor_prompt(), skip_sorry_filter=True, max_tokens=32)
-        floor_from_panel = _parse_floor_direct(raw_panel) if raw_panel else None
-        effective_floor = known_floor if known_floor is not None else floor_from_panel
+        effective_floor = known_floor
 
         if known_building is not None and effective_floor is not None:
             return ImageAnalysisResponse(
@@ -476,8 +473,6 @@ def analyze_image_via_colab(
         hint = "Directory signs are usually right next to the elevator and the stairs."
         if effective_floor is None and known_building is None:
             msg = f"In front of you there is an elevator with the doors {oc}. I still don't know your location. I need to know both your building and floor. {hint} You can also tell me by voice."
-        elif floor_from_panel is not None and known_building is None:
-            msg = f"In front of you there is an elevator with the doors {oc}. I can see the button shows floor {floor_from_panel}, so you are on {_floor_text(floor_from_panel)}. I still need to know your building. {hint} You can also tell me by voice."
         elif known_floor is not None and known_building is None:
             msg = f"In front of you there is an elevator with the doors {oc}. I know you are on {_floor_text(known_floor)}, but I still need to know your building. {hint} You can also tell me by voice."
         else:

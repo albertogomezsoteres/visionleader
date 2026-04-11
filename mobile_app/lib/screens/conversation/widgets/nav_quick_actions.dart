@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 /// Row of quick-action chips shown during active navigation.
 class NavQuickActions extends StatelessWidget {
   final VoidCallback onNext;
-  final VoidCallback onPhoto;
   final VoidCallback onRepeat;
   final VoidCallback onLost;
   final VoidCallback onCancel;
@@ -11,7 +10,6 @@ class NavQuickActions extends StatelessWidget {
   const NavQuickActions({
     super.key,
     required this.onNext,
-    required this.onPhoto,
     required this.onRepeat,
     required this.onLost,
     required this.onCancel,
@@ -36,21 +34,9 @@ class NavQuickActions extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Photo — secondary
-          Expanded(
-            flex: 2,
-            child: _NavChip(
-              icon: Icons.photo_camera_outlined,
-              label: 'Photo',
-              color: const Color(0xFF6366F1),
-              onTap: onPhoto,
-              semanticLabel: 'Take a verification photo',
-            ),
-          ),
-          const SizedBox(width: 8),
           // Repeat — utility
           Expanded(
-            flex: 2,
+            flex: 3,
             child: _NavChip(
               icon: Icons.replay_rounded,
               label: 'Repeat',
@@ -62,7 +48,7 @@ class NavQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           // Lost — warning
           Expanded(
-            flex: 2,
+            flex: 3,
             child: _NavChip(
               icon: Icons.help_outline_rounded,
               label: 'Lost',
@@ -74,7 +60,7 @@ class NavQuickActions extends StatelessWidget {
           const SizedBox(width: 8),
           // Cancel — destructive, least prominent
           Expanded(
-            flex: 2,
+            flex: 3,
             child: _NavChip(
               icon: Icons.close_rounded,
               label: 'Cancel',
@@ -120,7 +106,7 @@ class _NavChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           onTap: onTap,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 9),
+            padding: const EdgeInsets.symmetric(vertical: 11),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
@@ -133,13 +119,13 @@ class _NavChip extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 15, color: color),
+                Icon(icon, size: 18, color: color),
                 const SizedBox(height: 3),
                 Text(
                   label,
                   style: TextStyle(
                     color: filled ? color : const Color(0xFF94A3B8),
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.2,
                   ),

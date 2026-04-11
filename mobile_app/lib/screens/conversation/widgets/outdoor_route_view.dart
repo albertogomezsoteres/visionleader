@@ -134,10 +134,21 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
     if (widget.steps.isEmpty) return;
     final step = widget.steps[_currentStepIdx];
     final instruction = (step['instruction'] as String?) ?? '';
-    final distance = (step['distance'] as String?) ?? '';
+    final distance = _normalizeDistance((step['distance'] as String?) ?? '');
     final text = distance.isNotEmpty ? '$instruction. $distance.' : instruction;
     await _tts.stop();
     await _tts.speak('Step ${_currentStepIdx + 1}. $text');
+  }
+
+  String _normalizeDistance(String raw) {
+    final text = raw.trim();
+    if (text.isEmpty) return '';
+    final m = RegExp(r'^(\d+(?:[.,]\d+)?)\s*m$', caseSensitive: false).firstMatch(text);
+    if (m != null) {
+      final value = m.group(1)!.replaceAll(',', '.');
+      return '$value meters';
+    }
+    return text;
   }
 
   void _goToNextStep() {
@@ -211,7 +222,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
             flex: 4,
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 30),
               decoration: const BoxDecoration(
                 color: Color(0xFF0B1220),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -221,7 +232,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                 children: [
                   const Text(
                     'Walking guidance',
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
@@ -235,7 +246,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                             itemBuilder: (context, idx) {
                               final step = widget.steps[idx];
                               final instruction = (step['instruction'] as String?) ?? '';
-                              final distance = (step['distance'] as String?) ?? '';
+                              final distance = _normalizeDistance((step['distance'] as String?) ?? '');
                               final isActive = idx == _currentStepIdx;
                               return GestureDetector(
                                 onTap: () {
@@ -273,13 +284,13 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                                           distance.isNotEmpty ? '$instruction ($distance)' : instruction,
                                           style: TextStyle(
                                             color: isActive ? Colors.white : const Color(0xFF94A3B8),
-                                            fontSize: 13,
+                                            fontSize: 14,
                                             fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
                                           ),
                                         ),
                                       ),
                                       if (isActive)
-                                        const Icon(Icons.volume_up_rounded, color: Color(0xFF3B82F6), size: 15),
+                                        const Icon(Icons.volume_up_rounded, color: Color(0xFF3B82F6), size: 18),
                                     ],
                                   ),
                                 ),
@@ -298,7 +309,8 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF93C5FD),
                             side: const BorderSide(color: Color(0xFF334155)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            minimumSize: const Size.fromHeight(48),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
@@ -312,7 +324,8 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFFA7F3D0),
                             side: const BorderSide(color: Color(0xFF334155)),
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            minimumSize: const Size.fromHeight(48),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         ),
@@ -324,14 +337,19 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                           onPressed: () {
                             _tts.stop();
                             Navigator.of(context).pop();
-                            widget.onArrived();
+                            // Give the conversation screen a brief transition window
+                            // so the next step TTS starts reliably after map close.
+                            Future.delayed(const Duration(milliseconds: 900), () {
+                              widget.onArrived();
+                            });
                           },
                           icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
                           label: const Text("Arrived", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            minimumSize: const Size.fromHeight(48),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             elevation: 0,
                           ),

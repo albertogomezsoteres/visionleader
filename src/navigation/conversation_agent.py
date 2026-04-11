@@ -257,11 +257,19 @@ class ConversationAgent:
 
     @staticmethod
     def _normalize_room_code(code: str) -> str:
-        # Keep only digits + dot; normalize "1.30" -> "1.3"
-        m = re.search(r"(\d+\.\d+)", str(code))
-        if not m:
-            return str(code).strip().lower()
-        s = m.group(1)
+        """
+        Normalize room-code variants to canonical form (e.g. "14" -> "1.4").
+        """
+        raw = str(code).strip().lower()
+        m = re.search(r"(\d+\.\d+)", raw)
+        if m:
+            s = m.group(1)
+        else:
+            digits = re.sub(r"\D", "", raw)
+            # PaliGemma sometimes emits "14" instead of "1.4"
+            if len(digits) == 2 and digits[0].isdigit() and digits[1].isdigit():
+                return f"{int(digits[0])}.{int(digits[1])}"
+            return raw
         # Avoid float string artifacts: "1.30" should become "1.3"
         try:
             parts = s.split(".")
@@ -279,13 +287,19 @@ class ConversationAgent:
         for lm in analysis.get("landmarks", []) or []:
             match = re.search(r"(\d+\.\d+)", str(lm))
             if match:
-                return match.group(1)
+                return self._normalize_room_code(match.group(1))
+            compact = re.search(r"\b(\d{2})\b", str(lm))
+            if compact:
+                return self._normalize_room_code(compact.group(1))
         # Some image types (e.g., door) may not return landmarks, but the raw
         # response often contains the extracted classroom number.
         raw = analysis.get("raw_response") or analysis.get("raw") or ""
         match = re.search(r"(\d+\.\d+)", str(raw))
         if match:
-            return match.group(1)
+            return self._normalize_room_code(match.group(1))
+        compact = re.search(r"\b(\d{2})\b", str(raw))
+        if compact:
+            return self._normalize_room_code(compact.group(1))
         return None
 
     def _room_code_for_location(
@@ -381,16 +395,22 @@ class ConversationAgent:
                 from_floor = self._planta_to_int(params[2])
                 to_floor = self._planta_to_int(params[3])
                 bname = _BUILDING_NAMES.get(bld_id, "G")
+                pre_verified_at_elevator = False
 
                 if first_movement and o_loc and o_loc != "ascensor":
                     instr = self._get_local_instructions(bname, from_floor, o_loc, "ascensor")
                     if instr:
                         steps.append({
-                            "instruction": self._normalize_instruction(" ".join(instr)),
+                            "instruction": self._normalize_instruction(
+                                " ".join(instr)
+                                + " When you reach the elevator, please take a photo to verify it."
+                            ),
                             "type": "local_walk",
-                            "verification": "voice",
-                            "expected_photo_type": None,
+                            "verification": "photo",
+                            "expected_photo_type": "elevator",
+                            "inline_photo_prompt": True,
                         })
+                        pre_verified_at_elevator = True
 
                 conn_instr = self._get_connection_instructions(
                     bld_id, from_floor, bld_id, to_floor, "elevator"
@@ -406,19 +426,9 @@ class ConversationAgent:
                 steps.append({
                     "instruction": self._normalize_instruction(instr_text),
                     "type": "elevator",
-                    "verification": "photo",
-                    "expected_photo_type": "elevator",
-                    "pre_photo_instruction": f"Locate the elevator on {_floor_text(from_floor)}.",
-                    "elevator_photo_flow": True,
-                    "_elevator_stage": 1,
-                    "elevator_stage2_instruction": (
-                        "Press the button to call the elevator. "
-                        "When the doors are open, send me a photo so I can confirm."
-                    ),
-                    "post_photo_instruction": (
-                        f"Enter the elevator, press floor {to_floor}, "
-                        "wait until you arrive, and exit the elevator."
-                    ),
+                    "verification": "voice" if pre_verified_at_elevator else "photo",
+                    "expected_photo_type": None if pre_verified_at_elevator else "elevator",
+                    "post_photo_instruction": f"Enter the elevator, press floor {to_floor}, and exit when you arrive.",
                 })
                 last_arrival_loc = "ascensor"
                 first_movement = False
@@ -496,7 +506,10 @@ class ConversationAgent:
                     )
                     if instr:
                         steps.append({
-                            "instruction": self._normalize_instruction(" ".join(instr)),
+                            "instruction": self._normalize_instruction(
+                                " ".join(instr)
+                                + " Then exit the building through the two glass doors."
+                            ),
                             "type": "local_walk",
                             "verification": "voice",
                             "expected_photo_type": None,
@@ -510,15 +523,12 @@ class ConversationAgent:
                 if hallway_instr:
                     instr_text = " ".join(hallway_instr)
                 elif added_walk_to_entrance:
-                    instr_text = (
-                        "Push through the two glass doors to exit the building. "
-                        f"Google Maps will guide you walking to {to_name}."
-                    )
+                    instr_text = "Opening Google Maps for outdoor route navigation."
                 else:
                     instr_text = (
                         f"Head to the main entrance of {_BUILDING_FULL.get(from_bld, 'the building')}. "
                         "Push through the two glass doors to exit the building. "
-                        f"Google Maps will guide you walking to {to_name}."
+                        "Opening Google Maps for outdoor route navigation."
                     )
                 steps.append({
                     "instruction": self._normalize_instruction(instr_text),
@@ -1067,7 +1077,6 @@ class ConversationAgent:
     ) -> Dict:
         step = ctx.route_steps[ctx.current_step_idx]
         expected = step.get("expected_photo_type")
-        elevator_stage = step.get("_elevator_stage", 1)
 
         # Allow voice confirmation as fallback
         if not analysis and msg:
@@ -1081,12 +1090,6 @@ class ConversationAgent:
                 return self._deliver_step(ctx)
 
         if not analysis:
-            if step.get("elevator_photo_flow") and elevator_stage == 2:
-                tts = (
-                    "Please take a photo of the elevator doors when they are open. "
-                    "You can use the Photo button, or say done to continue without a photo."
-                )
-                return self._reply(ctx, tts, "photo", "waiting_elevator_open_photo")
             tts = (
                 f"Please take a photo of the {expected or 'area'} to verify your position. "
                 "Use the Photo button, or say done to continue without a photo."
@@ -1094,55 +1097,13 @@ class ConversationAgent:
             return self._reply(ctx, tts, "photo", "waiting_step_photo")
 
         image_type = analysis.get("image_type", "")
-        elevator_state = str(analysis.get("elevator_state", "") or "").lower().strip()
-
-        if step.get("elevator_photo_flow"):
-            if image_type != "elevator":
-                tts = (
-                    "I was expecting an elevator photo. "
-                    "Please take another photo focused on the elevator."
-                )
-                return self._reply(ctx, tts, "photo", "retry_elevator_photo")
-
-            if elevator_stage == 1:
-                step["_elevator_stage"] = 2
-                stage2_tts = step.get(
-                    "elevator_stage2_instruction",
-                    "Press the button to call the elevator. "
-                    "When the doors are open, send me a photo so I can confirm.",
-                )
-                tts = f"Confirmed! I can see the elevator. {stage2_tts}"
-                ctx.state = ConversationState.WAITING_STEP_PHOTO
-                return self._reply(ctx, tts, "photo", "waiting_elevator_open_photo")
-
-            if elevator_stage == 2:
-                if elevator_state != "open":
-                    tts = (
-                        "I can see the elevator, but the doors do not seem open yet. "
-                        "Please wait for the doors to open and send another photo."
-                    )
-                    return self._reply(ctx, tts, "photo", "retry_elevator_open_photo")
-
-                step["_elevator_stage"] = 3
-                post_tts = step.get(
-                    "post_photo_instruction",
-                    step.get("instruction", "Enter the elevator and continue."),
-                )
-                tts = (
-                    "Confirmed! The elevator doors are open. "
-                    f"{post_tts} "
-                    f"{self._next_local_walk_hint(ctx)}"
-                    "Tap Next when you have completed this step."
-                )
-                ctx.state = ConversationState.AWAITING_STEP_DONE
-                return self._reply(ctx, tts, "voice", "elevator_ready_to_board")
         if expected and image_type == expected:
             if step.get("arrival_strict_photo"):
                 expected_code = step.get("expected_room_code")
                 seen_code = self._extract_room_code_from_analysis(analysis)
 
                 if not expected_code:
-                    tts = f"Confirmed! I can see the {expected}. Moving to the next step."
+                    tts = f"Confirmed! I can see the {expected}."
                     ctx.current_step_idx += 1
                     if ctx.current_step_idx >= len(ctx.route_steps):
                         return self._navigation_complete(ctx)
@@ -1152,8 +1113,7 @@ class ConversationAgent:
 
                 if seen_code and self._normalize_room_code(seen_code) == self._normalize_room_code(expected_code):
                     tts = (
-                        f"Confirmed! I can see classroom {self._normalize_room_code(expected_code)}. "
-                        "Moving to the next step."
+                        f"Confirmed! I can see classroom {self._normalize_room_code(expected_code)}."
                     )
                     ctx.current_step_idx += 1
                     if ctx.current_step_idx >= len(ctx.route_steps):
@@ -1175,12 +1135,12 @@ class ConversationAgent:
                 tts = (
                     f"Confirmed! I can see the {expected}. "
                     f"{post_tts} "
-                    "Tap Next when you have completed this step."
+                    "Tap Next or say next when you have completed this step."
                 )
                 ctx.state = ConversationState.AWAITING_STEP_DONE
                 return self._reply(ctx, tts, "voice", "step_after_photo_confirm")
 
-            tts = f"Confirmed! I can see the {expected}. Moving to the next step."
+            tts = f"Confirmed! I can see the {expected}."
             ctx.current_step_idx += 1
             if ctx.current_step_idx >= len(ctx.route_steps):
                 return self._navigation_complete(ctx)
@@ -1285,11 +1245,15 @@ class ConversationAgent:
                     tts = f"{prefix}Step {idx} of {total}. {pre_tts}"
                 tts += f" Please take a photo of the {expected} to confirm."
             else:
+                if step.get("inline_photo_prompt"):
+                    ctx.state = ConversationState.WAITING_STEP_PHOTO
+                    next_input = "photo"
+                    return self._reply(ctx, tts, next_input, "navigation_step")
                 tts += f" When you arrive, please take a photo of the {expected} to confirm."
             ctx.state = ConversationState.WAITING_STEP_PHOTO
             next_input = "photo"
         else:
-            tts += " Tap Next when you have completed this step."
+            tts += " Tap Next or say next when you have completed this step."
             ctx.state = ConversationState.AWAITING_STEP_DONE
             next_input = "voice"
 
@@ -1304,6 +1268,8 @@ class ConversationAgent:
                 "floor": ctx.destination.get("floor"),
                 "location_id": ctx.destination.get("location_id"),
             }
+        # Clear goal to reflect that next destination is pending.
+        ctx.destination = None
         tts = (
             f"You have arrived at {dest_text}! "
             "Would you like to navigate somewhere else?"

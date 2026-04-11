@@ -52,6 +52,9 @@ class _ConversationScreenState extends State<ConversationScreen>
   String? _knownBuilding;
   int? _knownFloor;
   String? _knownLocationId;
+  String? _goalBuilding;
+  int? _goalFloor;
+  String? _goalLocationId;
   int _currentStep = 0;
   int _totalSteps = 0;
 
@@ -184,6 +187,8 @@ class _ConversationScreenState extends State<ConversationScreen>
       final stepIdx = ctx['current_step_idx'] as int?;
       if (steps != null && steps.isNotEmpty) {
         setState(() { _totalSteps = steps.length; _currentStep = (stepIdx ?? 0) + 1; });
+      } else {
+        setState(() { _totalSteps = 0; _currentStep = 0; });
       }
     }
 
@@ -209,8 +214,10 @@ class _ConversationScreenState extends State<ConversationScreen>
       final step = _currentStep;
       if (_lastAutoOpenedOutdoorStep != step) {
         _lastAutoOpenedOutdoorStep = step;
-        // Give TTS enough time so route view opens right after speaking.
-        Future.delayed(const Duration(milliseconds: 3600), () {
+        // Open the map right after TTS likely finishes this short outdoor step.
+        final textLen = tts.trim().length;
+        final delayMs = (textLen * 55).clamp(1800, 6500);
+        Future.delayed(Duration(milliseconds: delayMs), () {
           if (mounted) _openOutdoorRouteInApp();
         });
       }
@@ -270,6 +277,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     final partial = result['location_partial'] as Map<String, dynamic>?;
     final ctx = result['context'] as Map<String, dynamic>?;
     final loc = partial ?? (ctx?['current_location'] as Map<String, dynamic>?);
+    final goal = ctx?['goal'] as Map<String, dynamic>?;
     if (loc != null) {
       final building = loc['building'] as int?;
       final floor = loc['floor'] as int?;
@@ -278,6 +286,22 @@ class _ConversationScreenState extends State<ConversationScreen>
         if (building != null) _knownBuilding = _buildingNames[building] ?? 'B$building';
         if (floor != null) _knownFloor = floor;
         if (locationId != null && locationId.isNotEmpty) _knownLocationId = locationId;
+      });
+    }
+    if (goal != null) {
+      final building = goal['building'] as int?;
+      final floor = goal['floor'] as int?;
+      final locationId = goal['location_id'] as String?;
+      setState(() {
+        if (building != null) _goalBuilding = _buildingNames[building] ?? 'B$building';
+        if (floor != null) _goalFloor = floor;
+        if (locationId != null && locationId.isNotEmpty) _goalLocationId = locationId;
+      });
+    } else {
+      setState(() {
+        _goalBuilding = null;
+        _goalFloor = null;
+        _goalLocationId = null;
       });
     }
   }
@@ -438,48 +462,55 @@ class _ConversationScreenState extends State<ConversationScreen>
               children: [
                 const SizedBox(height: 8),
                 StatusRow(
-                  knownBuilding: _knownBuilding,
-                  knownFloor: _knownFloor,
-                  knownLocationId: _knownLocationId,
-                  isNavigating: _isNavigating,
-                  currentStep: _currentStep,
-                  totalSteps: _totalSteps,
+                  initialBuilding: _knownBuilding,
+                  initialFloor: _knownFloor,
+                  initialLocationId: _knownLocationId,
+                  goalBuilding: _goalBuilding,
+                  goalFloor: _goalFloor,
+                  goalLocationId: _goalLocationId,
                 ),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: MessageBubble(
-                    message: _ttsMessage,
-                    currentAction: _currentAction,
-                    onTapReplay: () => _speakTts(_ttsMessage),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                if (_transcription.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        const Icon(Icons.record_voice_over_rounded, size: 14, color: Color(0xFF3B82F6)),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            '"$_transcription"',
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontStyle: FontStyle.italic),
-                            maxLines: 2, overflow: TextOverflow.ellipsis,
-                          ),
+                        MessageBubble(
+                          message: _ttsMessage,
+                          currentAction: _currentAction,
+                          currentStep: _isNavigating ? _currentStep : null,
+                          totalSteps: _isNavigating ? _totalSteps : null,
+                          onTapReplay: () => _speakTts(_ttsMessage),
                         ),
+                        const SizedBox(height: 14),
+                        if (_transcription.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.record_voice_over_rounded, size: 14, color: Color(0xFF3B82F6)),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    '"$_transcription"',
+                                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontStyle: FontStyle.italic),
+                                    maxLines: 2, overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (_isNavigating)
+                          NavQuickActions(
+                            onNext: _goNextStep,
+                            onRepeat: () => _sendVoice('repeat'),
+                            onLost: () => _sendVoice("I'm lost"),
+                            onCancel: () => _sendVoice('cancel'),
+                          ),
+                        _buildActionArea(),
                       ],
                     ),
                   ),
-                if (_isNavigating)
-                  NavQuickActions(
-                    onNext: _goNextStep,
-                    onPhoto: () => showPhotoSourceSheet(context, _pickPhoto),
-                    onRepeat: () => _sendVoice('repeat'),
-                    onLost: () => _sendVoice("I'm lost"),
-                    onCancel: () => _sendVoice('cancel'),
-                  ),
-                _buildActionArea(),
+                ),
               ],
             ),
           ),
@@ -573,7 +604,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       case 'photo':
         return Column(children: [
           PhotoButton(onTap: () => showPhotoSourceSheet(context, _pickPhoto)),
-          const SizedBox(height: 16), const DividerOr(label: 'or speak'), const SizedBox(height: 12),
+          const SizedBox(height: 10),
           CompactMicButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording),
         ]);
       case 'confirm':

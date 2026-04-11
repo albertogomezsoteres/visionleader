@@ -39,8 +39,8 @@ class VoiceButton extends StatelessWidget {
               builder: (_, _) => Transform.scale(
                 scale: isRecording ? pulseAnimation.value : 1.0,
                 child: Container(
-                  width: 90,
-                  height: 90,
+                  width: 104,
+                  height: 104,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: isRecording
@@ -59,7 +59,7 @@ class VoiceButton extends StatelessWidget {
                   ),
                   child: Icon(
                     isRecording ? Icons.mic_rounded : Icons.mic_none_rounded,
-                    size: 40,
+                    size: 46,
                     color: Colors.white,
                   ),
                 ),
@@ -75,7 +75,7 @@ class VoiceButton extends StatelessWidget {
             color: isRecording
                 ? const Color(0xFFEF4444)
                 : const Color(0xFF64748B),
-            fontSize: 13,
+            fontSize: 15,
             fontWeight: isRecording ? FontWeight.w500 : FontWeight.normal,
           ),
         ),
@@ -114,8 +114,8 @@ class CompactMicButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 52,
-                height: 52,
+                width: 72,
+                height: 72,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: isRecording
@@ -129,7 +129,7 @@ class CompactMicButton extends StatelessWidget {
                 ),
                 child: Icon(
                   isRecording ? Icons.mic_rounded : Icons.mic_none_rounded,
-                  size: 24,
+                  size: 34,
                   color: isRecording
                       ? const Color(0xFFEF4444)
                       : const Color(0xFF64748B),
@@ -142,7 +142,7 @@ class CompactMicButton extends StatelessWidget {
                   color: isRecording
                       ? const Color(0xFFEF4444)
                       : const Color(0xFF64748B),
-                  fontSize: 13,
+                  fontSize: 15,
                 ),
               ),
             ],
