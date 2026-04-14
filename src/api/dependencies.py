@@ -19,34 +19,45 @@ from navigation.pddl_converter import (
 )
 from navigation.conversation_agent import ConversationAgent
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DOMAIN_PATH = BASE_DIR / "pddl" / "domain.pddl"
-CAMPUS_JSON = BASE_DIR / "config" / "campus_graph.json"
-PDDL_DIR = BASE_DIR / "pddl"
+BASE_DIR       = Path(__file__).resolve().parent.parent.parent
+DOMAIN_PATH    = BASE_DIR / "pddl" / "domain_outdoor.pddl"
+TOPOLOGY_JSON  = BASE_DIR / "config" / "campus_topology.json"
+PLACES_JSON    = BASE_DIR / "config" / "campus_places.json"
+PDDL_DIR       = BASE_DIR / "pddl"
 
 load_dotenv(BASE_DIR / ".env")
 
 COLAB_API_URL: str = (os.getenv("COLAB_API_URL") or "").strip().rstrip("/")
 
 planner = FastDownwardPlanner()
-# Legacy floor-level converter (still used by /api/plan and the global domain)
-converter = CampusGraphToPDDL(str(CAMPUS_JSON))
-# Room-level hierarchical converter (building-specific domains)
+# Legacy floor-level converter — reads topology only (outdoor domain)
+converter = CampusGraphToPDDL(str(TOPOLOGY_JSON))
+# Room-level hierarchical converter — reads topology only (indoor domain)
 hierarchical_converter = HierarchicalPDDLConverter(
-    json_path=str(CAMPUS_JSON),
+    json_path=str(TOPOLOGY_JSON),
     pddl_dir=str(PDDL_DIR),
 )
 
-_campus_graph_data: Optional[dict] = None
+_topology_data: Optional[dict] = None
+_places_data:   Optional[dict] = None
 
 
-def load_campus_graph() -> dict:
-    """Load the campus JSON once and keep it in memory."""
-    global _campus_graph_data
-    if _campus_graph_data is None:
-        with open(CAMPUS_JSON, "r", encoding="utf-8") as f:
-            _campus_graph_data = json.load(f)
-    return _campus_graph_data
+def load_topology() -> dict:
+    """Load campus_topology.json once and keep it in memory."""
+    global _topology_data
+    if _topology_data is None:
+        with open(TOPOLOGY_JSON, "r", encoding="utf-8") as f:
+            _topology_data = json.load(f)
+    return _topology_data
+
+
+def load_places() -> dict:
+    """Load campus_places.json once and keep it in memory."""
+    global _places_data
+    if _places_data is None:
+        with open(PLACES_JSON, "r", encoding="utf-8") as f:
+            _places_data = json.load(f)
+    return _places_data
 
 
 _conversation_agent: Optional[ConversationAgent] = None
@@ -56,5 +67,5 @@ def get_conversation_agent() -> ConversationAgent:
     """Return the singleton ConversationAgent, creating it on first call."""
     global _conversation_agent
     if _conversation_agent is None:
-        _conversation_agent = ConversationAgent(load_campus_graph())
+        _conversation_agent = ConversationAgent(load_topology(), load_places())
     return _conversation_agent

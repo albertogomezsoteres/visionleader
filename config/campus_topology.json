@@ -1,0 +1,2594 @@
+{
+  "_comment": "PDDL data source. Feeds CampusGraphToPDDL and HierarchicalPDDLConverter. No display data.",
+  "buildings": [
+    {
+      "id": 1,
+      "name": "G",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": true,
+      "stairs": true
+    },
+    {
+      "id": 2,
+      "name": "CD",
+      "floors": [
+        -1,
+        0
+      ],
+      "elevators": false,
+      "stairs": true,
+      "cafeteria_floor": 0,
+      "gimnasio_floor": -1
+    },
+    {
+      "id": 3,
+      "name": "H",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 4,
+      "name": "P",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": true,
+      "stairs": true
+    },
+    {
+      "id": 5,
+      "name": "O",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": true,
+      "stairs": true
+    },
+    {
+      "id": 6,
+      "name": "M",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": true,
+      "stairs": true
+    },
+    {
+      "id": 7,
+      "name": "N",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 8,
+      "name": "CSQ",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 9,
+      "name": "K",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 10,
+      "name": "CSC",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 11,
+      "name": "C",
+      "floors": [
+        0,
+        1,
+        2
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 12,
+      "name": "E",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": false,
+      "stairs": true
+    },
+    {
+      "id": 13,
+      "name": "CM",
+      "floors": [
+        0
+      ],
+      "elevators": false,
+      "stairs": false
+    },
+    {
+      "id": 14,
+      "name": "LCB",
+      "floors": [
+        0,
+        1
+      ],
+      "elevators": false,
+      "stairs": true
+    }
+  ],
+  "locations": {
+    "G": {
+      "0": [
+        {
+          "id": "entrada_principal",
+          "type": "entrance"
+        },
+        {
+          "id": "aula_0_1",
+          "type": "classroom"
+        },
+        {
+          "id": "aula_0_3",
+          "type": "classroom"
+        },
+        {
+          "id": "lab_ia",
+          "type": "laboratory"
+        },
+        {
+          "id": "directorio_0",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "type": "restroom"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_1_1",
+          "type": "classroom"
+        },
+        {
+          "id": "aula_1_4",
+          "type": "classroom"
+        },
+        {
+          "id": "despachos",
+          "type": "office"
+        },
+        {
+          "id": "directorio_1",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "type": "restroom"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_2_1",
+          "type": "classroom"
+        },
+        {
+          "id": "sala_mentorias",
+          "type": "office"
+        },
+        {
+          "id": "despachos_eps",
+          "type": "office"
+        },
+        {
+          "id": "secretaria",
+          "type": "office"
+        },
+        {
+          "id": "directorio_2",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "type": "restroom"
+        }
+      ]
+    },
+    "CD": {
+      "0": [
+        {
+          "id": "entrada_cd",
+          "type": "entrance"
+        },
+        {
+          "id": "cafeteria",
+          "type": "cafeteria"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "-1": [
+        {
+          "id": "gimnasio",
+          "type": "gym"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "H": {
+      "0": [
+        {
+          "id": "entrada_h",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_h_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_h_2",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "P": {
+      "0": [
+        {
+          "id": "entrada_p",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_p_1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "O": {
+      "0": [
+        {
+          "id": "entrada_o",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_o_1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_o_2",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "M": {
+      "0": [
+        {
+          "id": "entrada_m",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_m_1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "N": {
+      "0": [
+        {
+          "id": "entrada_n",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_n_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_n_2",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CSQ": {
+      "0": [
+        {
+          "id": "entrada_csq",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_csq_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "K": {
+      "0": [
+        {
+          "id": "entrada_k",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_k_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_k_2",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CSC": {
+      "0": [
+        {
+          "id": "entrada_csc",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_csc_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "C": {
+      "0": [
+        {
+          "id": "entrada_c",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_c_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_c_2",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "E": {
+      "0": [
+        {
+          "id": "entrada_e",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_e_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CM": {
+      "0": [
+        {
+          "id": "entrada_cm",
+          "type": "entrance"
+        }
+      ]
+    },
+    "LCB": {
+      "0": [
+        {
+          "id": "entrada_lcb",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_lcb_1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "type": "stairs"
+        }
+      ]
+    }
+  },
+  "connections": [
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 1
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 1
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 2
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 2
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 1
+      },
+      "to": {
+        "building": 1,
+        "floor": 2
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 2
+      },
+      "to": {
+        "building": 1,
+        "floor": 1
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 1
+      },
+      "type": "stairs_up"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 1
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "stairs_down"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 1
+      },
+      "to": {
+        "building": 1,
+        "floor": 2
+      },
+      "type": "stairs_up"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 2
+      },
+      "to": {
+        "building": 1,
+        "floor": 1
+      },
+      "type": "stairs_down"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": 0
+      },
+      "to": {
+        "building": 2,
+        "floor": -1
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": -1
+      },
+      "to": {
+        "building": 2,
+        "floor": 0
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": 0
+      },
+      "to": {
+        "building": 2,
+        "floor": -1
+      },
+      "type": "stairs_down"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": -1
+      },
+      "to": {
+        "building": 2,
+        "floor": 0
+      },
+      "type": "stairs_up"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 0
+      },
+      "to": {
+        "building": 3,
+        "floor": 1
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 1
+      },
+      "to": {
+        "building": 3,
+        "floor": 0
+      },
+      "type": "elevator"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 0
+      },
+      "to": {
+        "building": 3,
+        "floor": 1
+      },
+      "type": "stairs_up"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 1
+      },
+      "to": {
+        "building": 3,
+        "floor": 0
+      },
+      "type": "stairs_down"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 2,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 3,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 2,
+        "floor": 0
+      },
+      "to": {
+        "building": 3,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 3,
+        "floor": 0
+      },
+      "to": {
+        "building": 2,
+        "floor": 0
+      },
+      "type": "hallway"
+    }
+  ],
+  "local_connections": [
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "aula_0_1",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "entrada_principal",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "aula_0_3",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "entrada_principal",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "lab_ia",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "entrada_principal",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "ascensor",
+      "distance_m": 20
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "entrada_principal",
+      "distance_m": 20
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "escaleras",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_principal",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "bano",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "entrada_principal",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "entrada_principal",
+      "to": "directorio_0",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "entrada_principal",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "aula_0_3",
+      "distance_m": 20
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "aula_0_1",
+      "distance_m": 20
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "lab_ia",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "aula_0_1",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "ascensor",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "aula_0_1",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "escaleras",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "aula_0_1",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "bano",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "aula_0_1",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_1",
+      "to": "directorio_0",
+      "distance_m": 11
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "lab_ia",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "aula_0_3",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "ascensor",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "aula_0_3",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "escaleras",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "aula_0_3",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "bano",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "aula_0_3",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "aula_0_3",
+      "to": "directorio_0",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "ascensor",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "lab_ia",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "escaleras",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "lab_ia",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "bano",
+      "distance_m": 22
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "lab_ia",
+      "distance_m": 22
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "lab_ia",
+      "to": "directorio_0",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "bano",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "bano",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "ascensor",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "escaleras",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "bano",
+      "to": "directorio_0",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "ascensor",
+      "distance_m": 7
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "directorio_0",
+      "distance_m": 7
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "escaleras",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "directorio_0",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "aula_0_1",
+      "distance_m": 11
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "aula_0_3",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "lab_ia",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 0,
+      "from": "directorio_0",
+      "to": "bano",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "aula_1_1",
+      "distance_m": 3
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "ascensor",
+      "distance_m": 3
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_1_1",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "escaleras",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "aula_1_4",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "ascensor",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_1_4",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "escaleras",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "aula_1_4",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "aula_1_1",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "despachos",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "ascensor",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "despachos",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "escaleras",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "despachos",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "aula_1_1",
+      "distance_m": 8
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "despachos",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "aula_1_4",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "bano",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "aula_1_1",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "bano",
+      "distance_m": 3
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "aula_1_4",
+      "distance_m": 3
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "bano",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "ascensor",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "bano",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "escaleras",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "bano",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "despachos",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "ascensor",
+      "distance_m": 2
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "directorio_1",
+      "distance_m": 2
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "escaleras",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "directorio_1",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "aula_1_1",
+      "distance_m": 4
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "aula_1_4",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "despachos",
+      "distance_m": 5
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "directorio_1",
+      "to": "bano",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_1",
+      "to": "directorio_1",
+      "distance_m": 4
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "aula_1_4",
+      "to": "directorio_1",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "despachos",
+      "to": "directorio_1",
+      "distance_m": 5
+    },
+    {
+      "building": "G",
+      "floor": 1,
+      "from": "bano",
+      "to": "directorio_1",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "aula_2_1",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "ascensor",
+      "distance_m": 16
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_2_1",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "escaleras",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "sala_mentorias",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "ascensor",
+      "distance_m": 18
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "sala_mentorias",
+      "distance_m": 23
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "escaleras",
+      "distance_m": 23
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "despachos_eps",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "ascensor",
+      "distance_m": 25
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "despachos_eps",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "escaleras",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "secretaria",
+      "distance_m": 7
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "ascensor",
+      "distance_m": 7
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "secretaria",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "escaleras",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "bano",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "ascensor",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "bano",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "escaleras",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "sala_mentorias",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "aula_2_1",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "despachos_eps",
+      "distance_m": 11
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "aula_2_1",
+      "distance_m": 11
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "secretaria",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "aula_2_1",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "bano",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "aula_2_1",
+      "distance_m": 10
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "aula_2_1",
+      "to": "directorio_2",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "despachos_eps",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "sala_mentorias",
+      "distance_m": 13
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "secretaria",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "sala_mentorias",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "bano",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "sala_mentorias",
+      "distance_m": 12
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "sala_mentorias",
+      "to": "directorio_2",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "secretaria",
+      "distance_m": 22
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "despachos_eps",
+      "distance_m": 22
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "bano",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "despachos_eps",
+      "distance_m": 19
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "despachos_eps",
+      "to": "directorio_2",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "bano",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "secretaria",
+      "distance_m": 21
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "secretaria",
+      "to": "directorio_2",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "bano",
+      "to": "directorio_2",
+      "distance_m": 23
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "ascensor",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "directorio_2",
+      "distance_m": 9
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "escaleras",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "directorio_2",
+      "distance_m": 14
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "aula_2_1",
+      "distance_m": 15
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "sala_mentorias",
+      "distance_m": 17
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "despachos_eps",
+      "distance_m": 24
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "secretaria",
+      "distance_m": 6
+    },
+    {
+      "building": "G",
+      "floor": 2,
+      "from": "directorio_2",
+      "to": "bano",
+      "distance_m": 23
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "entrada_cd",
+      "to": "cafeteria",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "cafeteria",
+      "to": "entrada_cd",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "entrada_cd",
+      "to": "escaleras",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_cd",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "cafeteria",
+      "to": "escaleras",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "cafeteria",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": -1,
+      "from": "escaleras",
+      "to": "gimnasio",
+      "distance_m": 10
+    },
+    {
+      "building": "CD",
+      "floor": -1,
+      "from": "gimnasio",
+      "to": "escaleras",
+      "distance_m": 10
+    },
+    {
+      "building": "H",
+      "floor": 0,
+      "from": "entrada_h",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "H",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_h",
+      "distance_m": 15
+    },
+    {
+      "building": "H",
+      "floor": 1,
+      "from": "aula_h_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "H",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_h_1",
+      "distance_m": 15
+    },
+    {
+      "building": "H",
+      "floor": 2,
+      "from": "aula_h_2",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "H",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_h_2",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "entrada_p",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "entrada_p",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "entrada_p",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_p",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "aula_p_1",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "aula_p_1",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "aula_p_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_p_1",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "P",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "entrada_o",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "entrada_o",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "entrada_o",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_o",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "aula_o_1",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "aula_o_1",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "aula_o_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_o_1",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "aula_o_2",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "aula_o_2",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "aula_o_2",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_o_2",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "O",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "entrada_m",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "entrada_m",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "entrada_m",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_m",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "aula_m_1",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "aula_m_1",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "aula_m_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_m_1",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "ascensor",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "M",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "ascensor",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 0,
+      "from": "entrada_n",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_n",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 1,
+      "from": "aula_n_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_n_1",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 2,
+      "from": "aula_n_2",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "N",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_n_2",
+      "distance_m": 15
+    },
+    {
+      "building": "CSQ",
+      "floor": 0,
+      "from": "entrada_csq",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "CSQ",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_csq",
+      "distance_m": 15
+    },
+    {
+      "building": "CSQ",
+      "floor": 1,
+      "from": "aula_csq_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "CSQ",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_csq_1",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 0,
+      "from": "entrada_k",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_k",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 1,
+      "from": "aula_k_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_k_1",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 2,
+      "from": "aula_k_2",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "K",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_k_2",
+      "distance_m": 15
+    },
+    {
+      "building": "CSC",
+      "floor": 0,
+      "from": "entrada_csc",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "CSC",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_csc",
+      "distance_m": 15
+    },
+    {
+      "building": "CSC",
+      "floor": 1,
+      "from": "aula_csc_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "CSC",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_csc_1",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 0,
+      "from": "entrada_c",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_c",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 1,
+      "from": "aula_c_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_c_1",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 2,
+      "from": "aula_c_2",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "C",
+      "floor": 2,
+      "from": "escaleras",
+      "to": "aula_c_2",
+      "distance_m": 15
+    },
+    {
+      "building": "E",
+      "floor": 0,
+      "from": "entrada_e",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "E",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_e",
+      "distance_m": 15
+    },
+    {
+      "building": "E",
+      "floor": 1,
+      "from": "aula_e_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "E",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_e_1",
+      "distance_m": 15
+    },
+    {
+      "building": "LCB",
+      "floor": 0,
+      "from": "entrada_lcb",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "LCB",
+      "floor": 0,
+      "from": "escaleras",
+      "to": "entrada_lcb",
+      "distance_m": 15
+    },
+    {
+      "building": "LCB",
+      "floor": 1,
+      "from": "aula_lcb_1",
+      "to": "escaleras",
+      "distance_m": 15
+    },
+    {
+      "building": "LCB",
+      "floor": 1,
+      "from": "escaleras",
+      "to": "aula_lcb_1",
+      "distance_m": 15
+    }
+  ],
+  "functional_locations": {
+    "cafeteria": {
+      "building": 2,
+      "floor": 0
+    },
+    "gimnasio": {
+      "building": 2,
+      "floor": -1
+    }
+  }
+}

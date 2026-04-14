@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 
 from api.schemas import ImageAnalysisResponse
-from api.dependencies import load_campus_graph, COLAB_API_URL
+from api.dependencies import load_places, COLAB_API_URL
 from api.services.image_analysis import analyzeImageViaColab
 
 router = APIRouter()
@@ -29,7 +29,7 @@ async def analyze_image(
             raise HTTPException(status_code=400, detail=f"Unsupported image format: {file.content_type}")
 
         image_data = await file.read()
-        campus_graph = load_campus_graph()
+        campus_graph = load_places()
 
         # Parse optional known state sent by the app
         known_building: Optional[int] = None

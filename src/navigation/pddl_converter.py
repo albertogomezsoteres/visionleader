@@ -4,18 +4,15 @@ PDDL problem generators — legacy floor-level and hierarchical room-level.
 Two classes live here:
 
 - CampusGraphToPDDL:
-    Legacy converter used by the global domain (pddl/domain.pddl). Reasons
-    at (building, floor) level and is still used for inter-building plans
-    and the /api/plan route.
+    Legacy converter used by pddl/domain_outdoor.pddl. Reasons at (building, floor)
+    level and is still used for inter-building plans and the /api/plan route.
 
 - HierarchicalPDDLConverter:
-    Room-level converter used by building-specific domains
-    (pddl/domain_G.pddl, domain_CD.pddl, domain_H.pddl). Encodes the full
-    intra-building graph in the generated problem file's :init section.
+    Room-level converter used by pddl/domain_indoor.pddl (all 14 buildings).
+    Encodes the full intra-building graph in the generated problem file's :init section.
 
-Both converters read the campus graph JSON, but only to produce PDDL
-problem files. The symbolic reasoning over the topology is done by
-Fast Downward on the generated problem + the right domain.
+Both converters read config/campus_topology.json (topology-only data: buildings,
+connections, distances). All symbolic reasoning is delegated to Fast Downward.
 """
 
 import json
@@ -110,10 +107,6 @@ class CampusGraphToPDDL:
                     init.append(f"    (hay_ascensor edificio_{bid} {fs})")
                 if has_stairs:
                     init.append(f"    (hay_escalera edificio_{bid} {fs})")
-                if caf_floor is not None and floor == caf_floor:
-                    init.append(f"    (hay_cafeteria edificio_{bid} {fs})")
-                if gym_floor is not None and floor == gym_floor:
-                    init.append(f"    (hay_gimnasio edificio_{bid} {fs})")
 
         for conn in self.get_connections():
             fb, ff = conn["from"]["building"], conn["from"]["floor"]
@@ -146,14 +139,7 @@ class CampusGraphToPDDL:
             gbid, gfloor = self._find_functional_goal(goal_functional)
             if gbid is None or gfloor is None:
                 raise ValueError(f"Functional goal '{goal_functional}' not found in campus_graph.json")
-            gfs = _floor_str(gfloor)
-            facility_pred = "hay_cafeteria" if goal_functional.lower() == "cafeteria" else "hay_gimnasio"
-            goal = (
-                f"    (and\n"
-                f"      (en robot1 edificio_{gbid} {gfs})\n"
-                f"      ({facility_pred} edificio_{gbid} {gfs})\n"
-                f"    )"
-            )
+            goal = f"    (en robot1 edificio_{gbid} {_floor_str(gfloor)})"
         elif goal_state:
             gbid, gfloor = goal_state
             goal = f"    (en robot1 edificio_{gbid} {_floor_str(gfloor)})"
@@ -162,7 +148,7 @@ class CampusGraphToPDDL:
 
         content = (
             f"(define (problem {problem_name})\n"
-            f"  (:domain campus-navigation)\n"
+            f"  (:domain campus-outdoor)\n"
             f"\n"
             f"  (:objects\n"
             f"    {' '.join(objects['robots'])} - robot\n"
@@ -197,40 +183,44 @@ class HierarchicalPDDLConverter:
     """
     Room-level PDDL problem generator for building-specific domains.
 
-    Each building has its own PDDL domain (domain_G.pddl, domain_CD.pddl,
-    domain_H.pddl). This converter emits problem files whose :init section
-    encodes the full intra-building graph (which rooms connect to which,
-    floor tags, elevator/stair tags). Fast Downward then does all the
-    room-level routing by itself.
+    One PDDL domain covers all 14 UFV buildings:
+      - domain_indoor.pddl : All buildings. Building G uses measured metric distances
+                             (full room graph, dynamic closures, hurry mode); all
+                             others use approximate 15 m hop distances.
 
-    Only Building G is fully modeled for the TFG demo. CD and H expose
-    minimal graphs (basic facilities + elevator/stairs between floors).
+    This converter generates a PDDL *problem* file for the chosen building whose
+    :init section encodes the full intra-building graph. Fast Downward solves it.
     """
 
     # Location IDs that repeat on several floors (same name in the JSON)
     # must be disambiguated with a floor suffix in PDDL.
     SHARED_LOC_IDS: Set[str] = {"ascensor", "escaleras", "bano"}
 
-    # Per-building PDDL domain filenames
+    # Buildings that physically have an elevator (ascensor nodes in campus_graph).
+    HAS_ELEVATOR: Set[int] = {1, 4, 5, 6}   # G, P, O, M
+
+    # Default distance for non-G buildings (approximate, 15 m per hop).
+    # G uses exact measured distances from campus_graph.json.
+    DEFAULT_DISTANCE_NON_G: int = 15
+
+    # Per-building PDDL domain filenames — all buildings share domain_indoor.pddl.
+    # Building G uses the same action schema; what makes it special is that its
+    # problem file encodes real measured distances instead of the 15 m default.
     BUILDING_DOMAINS: Dict[int, str] = {
-        1: "domain_G.pddl",   # Edificio G (full room-level)
-        2: "domain_CD.pddl",  # Centro Deportivo (floor-level)
-        3: "domain_H.pddl",   # Edificio H (floor-level)
+        i: "domain_indoor.pddl" for i in range(1, 15)
     }
 
     # :domain directive name inside each problem file
     BUILDING_DOMAIN_NAMES: Dict[int, str] = {
-        1: "building-g",
-        2: "building-cd",
-        3: "building-h",
+        i: "building-indoor" for i in range(1, 15)
     }
 
-    # Mapping from numeric building id to the name used as key inside
-    # campus_graph.json "locations".
+    # Mapping from numeric building id to the campus_graph.json "locations" key
     BUILDING_JSON_NAMES: Dict[int, str] = {
-        1: "G",
-        2: "CD",
-        3: "H",
+        1:  "G",  2:  "CD",  3:  "H",   4:  "P",
+        5:  "O",  6:  "M",   7:  "N",   8:  "CSQ",
+        9:  "K",  10: "CSC", 11: "C",   12: "E",
+        13: "CM", 14: "LCB",
     }
 
     def __init__(
@@ -486,19 +476,29 @@ class HierarchicalPDDLConverter:
                 f"    (en_planta {pddl_id} {_floor_str(floor)})"
             )
 
-        # Elevator / stair tags (one per floor, at the ascensor/escaleras nodes)
+        # Elevator / stair tags — only for nodes that actually exist in this building.
+        building_has_elevator = building_id in self.HAS_ELEVATOR
         for floor in floors_set:
-            init_lines.append(
-                f"    (es_ascensor {self.location_to_pddl('ascensor', floor)})"
-            )
-            init_lines.append(
-                f"    (es_escalera {self.location_to_pddl('escaleras', floor)})"
-            )
+            locs_on_floor = {
+                loc["id"]
+                for loc in locations_by_floor.get(floor, [])
+            }
+            if building_has_elevator and "ascensor" in locs_on_floor:
+                init_lines.append(
+                    f"    (es_ascensor {self.location_to_pddl('ascensor', floor)})"
+                )
+            if "escaleras" in locs_on_floor:
+                init_lines.append(
+                    f"    (es_escalera {self.location_to_pddl('escaleras', floor)})"
+                )
 
         # Hallway connections derived from local_connections (per-floor edges).
         # Each edge emits BOTH the topology fact and the numeric distance
         # so the PDDL planner can cost-optimise the path in meters.
-        default_distance = 10  # fallback when distance_m is missing from JSON
+        # G uses exact measured distances; other buildings fall back to 15 m.
+        default_distance = (
+            10 if building_id == 1 else self.DEFAULT_DISTANCE_NON_G
+        )
         for lc in self.data.get("local_connections", []):
             if lc.get("building") != building_name:
                 continue
@@ -518,30 +518,37 @@ class HierarchicalPDDLConverter:
                 f"    (= (distancia {from_pddl} {to_pddl}) {distance})"
             )
 
-        # Elevator vertical connections (bidirectional, all-to-all between floors)
-        elevator_ids = [
-            self.location_to_pddl("ascensor", f) for f in floors_set
-        ]
-        for i, a in enumerate(elevator_ids):
-            for j, b in enumerate(elevator_ids):
-                if i != j:
-                    init_lines.append(f"    (conectado_ascensor {a} {b})")
+        # Elevator vertical connections (bidirectional, all-to-all between floors).
+        # Only generated when the building actually has an elevator.
+        if building_has_elevator:
+            elevator_ids = [
+                self.location_to_pddl("ascensor", f) for f in floors_set
+            ]
+            for i, a in enumerate(elevator_ids):
+                for j, b in enumerate(elevator_ids):
+                    if i != j:
+                        init_lines.append(f"    (conectado_ascensor {a} {b})")
 
         # Stair directed connections between ADJACENT floors only.
-        # Unlike the elevator (which can skip floors in a single ride),
-        # a real staircase forces the user to stop on every floor.
-        sorted_floors = sorted(floors_set)
-        for i in range(len(sorted_floors) - 1):
-            lower_floor = sorted_floors[i]
-            upper_floor = sorted_floors[i + 1]
-            lower = self.location_to_pddl("escaleras", lower_floor)
-            upper = self.location_to_pddl("escaleras", upper_floor)
-            init_lines.append(
-                f"    (conectado_escalera_subir {lower} {upper})"
-            )
-            init_lines.append(
-                f"    (conectado_escalera_bajar {upper} {lower})"
-            )
+        # Only generated when the building has stair nodes.
+        all_loc_ids = {
+            loc["id"]
+            for locs in locations_by_floor.values()
+            for loc in locs
+        }
+        if "escaleras" in all_loc_ids and len(floors_set) > 1:
+            sorted_floors = sorted(floors_set)
+            for i in range(len(sorted_floors) - 1):
+                lower_floor = sorted_floors[i]
+                upper_floor = sorted_floors[i + 1]
+                lower = self.location_to_pddl("escaleras", lower_floor)
+                upper = self.location_to_pddl("escaleras", upper_floor)
+                init_lines.append(
+                    f"    (conectado_escalera_subir {lower} {upper})"
+                )
+                init_lines.append(
+                    f"    (conectado_escalera_bajar {upper} {lower})"
+                )
 
         # Build final PDDL problem text
         problem_name = problem_name or f"{building_name.lower()}-intra-problem"
@@ -578,7 +585,7 @@ if __name__ == "__main__":
     import sys
     BASE = Path(__file__).parent.parent.parent
     converter = HierarchicalPDDLConverter(
-        json_path=str(BASE / "config" / "campus_graph.json"),
+        json_path=str(BASE / "config" / "campus_topology.json"),
         pddl_dir=str(BASE / "pddl"),
     )
 
