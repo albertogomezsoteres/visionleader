@@ -12,9 +12,9 @@ class PlanningRequest(BaseModel):
       - {'building': int, 'floor': int, 'room': 'aula_1_4'}    (room-level, hierarchical)
 
     When both initial_state and goal_state carry a 'room' and both belong
-    to the same building, the API uses the building-specific PDDL domain
-    (e.g. domain_G.pddl) and returns a room-level plan. Otherwise it falls
-    back to the global floor-level domain (pddl/domain.pddl).
+    to the same building, the API uses domain_indoor.pddl and returns a
+    room-level plan. Otherwise it falls back to the global floor-level
+    domain (pddl/domain_outdoor.pddl).
     """
     initial_state: Dict[str, Any] = Field(
         ...,

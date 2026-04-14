@@ -1,25 +1,45 @@
 # PDDL del campus
 
-## Ficheros
+## Dominios
 
-- **`domain.pddl`** — Dominio fijo: predicados, acciones y costes (`:action-costs`). La abstracción es **edificio + planta** (no aulas sueltas en el PDDL).
+El sistema usa **dos dominios PDDL** separados que se cargan según el tipo de plan:
 
-- **Problemas (`.pddl`)** — Se **generan en tiempo de ejecución** desde `config/campus_graph.json` con `src/navigation/pddl_converter.py` (no hay `problem_template.pddl` en el repo). Fast Downward recibe un fichero temporal.
+- **`domain_outdoor.pddl`** (`campus-outdoor`) — Navegación entre edificios del campus. Razona al nivel de `(edificio, planta)` sin entrar en habitaciones concretas. Tipos: `robot`, `edificio`, `planta`, `tipo_conexion`. Se usa cuando el origen y el destino están en edificios distintos.
 
-## Flujo
+- **`domain_indoor.pddl`** (`building-indoor`) — Navegación intra-edificio al nivel de sala (`ubicacion`). Compartido por los 14 edificios de UFV. Incluye distancias métricas en el fluente `(distancia ?u1 ?u2)` y cierres dinámicos vía el predicado `(abierto ?u)`. Edificio G usa distancias medidas reales; los demás usan una aproximación de 15 m por hop.
 
-1. El grafo JSON aporta `connections` (topología macro) y `buildings`.
-2. `CampusGraphToPDDL.generate_problem(...)` escribe init + goal + métrica.
-3. `FastDownwardPlanner` (Docker, imagen `fast-downward:latest`) resuelve el problema.
+## Acciones y costes
 
-## Documentación del dominio
+Ambos dominios comparten el mismo esquema de acciones: `caminar`/`mover_edificio`, `verificar_ascensor`, `usar_ascensor`, `validar_escaleras`, `subir_escaleras`, `bajar_escaleras`, `subir_escaleras_rapido`, `bajar_escaleras_rapido`. Los costes de `domain_indoor` están en unidades de segundos de esfuerzo; los de `domain_outdoor` son arbitrarios pero internamente consistentes.
 
-Ver comentarios al inicio de `domain.pddl`: modo accesible vs `modo_rapido`, validación autónoma de ascensor/escaleras, y movimiento entre edificios.
+El flag `(modo_rapido)` cambia el modelo de costes: modo accesible preferirá ascensor frente a escaleras, modo rápido preferirá escaleras para distancias cortas.
 
-## Ejemplo Docker
+## Generación de problemas
+
+Los ficheros de problema se **generan dinámicamente** desde `config/campus_graph.json`:
+
+- `src/navigation/pddl_converter.py::CampusGraphToPDDL` → outdoor
+- `src/navigation/pddl_converter.py::HierarchicalPDDLConverter` → indoor
+
+`pddl/problems/` contiene un problem file demo por edificio regenerable con `python scripts/generate_demo_problems.py`. Son ejemplos ilustrativos — el runtime nunca los lee, escribe tempfiles en cada petición.
+
+## Flujo de ejecución
+
+1. `ConversationAgent._compute_route` decide si el plan es intra o inter-edificio.
+2. El converter adecuado genera un problem tempfile en `pddl/`.
+3. `FastDownwardPlanner.plan()` ejecuta Fast Downward en Docker con `astar(lmcut())`.
+4. El plan se parsea a acciones PDDL y se convierte a pasos TTS.
+
+## Probar manualmente
 
 ```bash
-docker run --rm -v "%CD%:/pddl" fast-downward:latest domain.pddl <problem>.pddl
-```
+# Smoke-test de los 8 escenarios hierarchical
+python scripts/test_hierarchical_pddl.py
 
-(En Linux/macOS sustituir el volumen por `$(pwd):/pddl`.)
+# Escenarios de cierres dinámicos
+python scripts/test_closure_scenarios.py
+
+# Llamada directa a Fast Downward
+docker run --rm -v "$(pwd):/pddl" fast-downward:latest \
+  domain_indoor.pddl problems/problem_G_demo.pddl
+```

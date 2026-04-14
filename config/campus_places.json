@@ -1,0 +1,789 @@
+{
+  "_comment": "Display/TTS data source. Feeds ConversationAgent for room names, hints and photo recognition. No topology.",
+  "buildings": [
+    {
+      "id": 1,
+      "name": "G",
+      "display_name": "Edificio G (Escuela Politécnica Superior)",
+      "description": "Main engineering school. Entrance on floor 0. Elevator and stairs at the end of the corridor."
+    },
+    {
+      "id": 2,
+      "name": "CD",
+      "display_name": "Centro Deportivo",
+      "description": "Sports centre. Cafeteria on floor 0, gym on floor -1. Stairs only."
+    },
+    {
+      "id": 3,
+      "name": "H",
+      "display_name": "Edificio H",
+      "description": "Building H. Three floors, stairs only."
+    },
+    {
+      "id": 4,
+      "name": "P",
+      "display_name": "Edificio P",
+      "description": "Building P. Two floors, elevator and stairs."
+    },
+    {
+      "id": 5,
+      "name": "O",
+      "display_name": "Edificio O",
+      "description": "Building O. Three floors, elevator and stairs."
+    },
+    {
+      "id": 6,
+      "name": "M",
+      "display_name": "Edificio M",
+      "description": "Building M. Two floors, elevator and stairs."
+    },
+    {
+      "id": 7,
+      "name": "N",
+      "display_name": "Edificio N",
+      "description": "Building N. Three floors, stairs only."
+    },
+    {
+      "id": 8,
+      "name": "CSQ",
+      "display_name": "Edificio CSQ",
+      "description": "Building CSQ. Two floors, stairs only."
+    },
+    {
+      "id": 9,
+      "name": "K",
+      "display_name": "Edificio K",
+      "description": "Building K. Three floors, stairs only."
+    },
+    {
+      "id": 10,
+      "name": "CSC",
+      "display_name": "Edificio CSC",
+      "description": "Building CSC. Two floors, stairs only."
+    },
+    {
+      "id": 11,
+      "name": "C",
+      "display_name": "Edificio C",
+      "description": "Building C. Three floors, stairs only."
+    },
+    {
+      "id": 12,
+      "name": "E",
+      "display_name": "Edificio E",
+      "description": "Building E. Two floors, stairs only."
+    },
+    {
+      "id": 13,
+      "name": "CM",
+      "display_name": "Edificio CM",
+      "description": "Building CM. Single floor."
+    },
+    {
+      "id": 14,
+      "name": "LCB",
+      "display_name": "Edificio LCB",
+      "description": "Building LCB. Two floors, stairs only."
+    }
+  ],
+  "locations": {
+    "G": {
+      "0": [
+        {
+          "id": "entrada_principal",
+          "name": "Main Entrance",
+          "name_es": "Entrada Principal",
+          "type": "entrance"
+        },
+        {
+          "id": "aula_0_1",
+          "name": "Classroom 0.1",
+          "name_es": "Aula 0.1",
+          "type": "classroom",
+          "room_code": "0.1"
+        },
+        {
+          "id": "aula_0_3",
+          "name": "Classroom 0.3",
+          "name_es": "Aula 0.3",
+          "type": "classroom",
+          "room_code": "0.3"
+        },
+        {
+          "id": "lab_ia",
+          "name": "AI Laboratory",
+          "name_es": "Laboratorio de IA",
+          "type": "laboratory",
+          "room_code": "0.5"
+        },
+        {
+          "id": "directorio_0",
+          "name": "Floor Directory",
+          "name_es": "Directorio Planta",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "name": "Restroom",
+          "name_es": "Baño",
+          "type": "restroom"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_1_1",
+          "name": "Classroom 1.1",
+          "name_es": "Aula 1.1",
+          "type": "classroom",
+          "room_code": "1.1"
+        },
+        {
+          "id": "aula_1_4",
+          "name": "Classroom 1.4",
+          "name_es": "Aula 1.4",
+          "type": "classroom",
+          "room_code": "1.4"
+        },
+        {
+          "id": "despachos",
+          "name": "Faculty Offices",
+          "name_es": "Despachos Profesores",
+          "type": "office"
+        },
+        {
+          "id": "directorio_1",
+          "name": "Floor Directory",
+          "name_es": "Directorio Planta",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "name": "Restroom",
+          "name_es": "Baño",
+          "type": "restroom"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_2_1",
+          "name": "Classroom 2.1",
+          "name_es": "Aula 2.1",
+          "type": "classroom",
+          "room_code": "2.1"
+        },
+        {
+          "id": "sala_mentorias",
+          "name": "Mentoring Room",
+          "name_es": "Sala de Mentorías",
+          "type": "office"
+        },
+        {
+          "id": "despachos_eps",
+          "name": "EPS Faculty Offices",
+          "name_es": "Despachos Profesores EPS",
+          "type": "office"
+        },
+        {
+          "id": "secretaria",
+          "name": "Secretary Office",
+          "name_es": "Secretaría",
+          "type": "office"
+        },
+        {
+          "id": "directorio_2",
+          "name": "Floor Directory",
+          "name_es": "Directorio Planta",
+          "type": "directory_sign"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        },
+        {
+          "id": "bano",
+          "name": "Restroom",
+          "name_es": "Baño",
+          "type": "restroom"
+        }
+      ]
+    },
+    "CD": {
+      "0": [
+        {
+          "id": "entrada_cd",
+          "name": "CD Entrance",
+          "name_es": "Entrada CD",
+          "type": "entrance"
+        },
+        {
+          "id": "cafeteria",
+          "name": "Cafeteria",
+          "name_es": "Cafetería",
+          "type": "cafeteria"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "-1": [
+        {
+          "id": "gimnasio",
+          "name": "Gym",
+          "name_es": "Gimnasio",
+          "type": "gym"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "H": {
+      "0": [
+        {
+          "id": "entrada_h",
+          "name": "H Entrance",
+          "name_es": "Entrada H",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_h_1",
+          "name": "H Room 1.1",
+          "name_es": "Aula H 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_h_2",
+          "name": "H Room 2.1",
+          "name_es": "Aula H 2.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "P": {
+      "0": [
+        {
+          "id": "entrada_p",
+          "name": "P Entrance",
+          "name_es": "Entrada P",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_p_1",
+          "name": "P Room 1.1",
+          "name_es": "Aula P 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "O": {
+      "0": [
+        {
+          "id": "entrada_o",
+          "name": "O Entrance",
+          "name_es": "Entrada O",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_o_1",
+          "name": "O Room 1.1",
+          "name_es": "Aula O 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_o_2",
+          "name": "O Room 2.1",
+          "name_es": "Aula O 2.1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "M": {
+      "0": [
+        {
+          "id": "entrada_m",
+          "name": "M Entrance",
+          "name_es": "Entrada M",
+          "type": "entrance"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_m_1",
+          "name": "M Room 1.1",
+          "name_es": "Aula M 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "ascensor",
+          "name": "Elevator",
+          "name_es": "Ascensor",
+          "type": "elevator"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "N": {
+      "0": [
+        {
+          "id": "entrada_n",
+          "name": "N Entrance",
+          "name_es": "Entrada N",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_n_1",
+          "name": "N Room 1.1",
+          "name_es": "Aula N 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_n_2",
+          "name": "N Room 2.1",
+          "name_es": "Aula N 2.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CSQ": {
+      "0": [
+        {
+          "id": "entrada_csq",
+          "name": "CSQ Entrance",
+          "name_es": "Entrada CSQ",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_csq_1",
+          "name": "CSQ Room 1.1",
+          "name_es": "Aula CSQ 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "K": {
+      "0": [
+        {
+          "id": "entrada_k",
+          "name": "K Entrance",
+          "name_es": "Entrada K",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_k_1",
+          "name": "K Room 1.1",
+          "name_es": "Aula K 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_k_2",
+          "name": "K Room 2.1",
+          "name_es": "Aula K 2.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CSC": {
+      "0": [
+        {
+          "id": "entrada_csc",
+          "name": "CSC Entrance",
+          "name_es": "Entrada CSC",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_csc_1",
+          "name": "CSC Room 1.1",
+          "name_es": "Aula CSC 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "C": {
+      "0": [
+        {
+          "id": "entrada_c",
+          "name": "C Entrance",
+          "name_es": "Entrada C",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_c_1",
+          "name": "C Room 1.1",
+          "name_es": "Aula C 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "2": [
+        {
+          "id": "aula_c_2",
+          "name": "C Room 2.1",
+          "name_es": "Aula C 2.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "E": {
+      "0": [
+        {
+          "id": "entrada_e",
+          "name": "E Entrance",
+          "name_es": "Entrada E",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_e_1",
+          "name": "E Room 1.1",
+          "name_es": "Aula E 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    },
+    "CM": {
+      "0": [
+        {
+          "id": "entrada_cm",
+          "name": "CM Entrance",
+          "name_es": "Entrada CM",
+          "type": "entrance"
+        }
+      ]
+    },
+    "LCB": {
+      "0": [
+        {
+          "id": "entrada_lcb",
+          "name": "LCB Entrance",
+          "name_es": "Entrada LCB",
+          "type": "entrance"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ],
+      "1": [
+        {
+          "id": "aula_lcb_1",
+          "name": "LCB Room 1.1",
+          "name_es": "Aula LCB 1.1",
+          "type": "classroom"
+        },
+        {
+          "id": "escaleras",
+          "name": "Stairs",
+          "name_es": "Escaleras",
+          "type": "stairs"
+        }
+      ]
+    }
+  },
+  "hints": {
+    "G_0_entrada_principal_aula_0_1": "turn left, second door on the right",
+    "G_0_aula_0_1_entrada_principal": "exit the classroom and go back to the entrance",
+    "G_0_entrada_principal_aula_0_3": "first door on the right",
+    "G_0_aula_0_3_entrada_principal": "exit and turn left back to the entrance",
+    "G_0_entrada_principal_lab_ia": "straight ahead, last door on the left",
+    "G_0_lab_ia_entrada_principal": "exit and go straight back to the entrance",
+    "G_0_entrada_principal_ascensor": "end of the corridor on the left",
+    "G_0_ascensor_entrada_principal": "from the elevator go straight to the entrance",
+    "G_0_entrada_principal_escaleras": "end of the corridor on the right",
+    "G_0_escaleras_entrada_principal": "from the stairs go straight back",
+    "G_0_entrada_principal_bano": "turn left, third door on the right",
+    "G_0_bano_entrada_principal": "exit the restroom and go left to the entrance",
+    "G_0_aula_0_1_aula_0_3": "turn right, two doors down",
+    "G_0_aula_0_3_aula_0_1": "turn left, two doors down",
+    "G_0_aula_0_1_lab_ia": "turn right, third door on the left",
+    "G_0_aula_0_1_bano": "exit the classroom and turn right, first door",
+    "G_0_lab_ia_ascensor": "exit the lab and turn right to the elevator",
+    "G_1_ascensor_aula_1_1": "exit the elevator, turn right, first door on the right",
+    "G_1_aula_1_1_ascensor": "exit the classroom and turn left to the elevator",
+    "G_1_escaleras_aula_1_1": "at the top of the stairs, turn right, first door on the right",
+    "G_1_aula_1_1_escaleras": "exit the classroom and turn left to the stairs",
+    "G_1_ascensor_aula_1_4": "exit the elevator, turn right, fourth door on the left",
+    "G_1_aula_1_4_ascensor": "exit the classroom and turn right to the elevator",
+    "G_1_escaleras_aula_1_4": "at the top of the stairs, turn left, fourth door on the left",
+    "G_1_aula_1_4_escaleras": "exit the classroom and turn right to the stairs",
+    "G_1_aula_1_1_aula_1_4": "turn left, three doors ahead on your left",
+    "G_1_aula_1_4_aula_1_1": "turn right, three doors back on your right",
+    "G_1_ascensor_despachos": "exit the elevator, turn left, second door on the right",
+    "G_1_despachos_ascensor": "exit the offices and turn right to the elevator",
+    "G_1_aula_1_1_despachos": "turn left, walk past the elevator, second door on the right",
+    "G_1_despachos_aula_1_1": "turn right, walk past the elevator, first door on the right",
+    "G_1_aula_1_4_bano": "exit the classroom and turn right, restroom is right there",
+    "G_1_bano_aula_1_4": "exit the restroom and turn left, first door on the left",
+    "G_2_ascensor_aula_2_1": "exit the elevator, turn right, first door on the right",
+    "G_2_aula_2_1_ascensor": "exit the classroom and turn left to the elevator",
+    "G_2_escaleras_aula_2_1": "at the top of the stairs, turn left, first door on the right",
+    "G_2_ascensor_sala_mentorias": "exit the elevator, turn left, second door on the left",
+    "G_2_sala_mentorias_ascensor": "exit the room and turn right to the elevator",
+    "G_2_ascensor_despachos_eps": "exit the elevator, turn right, second door on the left",
+    "G_2_despachos_eps_ascensor": "exit the offices and turn left to the elevator",
+    "G_2_ascensor_secretaria": "exit the elevator, turn left, first door on the right",
+    "G_2_secretaria_ascensor": "exit the office and turn right to the elevator",
+    "G_2_escaleras_secretaria": "at the top of the stairs, turn right, second door on the left",
+    "G_2_secretaria_escaleras": "exit the office and turn left to the stairs",
+    "G_2_aula_2_1_sala_mentorias": "turn left, third door on the left",
+    "G_2_aula_2_1_despachos_eps": "turn right, last door on the right",
+    "G_2_aula_2_1_secretaria": "exit the classroom, turn left, last door on the right",
+    "G_2_secretaria_aula_2_1": "exit the office and go right, last door on the left"
+  },
+  "functional_locations": {
+    "cafeteria": {
+      "description": "Cafeteria in the Sports Centre"
+    },
+    "gimnasio": {
+      "description": "Gym in the Sports Centre basement"
+    }
+  }
+}

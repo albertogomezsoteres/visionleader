@@ -9,12 +9,14 @@ States:
 """
 
 from typing import Dict, List, Optional, Any
-from collections import deque
 from enum import Enum
 from pathlib import Path
+import logging
 import re
 import json
 import tempfile
+
+logger = logging.getLogger(__name__)
 
 
 class ConversationState(Enum):
@@ -42,15 +44,42 @@ _NEGATE = {"no", "nope", "nah", "cancel", "wrong", "incorrect", "not",
            "don't", "dont"}
 
 _BUILDING_MAP = {
-    "g": 1, "politécnica": 1, "politecnica": 1, "eps": 1,
-    "cd": 2, "centro deportivo": 2, "sports": 2, "sport": 2,
-    "h": 3, "edificio h": 3,
+    "g": 1,   "politécnica": 1, "politecnica": 1, "eps": 1,
+    "cd": 2,  "centro deportivo": 2, "sports": 2, "sport": 2,
+    "h": 3,
+    "p": 4,
+    "o": 5,
+    "m": 6,
+    "n": 7,
+    "csq": 8,
+    "k": 9,
+    "csc": 10,
+    "c": 11,
+    "e": 12,
+    "cm": 13,
+    "lcb": 14,
 }
-_BUILDING_NAMES = {1: "G", 2: "CD", 3: "H"}
+_BUILDING_NAMES = {
+    1: "G",  2: "CD",  3: "H",  4: "P",
+    5: "O",  6: "M",   7: "N",  8: "CSQ",
+    9: "K",  10: "CSC", 11: "C", 12: "E",
+    13: "CM", 14: "LCB",
+}
 _BUILDING_FULL = {
-    1: "Building G",
-    2: "Building CD",
-    3: "Building H",
+    1:  "Building G (EPS)",
+    2:  "Building CD (Centro Deportivo)",
+    3:  "Building H",
+    4:  "Building P",
+    5:  "Building O",
+    6:  "Building M",
+    7:  "Building N",
+    8:  "Building CSQ",
+    9:  "Building K",
+    10: "Building CSC",
+    11: "Building C",
+    12: "Building E",
+    13: "Building CM",
+    14: "Building LCB",
 }
 
 _FLOOR_WORDS = {
@@ -136,33 +165,34 @@ class ConversationContext:
 class ConversationAgent:
     """Full conversational navigation agent."""
 
-    def __init__(self, campus_graph: Dict):
-        self.graph = campus_graph
+    def __init__(self, topology: Dict, places: Dict):
+        """
+        topology  — contents of config/campus_topology.json
+                    (buildings, connections, local_connections, functional_locations).
+                    Used only to instantiate the PDDL converters.
+        places    — contents of config/campus_places.json
+                    (building display names, room names/types/room_codes, TTS hints).
+                    Used only for TTS decoration and room recognition.
+        """
+        self._topology = topology
+        self._places   = places
         self.contexts: Dict[str, ConversationContext] = {}
 
-        # Pre-index local connections for fast lookup
-        self._local_idx: Dict[str, List[str]] = {}
-        # Structured fields used by the distance-aware TTS generator:
-        #   key "<building>_<floor>_<from>_<to>" -> int meters
-        #   key "<building>_<floor>_<from>_<to>" -> Optional[str] directional hint
+        # Distance lookup: "<building>_<floor>_<from>_<to>" -> meters (int)
+        # Populated from topology — distances are PDDL data, not display data.
         self._local_distance: Dict[str, int] = {}
-        self._local_hint: Dict[str, Optional[str]] = {}
-        # Adjacency list per (building, floor) for BFS fallback
-        self._local_adj: Dict[str, Dict[str, List[str]]] = {}
-        for lc in self.graph.get("local_connections", []):
-            key = f"{lc['building']}_{lc['floor']}_{lc['from']}_{lc['to']}"
-            self._local_idx[key] = lc.get("instructions", []) or []
+        for lc in topology.get("local_connections", []):
             dist = lc.get("distance_m")
             if isinstance(dist, (int, float)) and dist > 0:
+                key = f"{lc['building']}_{lc['floor']}_{lc['from']}_{lc['to']}"
                 self._local_distance[key] = int(round(dist))
-            hint = lc.get("hint")
-            if isinstance(hint, str) and hint.strip():
-                self._local_hint[key] = hint.strip()
-            bf_key = f"{lc['building']}_{lc['floor']}"
-            self._local_adj.setdefault(bf_key, {}).setdefault(lc["from"], []).append(lc["to"])
 
-        # Location index  {building_name -> {floor_str -> [loc_dicts]}}
-        self._locations = self.graph.get("locations", {})
+        # Hint lookup: "<building>_<floor>_<from>_<to>" -> short directional string
+        # Populated from places — hints are TTS decoration only.
+        self._local_hint: Dict[str, str] = dict(places.get("hints", {}))
+
+        # Location index: {building_name -> {floor_str -> [loc_dicts]}}
+        self._locations = places.get("locations", {})
 
         # Known room codes -> (building_id, floor, location_id)
         self._room_lookup: Dict[str, tuple] = {}
@@ -186,11 +216,10 @@ class ConversationAgent:
         """Initialize Fast Downward planner and both PDDL converters.
 
         Two converters are created:
-          - CampusGraphToPDDL: used by the global/legacy domain.pddl for
-            inter-building or floor-level plans.
-          - HierarchicalPDDLConverter: used by building-specific domains
-            (domain_G.pddl, domain_CD.pddl, domain_H.pddl) for room-level
-            planning inside a single building.
+          - CampusGraphToPDDL: used by domain_outdoor.pddl for
+            inter-building (building + floor level) plans.
+          - HierarchicalPDDLConverter: used by domain_indoor.pddl for
+            room-level planning inside any single building.
         """
         try:
             from navigation.fast_downward_client import FastDownwardPlanner
@@ -200,8 +229,8 @@ class ConversationAgent:
             )
 
             base_dir = Path(__file__).parent.parent.parent
-            campus_json = base_dir / "config" / "campus_graph.json"
-            self._domain_path = base_dir / "pddl" / "domain.pddl"
+            campus_json = base_dir / "config" / "campus_topology.json"
+            self._domain_path = base_dir / "pddl" / "domain_outdoor.pddl"
             self._pddl_dir = base_dir / "pddl"
 
             self._planner = FastDownwardPlanner()
@@ -212,12 +241,11 @@ class ConversationAgent:
                 pddl_dir=str(self._pddl_dir),
                 closed_rooms_path=str(closed_rooms_path),
             )
-            print(
-                "[ConversationAgent] Fast Downward + hierarchical converter "
-                "initialized OK"
+            logger.info(
+                "Fast Downward + hierarchical converter initialized OK"
             )
         except Exception as e:
-            print(f"[ConversationAgent] WARNING: Could not init Fast Downward: {e}")
+            logger.warning("Could not init Fast Downward: %s", e)
             self._planner = None
             self._converter = None
             self._hierarchical_converter = None
@@ -233,7 +261,7 @@ class ConversationAgent:
         Returns list of action strings or None on failure.
         """
         if not self._planner or not self._converter:
-            print("[FD] Planner not available")
+            logger.warning("FD planner not available")
             return None
 
         initial_state = (origin_building, origin_floor)
@@ -262,15 +290,17 @@ class ConversationAgent:
 
             if result.get("success"):
                 actions = result.get("plan", [])
-                print(f"[FD] Plan found: {len(actions)} actions, cost={result.get('cost')}")
+                logger.info(
+                    "FD plan found: %d actions, cost=%s",
+                    len(actions), result.get("cost"),
+                )
                 for a in actions:
-                    print(f"  [FD]   {a}")
+                    logger.debug("  FD: %s", a)
                 return actions
-            else:
-                print(f"[FD] No plan found: {result.get('error')}")
-                return None
+            logger.warning("FD no plan found: %s", result.get("error"))
+            return None
         except Exception as e:
-            print(f"[FD] Error running Fast Downward: {e}")
+            logger.exception("FD error: %s", e)
             return None
         finally:
             if problem_path:
@@ -291,22 +321,21 @@ class ConversationAgent:
         Call Fast Downward with a building-specific, room-level domain.
 
         Uses self._hierarchical_converter to generate a problem file whose
-        :init section encodes the full intra-building graph, and loads the
-        corresponding domain file (domain_G.pddl, domain_CD.pddl, ...).
-        Returns the list of PDDL action strings or None on failure.
+        :init section encodes the full intra-building graph, and loads
+        domain_indoor.pddl. Returns the list of PDDL action strings or None on failure.
         """
         if not self._planner or not self._hierarchical_converter:
-            print("[FD-Hierarchical] Planner or hierarchical converter not available")
+            logger.warning("FD hierarchical planner/converter not available")
             return None
 
         try:
             domain_path = self._hierarchical_converter.get_domain_path(building_id)
         except ValueError as e:
-            print(f"[FD-Hierarchical] {e}")
+            logger.warning("FD hierarchical: %s", e)
             return None
 
         if not domain_path.exists():
-            print(f"[FD-Hierarchical] Domain file not found: {domain_path}")
+            logger.error("FD hierarchical domain file not found: %s", domain_path)
             return None
 
         problem_path = None
@@ -334,17 +363,19 @@ class ConversationAgent:
 
             if result.get("success"):
                 actions = result.get("plan", [])
-                print(
-                    f"[FD-Hierarchical] Plan found for building {building_id}: "
-                    f"{len(actions)} actions, cost={result.get('cost')}"
+                logger.info(
+                    "FD hierarchical plan for building %d: %d actions, cost=%s",
+                    building_id, len(actions), result.get("cost"),
                 )
                 for a in actions:
-                    print(f"  [FD-H]   {a}")
+                    logger.debug("  FD-H: %s", a)
                 return actions
-            print(f"[FD-Hierarchical] No plan found: {result.get('error')}")
+            logger.warning(
+                "FD hierarchical no plan found: %s", result.get("error")
+            )
             return None
         except Exception as e:
-            print(f"[FD-Hierarchical] Error: {e}")
+            logger.exception("FD hierarchical error: %s", e)
             return None
         finally:
             if problem_path:
@@ -506,7 +537,7 @@ class ConversationAgent:
                 pre_verified_at_elevator = False
 
                 if first_movement and o_loc and o_loc != "ascensor":
-                    instr = self._get_local_instructions(bname, from_floor, o_loc, "ascensor")
+                    instr = None
                     if instr:
                         steps.append({
                             "instruction": self._normalize_instruction(
@@ -520,9 +551,7 @@ class ConversationAgent:
                         })
                         pre_verified_at_elevator = True
 
-                conn_instr = self._get_connection_instructions(
-                    bld_id, from_floor, bld_id, to_floor, "elevator"
-                )
+                conn_instr = None
                 instr_text = (
                     " ".join(conn_instr) if conn_instr
                     else (
@@ -550,7 +579,7 @@ class ConversationAgent:
                 direction = "up" if "subir" in name else "down"
 
                 if first_movement and o_loc and o_loc != "escaleras":
-                    instr = self._get_local_instructions(bname, from_floor, o_loc, "escaleras")
+                    instr = None
                     if instr:
                         steps.append({
                             "instruction": self._normalize_instruction(" ".join(instr)),
@@ -559,9 +588,7 @@ class ConversationAgent:
                             "expected_photo_type": None,
                         })
 
-                conn_instr = self._get_connection_instructions(
-                    bld_id, from_floor, bld_id, to_floor, "stairs"
-                )
+                conn_instr = None
                 is_hurry = "rapido" in name
                 safety_msg = (
                     f"Go {direction} the stairs from {_floor_text(from_floor)} "
@@ -609,9 +636,7 @@ class ConversationAgent:
                 added_walk_to_entrance = False
                 if first_movement and o_loc and o_loc != from_entrance:
                     bname = _BUILDING_NAMES.get(from_bld, "G")
-                    instr = self._get_local_instructions(
-                        bname, floor, o_loc, from_entrance
-                    )
+                    instr = None
                     if instr:
                         steps.append({
                             "instruction": self._normalize_instruction(
@@ -625,9 +650,7 @@ class ConversationAgent:
                         added_walk_to_entrance = True
 
                 to_name = _BUILDING_FULL.get(to_bld, "the destination building")
-                hallway_instr = self._get_connection_instructions(
-                    from_bld, floor, to_bld, floor, "hallway"
-                )
+                hallway_instr = None
                 if hallway_instr:
                     instr_text = " ".join(hallway_instr)
                 elif added_walk_to_entrance:
@@ -653,11 +676,7 @@ class ConversationAgent:
         # Final local walk: from arrival point to destination location
         if d_loc and last_arrival_loc and d_loc != last_arrival_loc:
             bname = _BUILDING_NAMES.get(d_bld, "G")
-            instr = self._get_local_instructions(bname, d_flr, last_arrival_loc, d_loc)
-            if not instr and last_arrival_loc == "ascensor":
-                instr = self._get_local_instructions(bname, d_flr, "escaleras", d_loc)
-            if not instr and last_arrival_loc == "escaleras":
-                instr = self._get_local_instructions(bname, d_flr, "ascensor", d_loc)
+            instr = None
             if instr:
                 steps.append({
                     "instruction": self._normalize_instruction(" ".join(instr)),
@@ -1739,17 +1758,13 @@ class ConversationAgent:
 
         Routing strategy (hierarchical):
 
-          - Intra-building inside Edificio G (building id 1): try the
-            room-level domain (domain_G.pddl). PDDL reasons over the full
-            room graph so the plan contains walk-room / elevator / stairs
-            actions at ubicacion level. If that succeeds we skip the legacy
-            floor-level path entirely.
+          - Intra-building (any building): use domain_indoor.pddl via
+            HierarchicalPDDLConverter. PDDL reasons over the full room graph
+            so the plan contains walk-room / elevator / stairs actions at
+            ubicacion level.
 
-          - Same building, same floor (CD / H, or G fallback): just use
-            local_connections from the campus graph.
-
-          - Different floor or different building: fall back to the global
-            domain.pddl through Fast Downward (building-floor level).
+          - Different building: fall back to domain_outdoor.pddl through
+            Fast Downward (building-floor level).
         """
         o_bld = origin.get("building")
         o_flr = origin.get("floor")
@@ -1815,39 +1830,49 @@ class ConversationAgent:
         goal_functional = destination.get("functional")
         ctx_hurry = matching_ctx.hurry_mode if matching_ctx else False
 
-        # Intra-building G: hierarchical room-level planning
+        # Intra-building: hierarchical room-level planning for all buildings.
+        # Uses domain_indoor.pddl (building G gets measured distances,
+        # others use 15m defaults — same action schema throughout).
         if (
-            o_bld == d_bld == 1
+            o_bld == d_bld
             and o_loc
             and (d_loc or goal_functional)
             and self._hierarchical_converter is not None
         ):
-            fd_actions = self._run_hierarchical_building_planner(
-                building_id=1,
-                origin_room=o_loc, origin_floor=o_flr,
-                dest_room=d_loc, dest_floor=d_flr,
-                goal_functional=goal_functional,
-                hurry_mode=ctx_hurry,
-            )
-            if fd_actions:
-                steps = self._fd_plan_to_steps_room_level(
-                    fd_actions, origin, destination
+            try:
+                domain_path = self._hierarchical_converter.get_domain_path(o_bld)
+                domain_exists = domain_path.exists()
+            except ValueError:
+                domain_exists = False
+
+            if domain_exists:
+                fd_actions = self._run_hierarchical_building_planner(
+                    building_id=o_bld,
+                    origin_room=o_loc, origin_floor=o_flr,
+                    dest_room=d_loc, dest_floor=d_flr,
+                    goal_functional=goal_functional,
+                    hurry_mode=ctx_hurry,
                 )
-                if steps:
-                    print(
-                        f"[Route] Built {len(steps)} room-level navigation "
-                        f"steps from domain_G.pddl"
+                bname = _BUILDING_NAMES.get(o_bld, str(o_bld))
+                if fd_actions:
+                    steps = self._fd_plan_to_steps_room_level(
+                        fd_actions, origin, destination
                     )
-                    return self._apply_arrival_strict_photo(steps, destination)
-                print(
-                    "[Route] Hierarchical plan found but could not be "
-                    "converted to navigation steps — falling back."
-                )
-            else:
-                print(
-                    "[Route] Hierarchical planner failed — falling back to "
-                    "legacy routing."
-                )
+                    if steps:
+                        print(
+                            f"[Route] Built {len(steps)} room-level steps "
+                            f"for building {bname}"
+                        )
+                        return self._apply_arrival_strict_photo(steps, destination)
+                    print(
+                        f"[Route] Plan found for {bname} but could not be "
+                        "converted to steps — falling back."
+                    )
+                else:
+                    print(
+                        f"[Route] Hierarchical planner failed for {bname} "
+                        "— falling back to legacy routing."
+                    )
 
         # Same building, same floor → local graph instructions
         if o_bld == d_bld and o_flr == d_flr:
@@ -1877,16 +1902,8 @@ class ConversationAgent:
     def _compute_same_floor(
         self, bld: int, flr: int, o_loc: Optional[str], d_loc: Optional[str]
     ) -> List[Dict]:
-        bname = _BUILDING_NAMES.get(bld, "G")
         if o_loc and d_loc:
-            instr = self._get_local_instructions(bname, flr, o_loc, d_loc)
-            if instr:
-                return [{
-                    "instruction": self._normalize_instruction(" ".join(instr)),
-                    "type": "local_walk",
-                    "verification": "voice",
-                    "expected_photo_type": None,
-                }]
+            pass  # no legacy instruction lookup; fallback below
         return [{
             "instruction": (
                 f"Walk along {_floor_text(flr)} in "
@@ -1898,66 +1915,6 @@ class ConversationAgent:
             "expected_photo_type": None,
         }]
 
-    # Graph lookups
-    def _get_local_instructions(
-        self, building_name: str, floor: int, from_loc: str, to_loc: str
-    ) -> Optional[List[str]]:
-        """Return walking instructions between two POIs on the same floor.
-        Falls back to BFS through intermediate nodes when no direct edge exists."""
-        key = f"{building_name}_{floor}_{from_loc}_{to_loc}"
-        direct = self._local_idx.get(key)
-        if direct:
-            return direct
-        return self._bfs_local_instructions(building_name, floor, from_loc, to_loc)
-
-    def _bfs_local_instructions(
-        self, building_name: str, floor: int, from_loc: str, to_loc: str
-    ) -> Optional[List[str]]:
-        """BFS across local_connections to chain instructions when no direct link exists."""
-        bf_key = f"{building_name}_{floor}"
-        adjacency = self._local_adj.get(bf_key, {})
-        if from_loc not in adjacency:
-            return None
-
-        visited = {from_loc}
-        queue: deque = deque([(from_loc, [from_loc])])
-
-        while queue:
-            current, path = queue.popleft()
-            for neighbor in adjacency.get(current, []):
-                if neighbor in visited:
-                    continue
-                new_path = path + [neighbor]
-                if neighbor == to_loc:
-                    instructions: List[str] = []
-                    for i in range(len(new_path) - 1):
-                        k = f"{building_name}_{floor}_{new_path[i]}_{new_path[i+1]}"
-                        seg = self._local_idx.get(k, [])
-                        instructions.extend(seg)
-                    return instructions if instructions else None
-                visited.add(neighbor)
-                queue.append((neighbor, new_path))
-
-        return None
-
-    def _get_connection_instructions(
-        self, from_bld: int, from_flr: int, to_bld: int, to_flr: int, conn_type: str
-    ) -> Optional[List[str]]:
-        for c in self.graph.get("connections", []):
-            cfrom = c["from"]
-            cto = c["to"]
-            if (cfrom["building"] == from_bld and cfrom["floor"] == from_flr
-                    and cto["building"] == to_bld and cto["floor"] == to_flr):
-                ctype = c.get("type", "")
-                if conn_type == "elevator" and ctype == "elevator":
-                    return c.get("instructions")
-                if conn_type == "stairs" and ctype.startswith("stairs"):
-                    return c.get("instructions")
-                if conn_type == "hallway" and ctype == "hallway":
-                    return c.get("instructions")
-                if conn_type == ctype:
-                    return c.get("instructions")
-        return None
 
     def _normalize_instruction(self, text: str) -> str:
         """Normalize instruction wording to concise, English-only phrasing."""

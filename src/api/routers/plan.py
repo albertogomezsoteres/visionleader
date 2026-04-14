@@ -2,11 +2,11 @@
 
 Two planning paths are exposed by the same /api/plan endpoint:
 
-  1. Floor-level (legacy global domain.pddl):
+  1. Floor-level (global domain_outdoor.pddl):
      {"initial_state": {"building": 1, "floor": 0},
       "goal_state":    {"building": 1, "floor": 1}}
 
-  2. Room-level hierarchical (building-specific domain, e.g. domain_G.pddl):
+  2. Room-level hierarchical (domain_indoor.pddl, all buildings):
      {"initial_state": {"building": 1, "floor": 0, "room": "entrada_principal"},
       "goal_state":    {"building": 1, "floor": 1, "room": "aula_1_4"}}
 
@@ -31,7 +31,7 @@ from api.dependencies import (
     hierarchical_converter,
     DOMAIN_PATH,
     PDDL_DIR,
-    load_campus_graph,
+    load_topology,
 )
 
 router = APIRouter()
@@ -154,7 +154,7 @@ async def generate_plan(request: PlanningRequest):
         goal_floor = None
 
         if request.goal_functional:
-            campus_graph = load_campus_graph()
+            campus_graph = load_topology()
             goal_building_id, goal_floor = _resolve_functional_goal(
                 request.goal_functional, campus_graph
             )
