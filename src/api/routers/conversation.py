@@ -1,10 +1,10 @@
-"""Conversation endpoint — a single unified turn-based interface."""
+"""Conversation endpoint: single unified turn-based interface."""
 
 import traceback
 
 from fastapi import APIRouter
 
-from api.models import ConversationRequest, ConversationResponse
+from api.schemas import ConversationRequest, ConversationResponse
 from api.dependencies import get_conversation_agent
 
 router = APIRouter()

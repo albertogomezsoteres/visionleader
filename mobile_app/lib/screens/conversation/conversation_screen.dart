@@ -35,11 +35,11 @@ class ConversationScreen extends StatefulWidget {
 
 class _ConversationScreenState extends State<ConversationScreen>
     with SingleTickerProviderStateMixin {
-  // ── Core services ─────────────────────────────────────────────────────
+  // Core services
   final FlutterTts _tts = FlutterTts();
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
 
-  // ── UI state ──────────────────────────────────────────────────────────
+  // UI state
   String _ttsMessage = '';
   String _nextInput = 'voice';
   String _currentAction = '';
@@ -48,7 +48,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   bool _isRecording = false;
   String _transcription = '';
 
-  // ── Location / navigation progress ────────────────────────────────────
+  // Location / navigation progress
   String? _knownBuilding;
   int? _knownFloor;
   String? _knownLocationId;
@@ -58,19 +58,17 @@ class _ConversationScreenState extends State<ConversationScreen>
   int _currentStep = 0;
   int _totalSteps = 0;
 
-  // ── Recording helpers ─────────────────────────────────────────────────
+  // Recording helpers
   DateTime? _recordingStartedAt;
   String? _currentRecordingPath;
 
-  // ── Pulse animation for the mic button ────────────────────────────────
+  // Pulse animation for the mic button
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
 
   static const Map<int, String> _buildingNames = {1: 'G', 2: 'CD', 3: 'H'};
 
-  // ═══════════════════════════════════════════════════════════════════════
   // Lifecycle
-  // ═══════════════════════════════════════════════════════════════════════
 
   @override
   void initState() {
@@ -118,9 +116,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // Conversation turns — each method talks to ApiService and updates state
-  // ═══════════════════════════════════════════════════════════════════════
+  // Conversation turns - each method talks to ApiService and updates state
 
   Future<void> _fetchWelcome() async {
     setState(() { _isProcessing = true; _processingMsg = 'Starting assistant...'; });
@@ -167,7 +163,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   Future<void> _sendConfirmation(bool confirmed) async => _sendVoice(confirmed ? 'yes' : 'no');
   Future<void> _goNextStep() async => _sendVoice('done');
 
-  // ── Result handling ───────────────────────────────────────────────────
+  // Result handling
 
   // GPS coordinates for buildings (mirrored from backend)
   static const Map<int, Map<String, double>> _buildingGps = {
@@ -317,9 +313,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     if (mounted) await _tts.speak(text);
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
   // Photo actions
-  // ═══════════════════════════════════════════════════════════════════════
 
   Future<void> _pickPhoto(ImageSource source) async {
     final picked = await ImagePicker().pickImage(source: source, imageQuality: 85, requestFullMetadata: false);
@@ -336,9 +330,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
   // Voice recording
-  // ═══════════════════════════════════════════════════════════════════════
 
   Future<void> _startRecording() async {
     await _tts.stop();
@@ -428,9 +420,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
   }
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // Build — delegates to extracted widgets
-  // ═══════════════════════════════════════════════════════════════════════
+  // Build - delegates to extracted widgets
 
   bool get _isNavigating =>
       _currentAction == 'navigation_step' ||
@@ -520,7 +510,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     );
   }
 
-  // ── Action area: pick the right button layout for the current state ───
+  // Action area: pick the right button layout for the current state
 
   Widget _buildActionArea() {
     if (_currentAction == 'goodbye' || _currentAction == 'error') return const SizedBox.shrink();

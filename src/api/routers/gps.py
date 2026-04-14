@@ -6,11 +6,11 @@ import re
 import requests
 from fastapi import APIRouter
 
-from api.models import GPSRouteRequest, GPSRouteResponse
+from api.schemas import GPSRouteRequest, GPSRouteResponse
 
 router = APIRouter()
 
-# Hard-coded GPS coordinates for the three UFV campus buildings
+# Hard-coded GPS coordinates for the UFV campus buildings
 _BUILDING_GPS = {
     1: {"lat": 40.441595, "lng": -3.833650, "name": "G"},
     2: {"lat": 40.441412, "lng": -3.833501, "name": "CD"},
@@ -69,7 +69,7 @@ async def get_gps_route(request: GPSRouteRequest):
 
         return GPSRouteResponse(
             success=False,
-            error=f"Directions API: {data.get('status')} — {data.get('error_message', 'unknown')}",
+            error=f"Directions API returned status: {data.get('status')}",
         )
     except Exception as e:
         return GPSRouteResponse(success=False, error=f"Error fetching GPS route: {e}")

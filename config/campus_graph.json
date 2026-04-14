@@ -1,13 +1,13 @@
 {
     "_comment": "UFV campus model: metadata.planning_model and metadata.local_routing describe how this JSON feeds PDDL (macro) vs in-floor instructions (micro).",
     "metadata": {
-        "version": "5.0",
+        "version": "6.0",
         "last_updated": "2026-04-06",
         "coverage": "G (3 floors, all-to-all), CD (cafeteria, gym), H (minimal)",
         "total_buildings": 3,
         "data_source": "Manual mapping for TFG demo",
-        "planning_model": "connections: macro graph for PDDL (building-floor topology). Action costs are defined in pddl/domain.pddl, not in JSON.",
-        "local_routing": "local_connections: fine-grained walking instructions within one floor (natural language); optional BFS chains edges when no direct link exists."
+        "planning_model": "PDDL is the sole reasoner: topology AND metric distances live in the building-specific problem files (see pddl/domain_G.pddl). campus_graph.json is only a display layer.",
+        "local_routing": "local_connections: structured distance_m (meters, consumed by the PDDL converter) and hint (short directional text, consumed by the conversation agent for TTS decoration only)."
     },
     "buildings": [
         {
@@ -536,6 +536,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "aula_0_1",
+            "distance_m": 24,
+            "hint": "turn left, second door on the right",
             "instructions": [
                 "Walk 24 meters from entrada principal to aula 0 1."
             ]
@@ -545,6 +547,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "entrada_principal",
+            "distance_m": 24,
+            "hint": "exit the classroom and go back to the entrance",
             "instructions": [
                 "Walk 24 meters from aula 0 1 to entrada principal."
             ]
@@ -554,6 +558,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "aula_0_3",
+            "distance_m": 6,
+            "hint": "first door on the right",
             "instructions": [
                 "Walk 6 meters from entrada principal to aula 0 3."
             ]
@@ -563,6 +569,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "entrada_principal",
+            "distance_m": 6,
+            "hint": "exit and turn left back to the entrance",
             "instructions": [
                 "Walk 6 meters from aula 0 3 to entrada principal."
             ]
@@ -572,6 +580,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "lab_ia",
+            "distance_m": 18,
+            "hint": "straight ahead, last door on the left",
             "instructions": [
                 "Walk 18 meters from entrada principal to lab ia."
             ]
@@ -581,6 +591,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "entrada_principal",
+            "distance_m": 18,
+            "hint": "exit and go straight back to the entrance",
             "instructions": [
                 "Walk 18 meters from lab ia to entrada principal."
             ]
@@ -590,6 +602,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "ascensor",
+            "distance_m": 20,
+            "hint": "end of the corridor on the left",
             "instructions": [
                 "Walk 20 meters from entrada principal to ascensor."
             ]
@@ -599,6 +613,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "entrada_principal",
+            "distance_m": 20,
+            "hint": "from the elevator go straight to the entrance",
             "instructions": [
                 "Walk 20 meters from ascensor to entrada principal."
             ]
@@ -608,6 +624,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "escaleras",
+            "distance_m": 25,
+            "hint": "end of the corridor on the right",
             "instructions": [
                 "Walk 25 meters from entrada principal to escaleras."
             ]
@@ -617,6 +635,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "entrada_principal",
+            "distance_m": 25,
+            "hint": "from the stairs go straight back",
             "instructions": [
                 "Walk 25 meters from escaleras to entrada principal."
             ]
@@ -626,6 +646,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "bano",
+            "distance_m": 14,
+            "hint": "turn left, third door on the right",
             "instructions": [
                 "Walk 14 meters from entrada principal to bano."
             ]
@@ -635,6 +657,8 @@
             "floor": 0,
             "from": "bano",
             "to": "entrada_principal",
+            "distance_m": 14,
+            "hint": "exit the restroom and go left to the entrance",
             "instructions": [
                 "Walk 14 meters from bano to entrada principal."
             ]
@@ -644,6 +668,8 @@
             "floor": 0,
             "from": "entrada_principal",
             "to": "directorio_0",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "Walk 17 meters from entrada principal to directorio 0."
             ]
@@ -653,6 +679,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "entrada_principal",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "Walk 17 meters from directorio 0 to entrada principal."
             ]
@@ -662,6 +690,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "aula_0_3",
+            "distance_m": 20,
+            "hint": "turn right, two doors down",
             "instructions": [
                 "Walk 20 meters from aula 0 1 to aula 0 3."
             ]
@@ -671,6 +701,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "aula_0_1",
+            "distance_m": 20,
+            "hint": "turn left, two doors down",
             "instructions": [
                 "Walk 20 meters from aula 0 3 to aula 0 1."
             ]
@@ -680,6 +712,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "lab_ia",
+            "distance_m": 12,
+            "hint": "turn right, third door on the left",
             "instructions": [
                 "Walk 12 meters from aula 0 1 to lab ia."
             ]
@@ -689,6 +723,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "aula_0_1",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Walk 12 meters from lab ia to aula 0 1."
             ]
@@ -698,6 +734,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "ascensor",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from aula 0 1 to ascensor."
             ]
@@ -707,6 +745,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "aula_0_1",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from ascensor to aula 0 1."
             ]
@@ -716,6 +756,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "escaleras",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "Walk 19 meters from aula 0 1 to escaleras."
             ]
@@ -725,6 +767,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "aula_0_1",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "Walk 19 meters from escaleras to aula 0 1."
             ]
@@ -734,6 +778,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "bano",
+            "distance_m": 8,
+            "hint": "exit the classroom and turn right, first door",
             "instructions": [
                 "Walk 8 meters from aula 0 1 to bano."
             ]
@@ -743,6 +789,8 @@
             "floor": 0,
             "from": "bano",
             "to": "aula_0_1",
+            "distance_m": 8,
+            "hint": null,
             "instructions": [
                 "Walk 8 meters from bano to aula 0 1."
             ]
@@ -752,6 +800,8 @@
             "floor": 0,
             "from": "aula_0_1",
             "to": "directorio_0",
+            "distance_m": 11,
+            "hint": null,
             "instructions": [
                 "Walk 11 meters from aula 0 1 to directorio 0."
             ]
@@ -761,6 +811,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "lab_ia",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from aula 0 3 to lab ia."
             ]
@@ -770,6 +822,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "aula_0_3",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from lab ia to aula 0 3."
             ]
@@ -779,6 +833,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "ascensor",
+            "distance_m": 16,
+            "hint": null,
             "instructions": [
                 "Walk 16 meters from aula 0 3 to ascensor."
             ]
@@ -788,6 +844,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "aula_0_3",
+            "distance_m": 16,
+            "hint": null,
             "instructions": [
                 "Walk 16 meters from ascensor to aula 0 3."
             ]
@@ -797,6 +855,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "escaleras",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from aula 0 3 to escaleras."
             ]
@@ -806,6 +866,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "aula_0_3",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from escaleras to aula 0 3."
             ]
@@ -815,6 +877,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "bano",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from aula 0 3 to bano."
             ]
@@ -824,6 +888,8 @@
             "floor": 0,
             "from": "bano",
             "to": "aula_0_3",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from bano to aula 0 3."
             ]
@@ -833,6 +899,8 @@
             "floor": 0,
             "from": "aula_0_3",
             "to": "directorio_0",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from aula 0 3 to directorio 0."
             ]
@@ -842,6 +910,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "ascensor",
+            "distance_m": 8,
+            "hint": "exit the lab and turn right to the elevator",
             "instructions": [
                 "Walk 8 meters from lab ia to ascensor."
             ]
@@ -851,6 +921,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "lab_ia",
+            "distance_m": 8,
+            "hint": null,
             "instructions": [
                 "Walk 8 meters from ascensor to lab ia."
             ]
@@ -860,6 +932,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "escaleras",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from lab ia to escaleras."
             ]
@@ -869,6 +943,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "lab_ia",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from escaleras to lab ia."
             ]
@@ -878,6 +954,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "bano",
+            "distance_m": 22,
+            "hint": null,
             "instructions": [
                 "Walk 22 meters from lab ia to bano."
             ]
@@ -887,6 +965,8 @@
             "floor": 0,
             "from": "bano",
             "to": "lab_ia",
+            "distance_m": 22,
+            "hint": null,
             "instructions": [
                 "Walk 22 meters from bano to lab ia."
             ]
@@ -896,6 +976,8 @@
             "floor": 0,
             "from": "lab_ia",
             "to": "directorio_0",
+            "distance_m": 25,
+            "hint": null,
             "instructions": [
                 "Walk 25 meters from lab ia to directorio 0."
             ]
@@ -905,6 +987,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "escaleras",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from ascensor to escaleras."
             ]
@@ -914,6 +998,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "ascensor",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from escaleras to ascensor."
             ]
@@ -923,6 +1009,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "bano",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from ascensor to bano."
             ]
@@ -932,6 +1020,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "bano",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from escaleras to bano."
             ]
@@ -941,6 +1031,8 @@
             "floor": 0,
             "from": "bano",
             "to": "ascensor",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from bano to ascensor."
             ]
@@ -950,6 +1042,8 @@
             "floor": 0,
             "from": "bano",
             "to": "escaleras",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from bano to escaleras."
             ]
@@ -959,6 +1053,8 @@
             "floor": 0,
             "from": "bano",
             "to": "directorio_0",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from bano to directorio 0."
             ]
@@ -968,6 +1064,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "ascensor",
+            "distance_m": 7,
+            "hint": null,
             "instructions": [
                 "Walk 7 meters from directorio 0 to ascensor."
             ]
@@ -977,6 +1075,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "directorio_0",
+            "distance_m": 7,
+            "hint": null,
             "instructions": [
                 "Walk 7 meters from ascensor to directorio 0."
             ]
@@ -986,6 +1086,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "escaleras",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Walk 12 meters from directorio 0 to escaleras."
             ]
@@ -995,6 +1097,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "directorio_0",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Walk 12 meters from escaleras to directorio 0."
             ]
@@ -1004,6 +1108,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "aula_0_1",
+            "distance_m": 11,
+            "hint": null,
             "instructions": [
                 "Walk 11 meters from directorio 0 to aula 0 1."
             ]
@@ -1013,6 +1119,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "aula_0_3",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from directorio 0 to aula 0 3."
             ]
@@ -1022,6 +1130,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "lab_ia",
+            "distance_m": 25,
+            "hint": null,
             "instructions": [
                 "Walk 25 meters from directorio 0 to lab ia."
             ]
@@ -1031,6 +1141,8 @@
             "floor": 0,
             "from": "directorio_0",
             "to": "bano",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from directorio 0 to bano."
             ]
@@ -1040,6 +1152,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "aula_1_1",
+            "distance_m": 3,
+            "hint": "exit the elevator, turn right, first door on the right",
             "instructions": [
                 "Exit the elevator and turn right.",
                 "Walk down the corridor. Classroom 1.1 is the first door on your right."
@@ -1050,6 +1164,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "ascensor",
+            "distance_m": 3,
+            "hint": "exit the classroom and turn left to the elevator",
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk to the end of the corridor. The elevator is on your left."
@@ -1060,6 +1176,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "aula_1_1",
+            "distance_m": 8,
+            "hint": "at the top of the stairs, turn right, first door on the right",
             "instructions": [
                 "At the top of the stairs, turn left.",
                 "Classroom 1.1 is the first door on your right."
@@ -1070,6 +1188,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "escaleras",
+            "distance_m": 8,
+            "hint": "exit the classroom and turn left to the stairs",
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk to the end of the corridor. The stairs are on your right."
@@ -1080,6 +1200,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "aula_1_4",
+            "distance_m": 16,
+            "hint": "exit the elevator, turn right, fourth door on the left",
             "instructions": [
                 "Exit the elevator and turn right.",
                 "Walk down the corridor.",
@@ -1091,6 +1213,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "ascensor",
+            "distance_m": 16,
+            "hint": "exit the classroom and turn right to the elevator",
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
@@ -1102,6 +1226,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "aula_1_4",
+            "distance_m": 14,
+            "hint": "at the top of the stairs, turn left, fourth door on the left",
             "instructions": [
                 "At the top of the stairs, turn left.",
                 "Walk down the corridor.",
@@ -1113,6 +1239,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "escaleras",
+            "distance_m": 14,
+            "hint": "exit the classroom and turn right to the stairs",
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
@@ -1124,6 +1252,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "aula_1_4",
+            "distance_m": 13,
+            "hint": "turn left, three doors ahead on your left",
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk about 20 metres. Classroom 1.4 is on your left."
@@ -1134,6 +1264,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "aula_1_1",
+            "distance_m": 13,
+            "hint": "turn right, three doors back on your right",
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk about 20 metres. Classroom 1.1 is on your right."
@@ -1144,6 +1276,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "despachos",
+            "distance_m": 6,
+            "hint": "exit the elevator, turn left, second door on the right",
             "instructions": [
                 "Exit the elevator and turn left.",
                 "The faculty offices are the second door on your right."
@@ -1154,6 +1288,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "ascensor",
+            "distance_m": 6,
+            "hint": "exit the offices and turn right to the elevator",
             "instructions": [
                 "Exit the offices and turn left.",
                 "Walk to the end of the corridor. The elevator is on your right."
@@ -1164,6 +1300,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "despachos",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "At the top of the stairs, turn right.",
                 "The faculty offices are the second door on your right."
@@ -1174,6 +1312,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "escaleras",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Exit the offices and turn left.",
                 "Walk to the end of the corridor. The stairs are on your left."
@@ -1184,6 +1324,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "despachos",
+            "distance_m": 8,
+            "hint": "turn left, walk past the elevator, second door on the right",
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk to the end of the corridor and turn left.",
@@ -1195,6 +1337,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "aula_1_1",
+            "distance_m": 8,
+            "hint": "turn right, walk past the elevator, first door on the right",
             "instructions": [
                 "Exit the offices and turn left.",
                 "Walk down the corridor. Classroom 1.1 is the first door on your right."
@@ -1205,6 +1349,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "despachos",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor and turn left.",
@@ -1216,6 +1362,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "aula_1_4",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the offices and turn left.",
                 "Walk down the corridor.",
@@ -1227,6 +1375,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "bano",
+            "distance_m": 16,
+            "hint": null,
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk down the corridor. The restroom is at the end on your right."
@@ -1237,6 +1387,8 @@
             "floor": 1,
             "from": "bano",
             "to": "aula_1_1",
+            "distance_m": 16,
+            "hint": null,
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Classroom 1.1 is at the far end of the corridor, on your right."
@@ -1247,6 +1399,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "bano",
+            "distance_m": 3,
+            "hint": "exit the classroom and turn right, restroom is right there",
             "instructions": [
                 "Exit classroom 1.4 and turn left.",
                 "The restroom is at the end of the corridor on your right."
@@ -1257,6 +1411,8 @@
             "floor": 1,
             "from": "bano",
             "to": "aula_1_4",
+            "distance_m": 3,
+            "hint": "exit the restroom and turn left, first door on the left",
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Classroom 1.4 is the fourth door on your right."
@@ -1267,6 +1423,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "bano",
+            "distance_m": 18,
+            "hint": null,
             "instructions": [
                 "Exit the elevator and turn right.",
                 "Walk down the corridor.",
@@ -1278,6 +1436,8 @@
             "floor": 1,
             "from": "bano",
             "to": "ascensor",
+            "distance_m": 18,
+            "hint": null,
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -1289,6 +1449,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "bano",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "From the stairs, turn left.",
                 "Walk down the corridor.",
@@ -1300,6 +1462,8 @@
             "floor": 1,
             "from": "bano",
             "to": "escaleras",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -1311,6 +1475,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "bano",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Exit the offices and turn left.",
                 "Walk down the corridor.",
@@ -1322,6 +1488,8 @@
             "floor": 1,
             "from": "bano",
             "to": "despachos",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -1333,6 +1501,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "ascensor",
+            "distance_m": 2,
+            "hint": null,
             "instructions": [
                 "The elevator is right next to the directory sign, on your left."
             ]
@@ -1342,6 +1512,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "directorio_1",
+            "distance_m": 2,
+            "hint": null,
             "instructions": [
                 "The floor directory sign is on the wall right next to the elevator."
             ]
@@ -1351,6 +1523,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "escaleras",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "The stairs are right next to the directory sign, on your right."
             ]
@@ -1360,6 +1534,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "directorio_1",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "The floor directory sign is on the wall right next to the stairs."
             ]
@@ -1369,6 +1545,8 @@
             "floor": 1,
             "from": "ascensor",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the elevator, turn right.",
                 "The stairs are right next to you on the opposite side."
@@ -1379,6 +1557,8 @@
             "floor": 1,
             "from": "escaleras",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the stairs, turn left.",
                 "The elevator is right next to you on the opposite side."
@@ -1389,6 +1569,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "aula_1_1",
+            "distance_m": 4,
+            "hint": null,
             "instructions": [
                 "From the directory sign, walk down the corridor.",
                 "Classroom 1.1 is the first door on your right."
@@ -1399,6 +1581,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "aula_1_4",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "From the directory sign, walk down the corridor.",
                 "Classroom 1.4 is the fourth door on your left."
@@ -1409,6 +1593,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "despachos",
+            "distance_m": 5,
+            "hint": null,
             "instructions": [
                 "From the directory sign, turn around.",
                 "The faculty offices are the second door on your right."
@@ -1419,6 +1605,8 @@
             "floor": 1,
             "from": "directorio_1",
             "to": "bano",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "From the directory sign, walk down the corridor.",
                 "The restroom is at the end on your right."
@@ -1429,6 +1617,8 @@
             "floor": 1,
             "from": "aula_1_1",
             "to": "directorio_1",
+            "distance_m": 4,
+            "hint": null,
             "instructions": [
                 "Exit classroom 1.1 and turn left.",
                 "Walk to the end of the corridor.",
@@ -1440,6 +1630,8 @@
             "floor": 1,
             "from": "aula_1_4",
             "to": "directorio_1",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Exit classroom 1.4 and turn right.",
                 "Walk to the end of the corridor.",
@@ -1451,6 +1643,8 @@
             "floor": 1,
             "from": "despachos",
             "to": "directorio_1",
+            "distance_m": 5,
+            "hint": null,
             "instructions": [
                 "Exit the offices and turn right.",
                 "The floor directory sign is on the wall next to the elevator."
@@ -1461,6 +1655,8 @@
             "floor": 1,
             "from": "bano",
             "to": "directorio_1",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "Exit the restroom and turn left.",
                 "Walk to the end of the corridor.",
@@ -1472,6 +1668,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "aula_2_1",
+            "distance_m": 16,
+            "hint": "exit the elevator, turn right, first door on the right",
             "instructions": [
                 "Walk 16 meters from ascensor to aula 2 1."
             ]
@@ -1481,6 +1679,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "ascensor",
+            "distance_m": 16,
+            "hint": "exit the classroom and turn left to the elevator",
             "instructions": [
                 "Walk 16 meters from aula 2 1 to ascensor."
             ]
@@ -1490,6 +1690,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "aula_2_1",
+            "distance_m": 21,
+            "hint": "at the top of the stairs, turn left, first door on the right",
             "instructions": [
                 "Walk 21 meters from escaleras to aula 2 1."
             ]
@@ -1499,6 +1701,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "escaleras",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from aula 2 1 to escaleras."
             ]
@@ -1508,6 +1712,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "sala_mentorias",
+            "distance_m": 18,
+            "hint": "exit the elevator, turn left, second door on the left",
             "instructions": [
                 "Walk 18 meters from ascensor to sala mentorias."
             ]
@@ -1517,6 +1723,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "ascensor",
+            "distance_m": 18,
+            "hint": "exit the room and turn right to the elevator",
             "instructions": [
                 "Walk 18 meters from sala mentorias to ascensor."
             ]
@@ -1526,6 +1734,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "sala_mentorias",
+            "distance_m": 23,
+            "hint": null,
             "instructions": [
                 "Walk 23 meters from escaleras to sala mentorias."
             ]
@@ -1535,6 +1745,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "escaleras",
+            "distance_m": 23,
+            "hint": null,
             "instructions": [
                 "Walk 23 meters from sala mentorias to escaleras."
             ]
@@ -1544,6 +1756,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "despachos_eps",
+            "distance_m": 25,
+            "hint": "exit the elevator, turn right, second door on the left",
             "instructions": [
                 "Walk 25 meters from ascensor to despachos eps."
             ]
@@ -1553,6 +1767,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "ascensor",
+            "distance_m": 25,
+            "hint": "exit the offices and turn left to the elevator",
             "instructions": [
                 "Walk 25 meters from despachos eps to ascensor."
             ]
@@ -1562,6 +1778,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "despachos_eps",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from escaleras to despachos eps."
             ]
@@ -1571,6 +1789,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from despachos eps to escaleras."
             ]
@@ -1580,6 +1800,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "secretaria",
+            "distance_m": 7,
+            "hint": "exit the elevator, turn left, first door on the right",
             "instructions": [
                 "Walk 7 meters from ascensor to secretaria."
             ]
@@ -1589,6 +1811,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "ascensor",
+            "distance_m": 7,
+            "hint": "exit the office and turn right to the elevator",
             "instructions": [
                 "Walk 7 meters from secretaria to ascensor."
             ]
@@ -1598,6 +1822,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "secretaria",
+            "distance_m": 12,
+            "hint": "at the top of the stairs, turn right, second door on the left",
             "instructions": [
                 "Walk 12 meters from escaleras to secretaria."
             ]
@@ -1607,6 +1833,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "escaleras",
+            "distance_m": 12,
+            "hint": "exit the office and turn left to the stairs",
             "instructions": [
                 "Walk 12 meters from secretaria to escaleras."
             ]
@@ -1616,6 +1844,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "bano",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from ascensor to bano."
             ]
@@ -1625,6 +1855,8 @@
             "floor": 2,
             "from": "bano",
             "to": "ascensor",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from bano to ascensor."
             ]
@@ -1634,6 +1866,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "bano",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from escaleras to bano."
             ]
@@ -1643,6 +1877,8 @@
             "floor": 2,
             "from": "bano",
             "to": "escaleras",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from bano to escaleras."
             ]
@@ -1652,6 +1888,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "escaleras",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from ascensor to escaleras."
             ]
@@ -1661,6 +1899,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "ascensor",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from escaleras to ascensor."
             ]
@@ -1670,6 +1910,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "sala_mentorias",
+            "distance_m": 24,
+            "hint": "turn left, third door on the left",
             "instructions": [
                 "Walk 24 meters from aula 2 1 to sala mentorias."
             ]
@@ -1679,6 +1921,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "aula_2_1",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from sala mentorias to aula 2 1."
             ]
@@ -1688,6 +1932,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "despachos_eps",
+            "distance_m": 11,
+            "hint": "turn right, last door on the right",
             "instructions": [
                 "Walk 11 meters from aula 2 1 to despachos eps."
             ]
@@ -1697,6 +1943,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "aula_2_1",
+            "distance_m": 11,
+            "hint": null,
             "instructions": [
                 "Walk 11 meters from despachos eps to aula 2 1."
             ]
@@ -1706,6 +1954,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "secretaria",
+            "distance_m": 13,
+            "hint": "exit the classroom, turn left, last door on the right",
             "instructions": [
                 "Walk 13 meters from aula 2 1 to secretaria."
             ]
@@ -1715,6 +1965,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "aula_2_1",
+            "distance_m": 13,
+            "hint": "exit the office and go right, last door on the left",
             "instructions": [
                 "Walk 13 meters from secretaria to aula 2 1."
             ]
@@ -1724,6 +1976,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "bano",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from aula 2 1 to bano."
             ]
@@ -1733,6 +1987,8 @@
             "floor": 2,
             "from": "bano",
             "to": "aula_2_1",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Walk 10 meters from bano to aula 2 1."
             ]
@@ -1742,6 +1998,8 @@
             "floor": 2,
             "from": "aula_2_1",
             "to": "directorio_2",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from aula 2 1 to directorio 2."
             ]
@@ -1751,6 +2009,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "despachos_eps",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from sala mentorias to despachos eps."
             ]
@@ -1760,6 +2020,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "sala_mentorias",
+            "distance_m": 13,
+            "hint": null,
             "instructions": [
                 "Walk 13 meters from despachos eps to sala mentorias."
             ]
@@ -1769,6 +2031,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "secretaria",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from sala mentorias to secretaria."
             ]
@@ -1778,6 +2042,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "sala_mentorias",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from secretaria to sala mentorias."
             ]
@@ -1787,6 +2053,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "bano",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Walk 12 meters from sala mentorias to bano."
             ]
@@ -1796,6 +2064,8 @@
             "floor": 2,
             "from": "bano",
             "to": "sala_mentorias",
+            "distance_m": 12,
+            "hint": null,
             "instructions": [
                 "Walk 12 meters from bano to sala mentorias."
             ]
@@ -1805,6 +2075,8 @@
             "floor": 2,
             "from": "sala_mentorias",
             "to": "directorio_2",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "Walk 17 meters from sala mentorias to directorio 2."
             ]
@@ -1814,6 +2086,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "secretaria",
+            "distance_m": 22,
+            "hint": null,
             "instructions": [
                 "Walk 22 meters from despachos eps to secretaria."
             ]
@@ -1823,6 +2097,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "despachos_eps",
+            "distance_m": 22,
+            "hint": null,
             "instructions": [
                 "Walk 22 meters from secretaria to despachos eps."
             ]
@@ -1832,6 +2108,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "bano",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "Walk 19 meters from despachos eps to bano."
             ]
@@ -1841,6 +2119,8 @@
             "floor": 2,
             "from": "bano",
             "to": "despachos_eps",
+            "distance_m": 19,
+            "hint": null,
             "instructions": [
                 "Walk 19 meters from bano to despachos eps."
             ]
@@ -1850,6 +2130,8 @@
             "floor": 2,
             "from": "despachos_eps",
             "to": "directorio_2",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from despachos eps to directorio 2."
             ]
@@ -1859,6 +2141,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "bano",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from secretaria to bano."
             ]
@@ -1868,6 +2152,8 @@
             "floor": 2,
             "from": "bano",
             "to": "secretaria",
+            "distance_m": 21,
+            "hint": null,
             "instructions": [
                 "Walk 21 meters from bano to secretaria."
             ]
@@ -1877,6 +2163,8 @@
             "floor": 2,
             "from": "secretaria",
             "to": "directorio_2",
+            "distance_m": 6,
+            "hint": null,
             "instructions": [
                 "Walk 6 meters from secretaria to directorio 2."
             ]
@@ -1886,6 +2174,8 @@
             "floor": 2,
             "from": "bano",
             "to": "directorio_2",
+            "distance_m": 23,
+            "hint": null,
             "instructions": [
                 "Walk 23 meters from bano to directorio 2."
             ]
@@ -1895,6 +2185,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "ascensor",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from directorio 2 to ascensor."
             ]
@@ -1904,6 +2196,8 @@
             "floor": 2,
             "from": "ascensor",
             "to": "directorio_2",
+            "distance_m": 9,
+            "hint": null,
             "instructions": [
                 "Walk 9 meters from ascensor to directorio 2."
             ]
@@ -1913,6 +2207,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "escaleras",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from directorio 2 to escaleras."
             ]
@@ -1922,6 +2218,8 @@
             "floor": 2,
             "from": "escaleras",
             "to": "directorio_2",
+            "distance_m": 14,
+            "hint": null,
             "instructions": [
                 "Walk 14 meters from escaleras to directorio 2."
             ]
@@ -1931,6 +2229,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "aula_2_1",
+            "distance_m": 15,
+            "hint": null,
             "instructions": [
                 "Walk 15 meters from directorio 2 to aula 2 1."
             ]
@@ -1940,6 +2240,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "sala_mentorias",
+            "distance_m": 17,
+            "hint": null,
             "instructions": [
                 "Walk 17 meters from directorio 2 to sala mentorias."
             ]
@@ -1949,6 +2251,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "despachos_eps",
+            "distance_m": 24,
+            "hint": null,
             "instructions": [
                 "Walk 24 meters from directorio 2 to despachos eps."
             ]
@@ -1958,6 +2262,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "secretaria",
+            "distance_m": 6,
+            "hint": null,
             "instructions": [
                 "Walk 6 meters from directorio 2 to secretaria."
             ]
@@ -1967,6 +2273,8 @@
             "floor": 2,
             "from": "directorio_2",
             "to": "bano",
+            "distance_m": 23,
+            "hint": null,
             "instructions": [
                 "Walk 23 meters from directorio 2 to bano."
             ]
@@ -1976,6 +2284,8 @@
             "floor": 0,
             "from": "entrada_cd",
             "to": "cafeteria",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "After entering Building CD, walk straight ahead and push the second glass door.",
                 "Continue straight for about 10 metres.",
@@ -1987,6 +2297,8 @@
             "floor": 0,
             "from": "cafeteria",
             "to": "entrada_cd",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the cafeteria and turn right.",
                 "Walk straight, pass through the glass door, and continue to the main entrance."
@@ -1997,6 +2309,8 @@
             "floor": 0,
             "from": "entrada_cd",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the entrance, walk straight ahead past the cafeteria.",
                 "The elevator is at the end of the corridor on your left."
@@ -2007,6 +2321,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "entrada_cd",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the elevator, walk straight down the corridor to the entrance."
             ]
@@ -2016,6 +2332,8 @@
             "floor": 0,
             "from": "entrada_cd",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the entrance, walk straight ahead past the cafeteria.",
                 "The stairs are at the end of the corridor on your right."
@@ -2026,6 +2344,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "entrada_cd",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the stairs, walk straight down the corridor to the entrance."
             ]
@@ -2035,6 +2355,8 @@
             "floor": 0,
             "from": "cafeteria",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the cafeteria and turn left.",
                 "Walk to the end of the corridor. The elevator is on your left."
@@ -2045,6 +2367,8 @@
             "floor": 0,
             "from": "cafeteria",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the cafeteria and turn left.",
                 "Walk to the end of the corridor. The stairs are on your right."
@@ -2055,6 +2379,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the elevator, the stairs are right next to you on the opposite side."
             ]
@@ -2064,6 +2390,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the stairs, the elevator is right next to you on the opposite side."
             ]
@@ -2073,6 +2401,8 @@
             "floor": 0,
             "from": "ascensor",
             "to": "cafeteria",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the elevator, walk straight down the corridor.",
                 "The cafeteria is on your right."
@@ -2083,6 +2413,8 @@
             "floor": 0,
             "from": "escaleras",
             "to": "cafeteria",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the stairs, walk straight down the corridor.",
                 "The cafeteria is on your right."
@@ -2093,6 +2425,8 @@
             "floor": -1,
             "from": "ascensor",
             "to": "gimnasio",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the elevator and turn right.",
                 "The gym entrance is straight ahead."
@@ -2103,6 +2437,8 @@
             "floor": -1,
             "from": "gimnasio",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the gym and walk straight. The elevator is ahead on your left."
             ]
@@ -2112,6 +2448,8 @@
             "floor": -1,
             "from": "escaleras",
             "to": "gimnasio",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "At the bottom of the stairs, turn right.",
                 "The gym entrance is straight ahead."
@@ -2122,6 +2460,8 @@
             "floor": -1,
             "from": "gimnasio",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "Exit the gym and walk straight. The stairs are on your right."
             ]
@@ -2131,6 +2471,8 @@
             "floor": -1,
             "from": "ascensor",
             "to": "escaleras",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the elevator, the stairs are right next to you on the opposite side."
             ]
@@ -2140,6 +2482,8 @@
             "floor": -1,
             "from": "escaleras",
             "to": "ascensor",
+            "distance_m": 10,
+            "hint": null,
             "instructions": [
                 "From the stairs, the elevator is right next to you on the opposite side."
             ]

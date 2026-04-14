@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 ///
 /// The parent passes callbacks; this file owns only the visual layout.
 
-// ── Voice (large microphone) ────────────────────────────────────────────
+// Voice (large microphone)
 
 class VoiceButton extends StatelessWidget {
   final bool isRecording;
@@ -84,7 +84,7 @@ class VoiceButton extends StatelessWidget {
   }
 }
 
-// ── Compact mic (used alongside photo or confirm buttons) ───────────────
+// Compact mic (used alongside photo or confirm buttons)
 
 class CompactMicButton extends StatelessWidget {
   final bool isRecording;
@@ -153,7 +153,7 @@ class CompactMicButton extends StatelessWidget {
   }
 }
 
-// ── Photo button ────────────────────────────────────────────────────────
+// Photo button
 
 class PhotoButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -181,7 +181,7 @@ class PhotoButton extends StatelessWidget {
   }
 }
 
-// ── Confirm / deny row ──────────────────────────────────────────────────
+// Confirm / deny row
 
 class ConfirmButtons extends StatelessWidget {
   final bool isConfirmPlan;
@@ -238,7 +238,7 @@ class ConfirmButtons extends StatelessWidget {
   }
 }
 
-// ── "or" divider ────────────────────────────────────────────────────────
+// "or" divider
 
 class DividerOr extends StatelessWidget {
   final String label;
@@ -262,7 +262,7 @@ class DividerOr extends StatelessWidget {
   }
 }
 
-// ── Photo-source bottom sheet ───────────────────────────────────────────
+// Photo-source bottom sheet
 
 void showPhotoSourceSheet(BuildContext context, void Function(ImageSource) onPick) {
   showModalBottomSheet(

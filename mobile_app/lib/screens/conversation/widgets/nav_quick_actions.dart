@@ -21,7 +21,7 @@ class NavQuickActions extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         children: [
-          // Next — primary action, most prominent
+          // Next - primary action, most prominent
           Expanded(
             flex: 3,
             child: _NavChip(
@@ -34,7 +34,7 @@ class NavQuickActions extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Repeat — utility
+          // Repeat - utility
           Expanded(
             flex: 3,
             child: _NavChip(
@@ -46,7 +46,7 @@ class NavQuickActions extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Lost — warning
+          // Lost - warning
           Expanded(
             flex: 3,
             child: _NavChip(
@@ -58,7 +58,7 @@ class NavQuickActions extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // Cancel — destructive, least prominent
+          // Cancel - destructive, least prominent
           Expanded(
             flex: 3,
             child: _NavChip(

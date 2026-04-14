@@ -1,25 +1,22 @@
-;; Campus navigation domain — symbolic layer (building + floor only)
+;; Campus navigation domain: symbolic layer (building + floor only).
 ;;
-;; State abstraction: the planner reasons about (edificio, planta), not individual
-;; classrooms. Fine-grained walking text ("turn left", corridor detail) lives in
-;; campus_graph.json under local_connections and is merged by the conversation agent
-;; after each PDDL action is interpreted.
+;; State: the planner reasons about (edificio, planta), not individual rooms.
+;; Fine-grained walking text lives in campus_graph.json under local_connections
+;; and is merged by the conversation agent after each PDDL action.
 ;;
-;; Intended users: people with low vision using voice + photo assistance; elevator
-;; and stairs are validated autonomously with camera guidance before movement.
+;; Intended users: people with low vision using voice + photo assistance.
+;; Elevator and stairs are validated autonomously with camera guidance.
 ;;
 ;; Two navigation profiles controlled by the (modo_rapido) predicate:
 ;;
-;;   Accessible (default)          Hurry (modo_rapido)
-;;   ─────────────────────         ────────────────────
-;;   Elevator total cost: 3        Elevator total cost: 3
-;;   Stairs-up total cost: 6       Stairs-up total cost: 2
-;;   Stairs-down total cost: 5     Stairs-down total cost: 1
-;;   Outdoor walk cost: 5          Outdoor walk cost: 5
+;;   Accessible (default)      Hurry (modo_rapido)
+;;   Elevator total cost: 3    Elevator total cost: 3
+;;   Stairs-up total cost: 6   Stairs-up total cost: 2
+;;   Stairs-down total cost: 5 Stairs-down total cost: 1
+;;   Outdoor walk cost: 5      Outdoor walk cost: 5
 ;;
-;; In accessible mode the planner picks the elevator because it is
-;; cheaper.  In hurry mode the planner picks stairs because the
-;; safety-check steps are skipped and the cost drops below the elevator.
+;; In accessible mode the planner picks the elevator (cost 3 < stairs 5/6).
+;; In hurry mode the planner picks stairs (safety steps skipped, cost 1/2).
 
 (define (domain campus-navigation)
   (:requirements :strips :typing :action-costs)
@@ -63,9 +60,7 @@
     (modo_rapido)
   )
 
-  ;; ═══════════════════════════════════════════════════════════════════════
   ;; Outdoor movement between buildings on the same floor
-  ;; ═══════════════════════════════════════════════════════════════════════
 
   (:action mover_edificio
     :parameters (?r - robot
@@ -84,9 +79,7 @@
     )
   )
 
-  ;; ═══════════════════════════════════════════════════════════════════════
   ;; Elevator path (2 actions, total cost 3)
-  ;; ═══════════════════════════════════════════════════════════════════════
 
   (:action verificar_ascensor
     :parameters (?r - robot ?b - edificio ?p - planta)
@@ -120,9 +113,7 @@
     )
   )
 
-  ;; ═══════════════════════════════════════════════════════════════════════
-  ;; Stairs path  accessible mode (2 actions, total cost 6 up / 5 down)
-  ;; ═══════════════════════════════════════════════════════════════════════
+  ;; Stairs path, accessible mode (2 actions, total cost 6 up / 5 down)
 
   (:action validar_escaleras
     :parameters (?r - robot ?b - edificio ?p - planta)
@@ -177,10 +168,8 @@
     )
   )
 
-  ;; ═══════════════════════════════════════════════════════════════════════
-  ;; Stairs path  hurry mode (1 action, total cost 2 up / 1 down)
+  ;; Stairs path, hurry mode (1 action, total cost 2 up / 1 down)
   ;; Safety checks are skipped when the user is in a rush.
-  ;; ═══════════════════════════════════════════════════════════════════════
 
   (:action subir_escaleras_rapido
     :parameters (?r - robot

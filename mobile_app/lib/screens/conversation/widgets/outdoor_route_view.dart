@@ -202,7 +202,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
       ),
       body: Column(
         children: [
-          // ── Embedded Google Map (60% height) ──────────────────────────
+          // Embedded Google Map (60% height)
           Expanded(
             flex: 6,
             child: GoogleMap(
@@ -217,7 +217,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
             ),
           ),
 
-          // ── Walking guidance panel (40% height) ───────────────────────
+          // Walking guidance panel (40% height)
           Expanded(
             flex: 4,
             child: Container(

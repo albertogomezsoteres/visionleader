@@ -1,5 +1,5 @@
 """
-Conversational Navigation Agent — Full interactive flow.
+Conversational Navigation Agent: full interactive flow.
 
 States:
   WELCOME → ASK_KNOWS_LOCATION → (voice) ASK_LOCATION_VOICE / (photo) ASK_SITUATION
@@ -35,8 +35,7 @@ class ConversationState(Enum):
     NAVIGATION_COMPLETE = "navigation_complete"
 
 
-# ── Parsing helpers ────────────────────────────────────────────────────────
-
+# Parsing helpers
 _AFFIRM = {"yes", "yeah", "yep", "sure", "ok", "okay", "correct", "right",
            "sí", "si", "vale", "claro", "por supuesto", "confirm", "confirmed"}
 _NEGATE = {"no", "nope", "nah", "cancel", "wrong", "incorrect", "not",
@@ -56,7 +55,7 @@ _BUILDING_FULL = {
 
 _FLOOR_WORDS = {
     "ground": 0, "ground floor": 0, "first": 1, "first floor": 1,
-    "second": 1, "second floor": 2, "third": 2,
+    "second": 2, "second floor": 2, 
     "basement": -1, "minus one": -1, "minus 1": -1,
     "planta baja": 0, "planta 0": 0, "planta 1": 1, "planta 2": 2,
     "planta -1": -1, "floor 0": 0, "floor 1": 1, "floor 2": 2,
@@ -84,8 +83,7 @@ def _floor_text(f: int) -> str:
     return f"floor {f}"
 
 
-# ── Context ────────────────────────────────────────────────────────────────
-
+# Context
 class ConversationContext:
     def __init__(self, session_id: str):
         self.session_id = session_id
@@ -103,13 +101,18 @@ class ConversationContext:
         self.history: List[Dict[str, str]] = []
         self.hurry_mode: bool = False
 
+        # Closure handling — populated by _compute_route when the original
+        # destination was closed. Consumed by _present_plan (success) or
+        # destination handlers (failure) to prepend an explanation.
+        self.pending_announcement: Optional[str] = None
+        self.closure_blocked: bool = False
+
         # Partial location accumulation (building known but floor unknown, etc.)
         self.partial_building: Optional[int] = None
         self.partial_floor: Optional[int] = None
         self.partial_location_id: Optional[str] = None
 
-    # Convenience ──────────────────────────────────────
-
+    # Convenience
     def current_location(self) -> Optional[Dict]:
         return self.origin
 
@@ -129,8 +132,7 @@ class ConversationContext:
         }
 
 
-# ── Agent ──────────────────────────────────────────────────────────────────
-
+# Agent
 class ConversationAgent:
     """Full conversational navigation agent."""
 
@@ -140,11 +142,22 @@ class ConversationAgent:
 
         # Pre-index local connections for fast lookup
         self._local_idx: Dict[str, List[str]] = {}
+        # Structured fields used by the distance-aware TTS generator:
+        #   key "<building>_<floor>_<from>_<to>" -> int meters
+        #   key "<building>_<floor>_<from>_<to>" -> Optional[str] directional hint
+        self._local_distance: Dict[str, int] = {}
+        self._local_hint: Dict[str, Optional[str]] = {}
         # Adjacency list per (building, floor) for BFS fallback
         self._local_adj: Dict[str, Dict[str, List[str]]] = {}
         for lc in self.graph.get("local_connections", []):
             key = f"{lc['building']}_{lc['floor']}_{lc['from']}_{lc['to']}"
-            self._local_idx[key] = lc["instructions"]
+            self._local_idx[key] = lc.get("instructions", []) or []
+            dist = lc.get("distance_m")
+            if isinstance(dist, (int, float)) and dist > 0:
+                self._local_distance[key] = int(round(dist))
+            hint = lc.get("hint")
+            if isinstance(hint, str) and hint.strip():
+                self._local_hint[key] = hint.strip()
             bf_key = f"{lc['building']}_{lc['floor']}"
             self._local_adj.setdefault(bf_key, {}).setdefault(lc["from"], []).append(lc["to"])
 
@@ -163,16 +176,28 @@ class ConversationAgent:
 
         # Fast Downward integration
         self._planner = None
-        self._converter = None
+        self._converter = None                # legacy floor-level converter
+        self._hierarchical_converter = None   # room-level building converter
         self._domain_path = None
         self._pddl_dir = None
         self._init_planner()
 
     def _init_planner(self):
-        """Initialize Fast Downward planner and PDDL converter."""
+        """Initialize Fast Downward planner and both PDDL converters.
+
+        Two converters are created:
+          - CampusGraphToPDDL: used by the global/legacy domain.pddl for
+            inter-building or floor-level plans.
+          - HierarchicalPDDLConverter: used by building-specific domains
+            (domain_G.pddl, domain_CD.pddl, domain_H.pddl) for room-level
+            planning inside a single building.
+        """
         try:
             from navigation.fast_downward_client import FastDownwardPlanner
-            from navigation.pddl_converter import CampusGraphToPDDL
+            from navigation.pddl_converter import (
+                CampusGraphToPDDL,
+                HierarchicalPDDLConverter,
+            )
 
             base_dir = Path(__file__).parent.parent.parent
             campus_json = base_dir / "config" / "campus_graph.json"
@@ -181,11 +206,21 @@ class ConversationAgent:
 
             self._planner = FastDownwardPlanner()
             self._converter = CampusGraphToPDDL(str(campus_json))
-            print("[ConversationAgent] Fast Downward planner initialized OK")
+            closed_rooms_path = base_dir / "config" / "closed_rooms.json"
+            self._hierarchical_converter = HierarchicalPDDLConverter(
+                json_path=str(campus_json),
+                pddl_dir=str(self._pddl_dir),
+                closed_rooms_path=str(closed_rooms_path),
+            )
+            print(
+                "[ConversationAgent] Fast Downward + hierarchical converter "
+                "initialized OK"
+            )
         except Exception as e:
             print(f"[ConversationAgent] WARNING: Could not init Fast Downward: {e}")
             self._planner = None
             self._converter = None
+            self._hierarchical_converter = None
 
     def _run_fast_downward(
         self, origin_building: int, origin_floor: int,
@@ -244,8 +279,81 @@ class ConversationAgent:
                 except Exception:
                     pass
 
-    # ── PDDL action parsing ───────────────────────────────────────────────
+    def _run_hierarchical_building_planner(
+        self,
+        building_id: int,
+        origin_room: str, origin_floor: int,
+        dest_room: Optional[str], dest_floor: Optional[int],
+        goal_functional: Optional[str] = None,
+        hurry_mode: bool = False,
+    ) -> Optional[List[str]]:
+        """
+        Call Fast Downward with a building-specific, room-level domain.
 
+        Uses self._hierarchical_converter to generate a problem file whose
+        :init section encodes the full intra-building graph, and loads the
+        corresponding domain file (domain_G.pddl, domain_CD.pddl, ...).
+        Returns the list of PDDL action strings or None on failure.
+        """
+        if not self._planner or not self._hierarchical_converter:
+            print("[FD-Hierarchical] Planner or hierarchical converter not available")
+            return None
+
+        try:
+            domain_path = self._hierarchical_converter.get_domain_path(building_id)
+        except ValueError as e:
+            print(f"[FD-Hierarchical] {e}")
+            return None
+
+        if not domain_path.exists():
+            print(f"[FD-Hierarchical] Domain file not found: {domain_path}")
+            return None
+
+        problem_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode='w', suffix='.pddl',
+                dir=str(self._pddl_dir), delete=False
+            ) as f:
+                problem_path = f.name
+                self._hierarchical_converter.generate_building_problem(
+                    building_id=building_id,
+                    origin_room=origin_room,
+                    origin_floor=origin_floor,
+                    dest_room=dest_room,
+                    dest_floor=dest_floor,
+                    goal_functional=goal_functional,
+                    hurry_mode=hurry_mode,
+                    output_path=problem_path,
+                )
+
+            result = self._planner.plan(
+                domain_path=str(domain_path),
+                problem_path=problem_path,
+            )
+
+            if result.get("success"):
+                actions = result.get("plan", [])
+                print(
+                    f"[FD-Hierarchical] Plan found for building {building_id}: "
+                    f"{len(actions)} actions, cost={result.get('cost')}"
+                )
+                for a in actions:
+                    print(f"  [FD-H]   {a}")
+                return actions
+            print(f"[FD-Hierarchical] No plan found: {result.get('error')}")
+            return None
+        except Exception as e:
+            print(f"[FD-Hierarchical] Error: {e}")
+            return None
+        finally:
+            if problem_path:
+                try:
+                    Path(problem_path).unlink(missing_ok=True)
+                except Exception:
+                    pass
+
+    # PDDL action parsing
     @staticmethod
     def _parse_fd_action(action_str: str) -> Optional[Dict]:
         """Parse a single PDDL action string into structured dict."""
@@ -560,15 +668,198 @@ class ConversationAgent:
 
         return steps if steps else None
 
-    # ── Session management ─────────────────────────────────────────────────
+    def _fd_plan_to_steps_room_level(
+        self, fd_actions: List[str], origin: Dict, destination: Dict
+    ) -> Optional[List[Dict]]:
+        """
+        Convert a room-level plan (from a building-specific PDDL domain) into
+        navigation steps. Actions at this level carry ubicacion parameters:
 
+          caminar robot1 <room_from> <room_to>
+          verificar_ascensor robot1 <ascensor_pX>       (skipped in instructions)
+          usar_ascensor robot1 <ascensor_pX> <ascensor_pY>
+          validar_escaleras robot1 <escaleras_pX>       (skipped in instructions)
+          subir_escaleras robot1 <escaleras_pX> <escaleras_pY>
+          bajar_escaleras robot1 <escaleras_pX> <escaleras_pY>
+          subir_escaleras_rapido / bajar_escaleras_rapido
+
+        Consecutive caminar hops are merged into a single walking step
+        enriched with the text from campus_graph.json local_connections
+        (so the user still hears natural navigation instructions).
+        """
+        from navigation.pddl_converter import HierarchicalPDDLConverter
+
+        steps: List[Dict] = []
+        bname = _BUILDING_NAMES.get(origin.get("building"), "G")
+        current_floor = origin.get("floor", 0) or 0
+
+        walk_buffer: List[Dict] = []  # buffered caminar hops
+
+        def pddl_to_json(pddl_id: str, default_floor: int):
+            """Return (json_location_id, floor) for a PDDL ubicacion id."""
+            base, floor = HierarchicalPDDLConverter.pddl_to_location(pddl_id)
+            if floor is not None:
+                return base, floor
+            # Unique id: look up its floor in campus_graph.json locations
+            for f_str, locs in (self._locations.get(bname, {}) or {}).items():
+                for loc in locs:
+                    if loc.get("id") == base:
+                        try:
+                            return base, int(f_str)
+                        except (TypeError, ValueError):
+                            pass
+            return base, default_floor
+
+        def flush_walk():
+            """Turn the buffered caminar hops into a single TTS step.
+
+            Consecutive caminar hops on the same floor are merged: the
+            distances are summed (so PDDL stays the authoritative source
+            for the metric total) and the directional hint of the FINAL
+            hop is used, since that is the one that ends at the user's
+            immediate target. Intermediate nodes chosen by the planner
+            for distance optimisation (e.g. passing by bano on a shortcut)
+            do not appear in the TTS — the user only hears the final leg.
+
+            The generated instruction follows the short demo-friendly
+            pattern:
+                "Walk {N}m, {hint}."          (when hint is present)
+                "Walk {N}m to {pretty_name}." (when hint is missing)
+            """
+            if not walk_buffer:
+                return
+
+            total_distance = 0
+            any_distance = False
+            for hop in walk_buffer:
+                key = f"{bname}_{hop['floor']}_{hop['json_from']}_{hop['json_to']}"
+                d = self._local_distance.get(key)
+                if d:
+                    total_distance += d
+                    any_distance = True
+
+            final_hop = walk_buffer[-1]
+            final_key = (
+                f"{bname}_{final_hop['floor']}_"
+                f"{final_hop['json_from']}_{final_hop['json_to']}"
+            )
+            final_hint = self._local_hint.get(final_key)
+            final_target = self._nice_location_name(final_hop["json_to"])
+
+            if any_distance and final_hint:
+                sentence = f"Walk {total_distance} meters, {final_hint}."
+            elif any_distance:
+                sentence = f"Walk {total_distance} meters to {final_target}."
+            elif final_hint:
+                sentence = f"Walk to {final_target}, {final_hint}."
+            else:
+                sentence = f"Walk to {final_target}."
+
+            steps.append({
+                "instruction": self._normalize_instruction(sentence),
+                "type": "local_walk",
+                "verification": "voice",
+                "expected_photo_type": None,
+            })
+            walk_buffer.clear()
+
+        for action_str in fd_actions:
+            parsed = self._parse_fd_action(action_str)
+            if not parsed:
+                continue
+            name = parsed["name"]
+            params = parsed["params"]
+
+            # Skip internal safety-check actions (no user-visible step)
+            if name in ("verificar_ascensor", "validar_escaleras"):
+                continue
+
+            if name == "caminar":
+                # params: robot1 <from> <to>
+                if len(params) < 3:
+                    continue
+                j_from, f_from = pddl_to_json(params[1], current_floor)
+                j_to, f_to = pddl_to_json(params[2], current_floor)
+                walk_buffer.append({
+                    "pddl_from": params[1],
+                    "pddl_to": params[2],
+                    "json_from": j_from,
+                    "json_to": j_to,
+                    "floor": f_from,
+                })
+                current_floor = f_to
+                continue
+
+            if name == "usar_ascensor":
+                flush_walk()
+                _jf, from_floor = pddl_to_json(params[1], current_floor)
+                _jt, to_floor = pddl_to_json(params[2], current_floor)
+                steps.append({
+                    "instruction": self._normalize_instruction(
+                        f"Take the elevator from {_floor_text(from_floor)} "
+                        f"to {_floor_text(to_floor)}. "
+                        "Press the button and wait for the doors to open."
+                    ),
+                    "type": "elevator",
+                    "verification": "photo",
+                    "expected_photo_type": "elevator",
+                    "post_photo_instruction": (
+                        f"Enter the elevator, press floor {to_floor}, "
+                        "and exit when you arrive."
+                    ),
+                })
+                current_floor = to_floor
+                continue
+
+            if name in (
+                "subir_escaleras", "bajar_escaleras",
+                "subir_escaleras_rapido", "bajar_escaleras_rapido",
+            ):
+                flush_walk()
+                _jf, from_floor = pddl_to_json(params[1], current_floor)
+                _jt, to_floor = pddl_to_json(params[2], current_floor)
+                direction = "up" if "subir" in name else "down"
+                is_hurry = "rapido" in name
+
+                safety_msg = (
+                    f"Go {direction} the stairs from "
+                    f"{_floor_text(from_floor)} to {_floor_text(to_floor)}. "
+                )
+                if is_hurry:
+                    safety_msg += "Take the stairs quickly, but be careful."
+                else:
+                    safety_msg += (
+                        "Hold the handrail firmly with one hand. "
+                        "Take it one step at a time."
+                    )
+
+                steps.append({
+                    "instruction": self._normalize_instruction(safety_msg),
+                    "type": "stairs",
+                    "verification": "photo",
+                    "expected_photo_type": "stairs",
+                    "two_phase_photo": True,
+                    "pre_photo_instruction": (
+                        f"Locate the stairs on {_floor_text(from_floor)}. "
+                        "Please take a photo so I can confirm they go "
+                        f"{direction} and have a handrail."
+                    ),
+                    "post_photo_instruction": safety_msg,
+                    "stairs_direction": direction,
+                })
+                current_floor = to_floor
+                continue
+
+        flush_walk()
+        return steps if steps else None
+
+    # Session management
     def get_or_create_context(self, session_id: str) -> ConversationContext:
         if session_id not in self.contexts:
             self.contexts[session_id] = ConversationContext(session_id)
         return self.contexts[session_id]
 
-    # ── Main entry point ───────────────────────────────────────────────────
-
+    # Main entry point
     def process_turn(
         self,
         session_id: str,
@@ -623,8 +914,7 @@ class ConversationAgent:
 
         return self._reply(ctx, "Something went wrong. Let's start over.", "voice", "error")
 
-    # ── State handlers ─────────────────────────────────────────────────────
-
+    # State handlers
     def _handle_welcome(self, ctx: ConversationContext) -> Dict:
         tts = (
             "Hello! I am your campus navigation assistant. "
@@ -900,7 +1190,7 @@ class ConversationAgent:
                 )
                 ctx.add("system", tts)
                 return self._present_plan(ctx)
-            tts = self._macro_planner_failed_message()
+            tts = self._planner_failure_message(ctx)
             ctx.add("system", tts)
             return self._reply(ctx, tts, "voice", "ask_destination")
 
@@ -925,7 +1215,7 @@ class ConversationAgent:
                     )
                     ctx.add("system", tts)
                     return self._present_plan(ctx)
-                tts = self._macro_planner_failed_message()
+                tts = self._planner_failure_message(ctx)
                 ctx.add("system", tts)
                 return self._reply(ctx, tts, "voice", "ask_destination")
 
@@ -965,7 +1255,7 @@ class ConversationAgent:
             ctx.destination = dest
             route = self._compute_route(ctx.origin, dest)
             if not route:
-                tts = self._macro_planner_failed_message()
+                tts = self._planner_failure_message(ctx)
                 return self._reply(ctx, tts, "voice", "ask_destination")
             ctx.route_steps = route
             ctx.current_step_idx = 0
@@ -1006,7 +1296,16 @@ class ConversationAgent:
         else:
             requirement = f"There {'is' if n == 1 else 'are'} {n} step{'s' if n != 1 else ''} required: {overview}."
 
+        # If the route was substituted because the original destination was
+        # closed, prepend the announcement to the plan presentation so the
+        # user understands why we are heading somewhere they did not ask for.
+        prefix = ""
+        if ctx.pending_announcement:
+            prefix = ctx.pending_announcement.rstrip() + " "
+            ctx.pending_announcement = None
+
         tts = (
+            f"{prefix}"
             f"Perfect. I will guide you to {dest_text}. "
             f"{requirement} "
             f"Click Start Navigation or say start.{hurry_note}"
@@ -1045,7 +1344,7 @@ class ConversationAgent:
                 ctx.route_steps = route
                 ctx.current_step_idx = 0
                 return self._present_plan(ctx)
-            tts = self._macro_planner_failed_message()
+            tts = self._planner_failure_message(ctx)
             return self._reply(ctx, tts, "voice", "confirm_plan")
 
         tts = (
@@ -1170,7 +1469,7 @@ class ConversationAgent:
                 ctx.current_step_idx = 0
                 ctx.state = ConversationState.CONFIRMING_PLAN
                 return self._present_plan(ctx)
-            tts = self._macro_planner_failed_message()
+            tts = self._planner_failure_message(ctx)
             return self._reply(ctx, tts, "voice", "nav_complete")
 
         if any(w in low for w in ("yes", "new", "another", "sí", "si", "otra", "new route")):
@@ -1191,8 +1490,7 @@ class ConversationAgent:
         )
         return self._reply(ctx, tts, "voice", "nav_complete")
 
-    # ── Navigation helpers ─────────────────────────────────────────────────
-
+    # Navigation helpers
     def _deliver_step(self, ctx: ConversationContext, prefix: str = "") -> Dict:
         if ctx.current_step_idx >= len(ctx.route_steps):
             return self._navigation_complete(ctx)
@@ -1308,8 +1606,111 @@ class ConversationAgent:
             return "photo"
         return "voice"
 
-    # ── Route computation ──────────────────────────────────────────────────
+    # Closure handling (dynamic availability state)
 
+    def _find_matching_ctx(
+        self, origin: Dict, destination: Dict
+    ) -> Optional["ConversationContext"]:
+        """Locate the ConversationContext that owns this (origin, dest) pair."""
+        for ctx in self.contexts.values():
+            if ctx.origin == origin and ctx.destination == destination:
+                return ctx
+        return None
+
+    def _load_current_closures(self) -> List[Dict]:
+        """Fresh read of config/closed_rooms.json via the hierarchical converter."""
+        if not self._hierarchical_converter:
+            return []
+        return self._hierarchical_converter.load_closed_rooms()
+
+    def _is_room_closed(
+        self, building_id: int, floor: Optional[int], location_id: str
+    ) -> Optional[Dict]:
+        """Return the closure entry if the given room is closed, None otherwise."""
+        if not location_id:
+            return None
+        bname = _BUILDING_NAMES.get(building_id)
+        if not bname:
+            return None
+        for entry in self._load_current_closures():
+            if entry.get("building") != bname:
+                continue
+            if entry.get("location_id") != location_id:
+                continue
+            entry_floor = entry.get("floor")
+            if entry_floor is None or floor is None or int(entry_floor) == int(floor):
+                return entry
+        return None
+
+    def _find_open_alternative(
+        self, building_id: int, floor: int, location_id: str
+    ) -> Optional[Dict]:
+        """Search campus_graph.json for a room of the SAME type as `location_id`
+        that is currently open. Prefers the same floor; falls back to any
+        floor in the same building.
+
+        Returns a dict {building, floor, location_id, type, name} or None.
+        """
+        bname = _BUILDING_NAMES.get(building_id)
+        if not bname:
+            return None
+        floors_data = self._locations.get(bname, {}) or {}
+
+        # Resolve the original room type
+        original_type: Optional[str] = None
+        original_name: Optional[str] = None
+        for f_str, locs in floors_data.items():
+            for loc in locs:
+                if loc.get("id") == location_id:
+                    original_type = loc.get("type")
+                    original_name = loc.get("name")
+                    break
+            if original_type:
+                break
+        if not original_type:
+            return None
+
+        # Candidates: same type, not closed, not the original room
+        def candidate_on_floor(f_int: int) -> Optional[Dict]:
+            locs = floors_data.get(str(f_int), []) or []
+            for loc in locs:
+                if loc.get("id") == location_id:
+                    continue
+                if loc.get("type") != original_type:
+                    continue
+                if self._is_room_closed(building_id, f_int, loc["id"]):
+                    continue
+                return {
+                    "building": building_id,
+                    "floor": f_int,
+                    "location_id": loc["id"],
+                    "type": original_type,
+                    "name": loc.get("name", loc["id"]),
+                    "original_location_id": location_id,
+                    "original_name": original_name or location_id,
+                }
+            return None
+
+        # 1. Same floor first
+        same_floor = candidate_on_floor(floor)
+        if same_floor:
+            return same_floor
+
+        # 2. Then nearest other floors
+        all_floors = sorted(
+            int(f) for f in floors_data.keys()
+        )
+        by_distance = sorted(all_floors, key=lambda f: abs(f - floor))
+        for f_int in by_distance:
+            if f_int == floor:
+                continue
+            alt = candidate_on_floor(f_int)
+            if alt:
+                return alt
+
+        return None
+
+    # Route computation
     @staticmethod
     def _macro_planner_failed_message() -> str:
         return (
@@ -1318,14 +1719,37 @@ class ConversationAgent:
             "(fast-downward:latest), then try your destination again."
         )
 
+    def _planner_failure_message(self, ctx: "ConversationContext") -> str:
+        """Return the right user-facing error when _compute_route returns None.
+
+        Prefers a pending closure announcement (informative: "X is closed,
+        no alternative") over the generic planner failure message.
+        """
+        if ctx and ctx.pending_announcement:
+            msg = ctx.pending_announcement
+            ctx.pending_announcement = None
+            ctx.closure_blocked = False
+            return msg
+        return self._planner_failure_message(ctx)
+
     def _compute_route(
         self, origin: Dict, destination: Dict
     ) -> Optional[List[Dict]]:
         """Build navigation steps.
 
-        Same building and same floor: local graph instructions only (PDDL state
-        is floor-level). Different floor or building: Fast Downward only; there
-        is no alternate macro router so Docker must produce a valid plan.
+        Routing strategy (hierarchical):
+
+          - Intra-building inside Edificio G (building id 1): try the
+            room-level domain (domain_G.pddl). PDDL reasons over the full
+            room graph so the plan contains walk-room / elevator / stairs
+            actions at ubicacion level. If that succeeds we skip the legacy
+            floor-level path entirely.
+
+          - Same building, same floor (CD / H, or G fallback): just use
+            local_connections from the campus graph.
+
+          - Different floor or different building: fall back to the global
+            domain.pddl through Fast Downward (building-floor level).
         """
         o_bld = origin.get("building")
         o_flr = origin.get("floor")
@@ -1338,18 +1762,99 @@ class ConversationAgent:
         if o_bld is None or o_flr is None or d_bld is None or d_flr is None:
             return None
 
-        # Same building, same floor → local only (PDDL operates at floor level)
+        matching_ctx = self._find_matching_ctx(origin, destination)
+        if matching_ctx:
+            matching_ctx.pending_announcement = None
+            matching_ctx.closure_blocked = False
+
+        # Closure preflight: if the destination is closed, either substitute
+        # a same-type alternative in-place or return None with an explanation.
+        if d_loc:
+            closure = self._is_room_closed(d_bld, d_flr, d_loc)
+            if closure:
+                alt = self._find_open_alternative(d_bld, d_flr, d_loc)
+                orig_name = self._nice_location_name(d_loc)
+                reason = closure.get("reason") or "currently unavailable"
+
+                if alt:
+                    # Mutate destination dict in-place so the planner, ctx
+                    # and every downstream check see the new target.
+                    destination["location_id"] = alt["location_id"]
+                    destination["floor"] = alt["floor"]
+                    destination.pop("functional", None)
+                    alt_name = self._nice_location_name(alt["location_id"])
+                    announcement = (
+                        f"{orig_name} is {reason}. "
+                        f"I'll guide you to {alt_name} instead."
+                    )
+                    if matching_ctx:
+                        matching_ctx.pending_announcement = announcement
+                    # fall through with the new destination
+                    d_loc = destination["location_id"]
+                    d_flr = destination["floor"]
+                    print(
+                        f"[Closure] {orig_name} closed ({reason}); "
+                        f"redirecting to {alt_name}"
+                    )
+                else:
+                    announcement = (
+                        f"{orig_name} is {reason}, and there is no equivalent "
+                        "alternative available right now. Please try a "
+                        "different destination."
+                    )
+                    if matching_ctx:
+                        matching_ctx.pending_announcement = announcement
+                        matching_ctx.closure_blocked = True
+                    print(
+                        f"[Closure] {orig_name} closed ({reason}); "
+                        "no alternative found"
+                    )
+                    return None
+
+        # Determine hurry mode from the (possibly already found) matching context
+        goal_functional = destination.get("functional")
+        ctx_hurry = matching_ctx.hurry_mode if matching_ctx else False
+
+        # Intra-building G: hierarchical room-level planning
+        if (
+            o_bld == d_bld == 1
+            and o_loc
+            and (d_loc or goal_functional)
+            and self._hierarchical_converter is not None
+        ):
+            fd_actions = self._run_hierarchical_building_planner(
+                building_id=1,
+                origin_room=o_loc, origin_floor=o_flr,
+                dest_room=d_loc, dest_floor=d_flr,
+                goal_functional=goal_functional,
+                hurry_mode=ctx_hurry,
+            )
+            if fd_actions:
+                steps = self._fd_plan_to_steps_room_level(
+                    fd_actions, origin, destination
+                )
+                if steps:
+                    print(
+                        f"[Route] Built {len(steps)} room-level navigation "
+                        f"steps from domain_G.pddl"
+                    )
+                    return self._apply_arrival_strict_photo(steps, destination)
+                print(
+                    "[Route] Hierarchical plan found but could not be "
+                    "converted to navigation steps — falling back."
+                )
+            else:
+                print(
+                    "[Route] Hierarchical planner failed — falling back to "
+                    "legacy routing."
+                )
+
+        # Same building, same floor → local graph instructions
         if o_bld == d_bld and o_flr == d_flr:
             steps = self._compute_same_floor(o_bld, o_flr, o_loc, d_loc)
             return self._apply_arrival_strict_photo(steps, destination)
 
-        # Different floor or different building → call Fast Downward
-        goal_functional = destination.get("functional")
-        ctx_hurry = False
-        for ctx in self.contexts.values():
-            if ctx.origin == origin and ctx.destination == destination:
-                ctx_hurry = ctx.hurry_mode
-                break
+        # Different floor or building → global Fast Downward (legacy domain)
         fd_actions = self._run_fast_downward(
             o_bld, o_flr, d_bld, d_flr, goal_functional, hurry_mode=ctx_hurry
         )
@@ -1393,8 +1898,7 @@ class ConversationAgent:
             "expected_photo_type": None,
         }]
 
-    # ── Graph lookups ──────────────────────────────────────────────────────
-
+    # Graph lookups
     def _get_local_instructions(
         self, building_name: str, floor: int, from_loc: str, to_loc: str
     ) -> Optional[List[str]]:
@@ -1471,31 +1975,15 @@ class ConversationAgent:
         out = re.sub(r"\s+", " ", out).strip()
         return out
 
-    def _next_local_walk_hint(self, ctx: ConversationContext) -> str:
-        """Return a short hint about the immediate next walking step, if available."""
-        next_idx = ctx.current_step_idx + 1
-        if next_idx < len(ctx.route_steps):
-            nxt = ctx.route_steps[next_idx]
-            if nxt.get("type") == "local_walk":
-                return f" After you arrive, {nxt.get('instruction', '').strip()} "
-        return ""
-
     def _entrance_id(self, building_id: int) -> str:
         """Return the entrance location_id for a building."""
         entrances = {1: "entrada_principal", 2: "entrada_cd", 3: "entrada_principal"}
         return entrances.get(building_id, "entrada_principal")
 
-    def _has_elevator(self, building_id: int) -> bool:
-        for b in self.graph.get("buildings", []):
-            if b["id"] == building_id:
-                return b.get("elevators", False)
-        return False
-
     def _building_id(self, name: str) -> int:
         return _BUILDING_MAP.get(name.lower(), 0)
 
-    # ── Parsing ────────────────────────────────────────────────────────────
-
+    # Parsing
     def _parse_location(self, msg: str) -> Optional[Dict]:
         """Parse a user message into {building, floor, location_id}."""
         low = msg.lower().strip()
@@ -1708,8 +2196,7 @@ class ConversationAgent:
                 return val
         return None
 
-    # ── Display helpers ────────────────────────────────────────────────────
-
+    # Display helpers
     def _location_text(self, loc: Optional[Dict]) -> str:
         if not loc:
             return "an unknown location"
@@ -1755,8 +2242,7 @@ class ConversationAgent:
     def _get_building_name(self, building_id: int) -> str:
         return _BUILDING_NAMES.get(building_id, str(building_id))
 
-    # ── Response builder ───────────────────────────────────────────────────
-
+    # Response builder
     def _reply(
         self,
         ctx: ConversationContext,
@@ -1776,55 +2262,3 @@ class ConversationAgent:
         }
         result.update(extra)
         return result
-
-    # ── Backwards-compatible methods (called by planning_api.py) ───────
-
-    def get_system_greeting(self, session_id: str) -> Dict[str, Any]:
-        return self.process_turn(session_id)
-
-    def handle_photo_analysis(
-        self, session_id: str, analysis_result: Dict
-    ) -> Dict[str, Any]:
-        return self.process_turn(session_id, image_analysis=analysis_result)
-
-    def handle_voice_for_location(
-        self, session_id: str, message: str
-    ) -> Dict[str, Any]:
-        return self.process_turn(session_id, user_message=message)
-
-    def handle_goal_voice(
-        self, session_id: str, message: str
-    ) -> Dict[str, Any]:
-        return self.process_turn(session_id, user_message=message)
-
-    def handle_goal_confirmation(
-        self, session_id: str, confirmed: bool
-    ) -> Dict[str, Any]:
-        msg = "yes" if confirmed else "no"
-        return self.process_turn(session_id, user_message=msg)
-
-    def handle_navigation_photo(self, session_id: str, **kwargs) -> Dict[str, Any]:
-        return self.process_turn(session_id, image_analysis=kwargs)
-
-    def handle_navigation_voice(self, session_id: str, message: str) -> Dict[str, Any]:
-        return self.process_turn(session_id, user_message=message)
-
-    def process_user_message(
-        self, session_id: str, user_message: str, image_analysis: Optional[Dict] = None
-    ) -> Dict[str, Any]:
-        return self.process_turn(session_id, user_message=user_message, image_analysis=image_analysis)
-
-    def generate_plan_request(self, session_id: str) -> Optional[Dict]:
-        ctx = self.get_or_create_context(session_id)
-        if ctx.origin and ctx.destination:
-            return {
-                "initial_state": {
-                    "building": ctx.origin.get("building"),
-                    "floor": ctx.origin.get("floor"),
-                },
-                "goal_state": {
-                    "building": ctx.destination.get("building"),
-                    "floor": ctx.destination.get("floor"),
-                },
-            }
-        return None
