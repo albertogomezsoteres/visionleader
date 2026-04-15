@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img_lib;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:image_picker/image_picker.dart';
@@ -85,7 +87,6 @@ class _ConversationScreenState extends State<ConversationScreen>
   @override
   void dispose() {
     _tts.stop();
-    _tts.dispose();
     _recorder.closeRecorder().catchError((_) {});
     _pulseCtrl.dispose();
     super.dispose();
@@ -330,12 +331,31 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // Photo actions
 
+  /// Center-crops to square and resizes to 800px before sending to PaliGemma.
+  /// PaliGemma 448 expects square input — without this the processor squishes
+  /// portrait photos and distorts text on door signs / directory boards.
+  Future<File> _cropSquare(File imageFile) async {
+    final bytes = await imageFile.readAsBytes();
+    final original = img_lib.decodeImage(bytes);
+    if (original == null) return imageFile;
+    final size = min(original.width, original.height);
+    final x = (original.width - size) ~/ 2;
+    final y = (original.height - size) ~/ 2;
+    final cropped = img_lib.copyCrop(original, x: x, y: y, width: size, height: size);
+    final resized = img_lib.copyResize(cropped, width: 800, interpolation: img_lib.Interpolation.linear);
+    final tmpDir = await getTemporaryDirectory();
+    final tmpFile = File('${tmpDir.path}/paligemma_input.jpg');
+    await tmpFile.writeAsBytes(img_lib.encodeJpg(resized, quality: 88));
+    return tmpFile;
+  }
+
   Future<void> _pickPhoto(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85, requestFullMetadata: false);
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 92, requestFullMetadata: false);
     if (picked == null) return;
     setState(() { _isProcessing = true; _processingMsg = 'Analyzing image...'; });
     try {
-      final analysis = await ApiService.analyzeImage(File(picked.path));
+      final cropped = await _cropSquare(File(picked.path));
+      final analysis = await ApiService.analyzeImage(cropped);
       if (!mounted) return;
       await _sendPhoto(analysis);
     } catch (_) {

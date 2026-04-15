@@ -94,7 +94,6 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
   @override
   void dispose() {
     _tts.stop();
-    _tts.dispose();
     _mapController?.dispose();
     super.dispose();
   }
