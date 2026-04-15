@@ -1,90 +1,46 @@
-# Fast Downward Docker Setup
+# Fast Downward Docker
 
-Este directorio contiene los archivos necesarios para ejecutar Fast Downward en Docker.
+Imagen Docker que empaqueta Fast Downward para que el backend pueda invocar al planificador clásico desde Python sin tener que compilarlo en el host.
 
-## Instrucciones Paso a Paso
+## Construir la imagen
 
-### Paso 1: Verificar que Docker está instalado
-
-Abre una terminal y ejecuta:
-```bash
-docker --version
-```
-
-Si no está instalado, instálalo desde: https://www.docker.com/get-started
-
-### Paso 2: Construir la imagen Docker
-
-Desde la raíz del proyecto (donde está el directorio `docker/`), ejecuta:
+Desde la raíz del proyecto:
 
 ```bash
 cd docker/fast-downward
 docker build -t fast-downward:latest .
 ```
 
-**Nota**: La compilación de Fast Downward puede tardar 5-10 minutos. Ten paciencia.
+La compilación tarda 5–10 minutos la primera vez. Requiere conexión a Internet (descarga el código fuente de Fast Downward).
 
-### Paso 3: Verificar que la imagen se construyó correctamente
+## Verificar la imagen
 
 ```bash
 docker images | grep fast-downward
 ```
 
-Deberías ver algo como:
+Salida esperada:
+
 ```
-fast-downward   latest   abc123def456   2 minutes ago   1.2GB
+fast-downward   latest   <id>   <fecha>   ~1.2GB
 ```
 
-### Paso 4: Probar Fast Downward
+## Ejecución directa (debug)
 
-Ejecuta el test Python desde la raíz del proyecto:
+Para invocar Fast Downward sobre un par `dominio + problema`:
 
 ```bash
-# Desde la raíz del proyecto
-python test_fast_downward_docker.py
+docker run --rm -v "$(pwd)/pddl:/pddl" fast-downward:latest domain_indoor.pddl problems/problem_G_demo.pddl
 ```
 
-O prueba directamente con tu dominio:
+El contenedor monta la carpeta `pddl/` del repo en `/pddl` dentro del contenedor. La salida muestra la búsqueda y, si tiene éxito, el plan línea a línea.
 
-```bash
-# Desde la raíz del proyecto
-docker run --rm -v "$(pwd)/pddl:/pddl" fast-downward:latest domain.pddl problem_ejemplo.pddl
-```
+## Uso desde el backend
 
-### Paso 5: Verificar el resultado
+El backend nunca lanza Docker manualmente. `src/navigation/fast_downward_client.py` envuelve la llamada y limpia los tempfiles. La API de planificación (`/api/plan`) requiere que la imagen `fast-downward:latest` esté disponible localmente; si no lo está, la respuesta indica que no se puede generar ruta.
 
-Si todo funciona correctamente, deberías ver:
-- Información sobre la búsqueda
-- Un plan de acciones (ej: `move obj1 loc1 loc2`, `move obj1 loc2 loc3`)
-- Mensaje de éxito
+## Solución de problemas
 
-## Uso General
-
-Para usar Fast Downward con tus propios archivos PDDL:
-
-1. Coloca tus archivos `domain.pddl` y `problem.pddl` en un directorio (ej: `pddl/`)
-2. Ejecuta:
-   ```bash
-   docker run --rm -v /ruta/a/tus/archivos:/pddl fast-downward:latest domain.pddl problem.pddl
-   ```
-
-## Solución de Problemas
-
-### Error: "Cannot connect to the Docker daemon"
-- Asegúrate de que Docker Desktop esté ejecutándose
-- En Windows/Mac, abre Docker Desktop
-
-### Error: "No such file or directory"
-- Verifica que los archivos PDDL estén en el directorio montado
-- Usa rutas absolutas si es necesario
-
-### Error durante la compilación
-- Verifica que tienes suficiente espacio en disco (necesitas ~2GB)
-- Asegúrate de tener conexión a Internet (descarga código desde GitHub)
-
-## Próximos Pasos
-
-Una vez que Fast Downward funcione correctamente:
-1. Crear el dominio PDDL para el campus (basado en `campus_graph.json`)
-2. Crear problemas PDDL dinámicamente desde estados inicial/final
-3. Integrar con la API FastAPI
+- **`Cannot connect to the Docker daemon`** — Docker Desktop no está arrancado.
+- **`No such file or directory`** dentro del contenedor — verifica que el `-v` apunta a una ruta absoluta correcta y que el archivo PDDL existe en esa carpeta.
+- **Build falla** — comprueba espacio en disco (~2 GB) y que el host tiene salida a Internet.

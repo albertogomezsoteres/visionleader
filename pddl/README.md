@@ -16,12 +16,12 @@ El flag `(modo_rapido)` cambia el modelo de costes: modo accesible preferirá as
 
 ## Generación de problemas
 
-Los ficheros de problema se **generan dinámicamente** desde `config/campus_graph.json`:
+Los ficheros de problema se **generan dinámicamente** desde `config/campus_topology.json` y `config/campus_places.json`:
 
 - `src/navigation/pddl_converter.py::CampusGraphToPDDL` → outdoor
 - `src/navigation/pddl_converter.py::HierarchicalPDDLConverter` → indoor
 
-`pddl/problems/` contiene un problem file demo por edificio regenerable con `python scripts/generate_demo_problems.py`. Son ejemplos ilustrativos — el runtime nunca los lee, escribe tempfiles en cada petición.
+`pddl/problems/` contiene un problem file demo por edificio. Son ejemplos ilustrativos — el runtime nunca los lee, escribe tempfiles en cada petición.
 
 ## Flujo de ejecución
 
@@ -33,13 +33,6 @@ Los ficheros de problema se **generan dinámicamente** desde `config/campus_grap
 ## Probar manualmente
 
 ```bash
-# Smoke-test de los 8 escenarios hierarchical
-python scripts/test_hierarchical_pddl.py
-
-# Escenarios de cierres dinámicos
-python scripts/test_closure_scenarios.py
-
-# Llamada directa a Fast Downward
 docker run --rm -v "$(pwd):/pddl" fast-downward:latest \
   domain_indoor.pddl problems/problem_G_demo.pddl
 ```

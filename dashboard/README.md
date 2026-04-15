@@ -1,6 +1,6 @@
 # PaliGemma Evaluation Dashboard
 
-Dashboard interactivo profesional para visualizar los resultados del experimento de evaluación de modelos PaliGemma.
+Dashboard interactivo (Streamlit) para visualizar los resultados de la evaluación comparativa de modelos PaliGemma sobre el dataset UFV. Lee los CSV y matrices de confusión generados por los notebooks de `notebooks/Experiment 1` y `notebooks/Experiment 2`.
 
 ## Instalación
 
