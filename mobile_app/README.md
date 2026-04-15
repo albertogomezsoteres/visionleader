@@ -24,6 +24,17 @@ flutter run --dart-define=API_BASE_URL=http://192.168.1.50:8000
 
 En el emulador Android usa `http://10.0.2.2:8000` para alcanzar el host.
 
+### Atajo: auto-detectar la IP del host (Windows)
+
+Para no tener que mirar la IP a mano cada vez que cambia la red, hay un script PowerShell que la detecta y lanza la app:
+
+```powershell
+cd mobile_app
+.\run_dev.ps1
+```
+
+Por defecto usa el puerto 8000. Para otro puerto: `.\run_dev.ps1 -Port 8001`.
+
 ## Estructura
 
 - `lib/screens/home_screen.dart` — pantalla inicial.

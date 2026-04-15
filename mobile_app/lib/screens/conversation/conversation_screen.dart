@@ -396,8 +396,10 @@ class _ConversationScreenState extends State<ConversationScreen>
 
     final elapsedMs = _recordingStartedAt == null ? 0 : DateTime.now().difference(_recordingStartedAt!).inMilliseconds;
     final finalPath = path ?? _currentRecordingPath;
+    final tempFile = finalPath != null ? File(finalPath) : null;
 
     if (elapsedMs < 1800) {
+      await _safeDelete(tempFile);
       setState(() => _isProcessing = false);
       _setMessage(
         'Please hold the microphone longer (at least 2 seconds) and speak clearly.',
@@ -406,18 +408,18 @@ class _ConversationScreenState extends State<ConversationScreen>
       );
       return;
     }
-    if (finalPath == null) {
+    if (tempFile == null) {
       setState(() => _isProcessing = false);
       _setMessage("I couldn't capture your audio. Please try again.", _nextInput, _currentAction);
       return;
     }
-    final audioFile = File(finalPath);
-    if (!await audioFile.exists()) {
+    if (!await tempFile.exists()) {
       setState(() => _isProcessing = false);
       _setMessage("I couldn't save the recorded audio. Please try again.", _nextInput, _currentAction);
       return;
     }
-    if (await audioFile.length() < 20000) {
+    if (await tempFile.length() < 20000) {
+      await _safeDelete(tempFile);
       setState(() => _isProcessing = false);
       _setMessage(
         "I couldn't hear your voice clearly. Speak louder, hold the button for 2-3 seconds, and keep the phone close to your mouth.",
@@ -426,7 +428,14 @@ class _ConversationScreenState extends State<ConversationScreen>
       );
       return;
     }
-    await _transcribeAndSend(audioFile);
+    await _transcribeAndSend(tempFile);
+  }
+
+  Future<void> _safeDelete(File? file) async {
+    if (file == null) return;
+    try {
+      if (await file.exists()) await file.delete();
+    } catch (_) {}
   }
 
   Future<void> _transcribeAndSend(File audio) async {
@@ -452,6 +461,8 @@ class _ConversationScreenState extends State<ConversationScreen>
       if (!mounted) return;
       setState(() => _isProcessing = false);
       _setMessage('Transcription failed. Please try again.', _nextInput, _currentAction);
+    } finally {
+      await _safeDelete(audio);
     }
   }
 
