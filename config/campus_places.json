@@ -84,6 +84,18 @@
       "name": "LCB",
       "display_name": "Edificio LCB",
       "description": "Building LCB. Two floors, stairs only."
+    },
+    {
+      "id": 15,
+      "name": "Rodilla",
+      "display_name": "Rodilla",
+      "description": "Sandwich restaurant on campus. Outdoor destination — exit Building G and follow GPS."
+    },
+    {
+      "id": 16,
+      "name": "Capilla",
+      "display_name": "Capilla UFV",
+      "description": "UFV Chapel. Outdoor destination — exit Building G and follow GPS."
     }
   ],
   "locations": {
@@ -724,6 +736,26 @@
           "name": "Stairs",
           "name_es": "Escaleras",
           "type": "stairs"
+        }
+      ]
+    },
+    "Rodilla": {
+      "0": [
+        {
+          "id": "entrada_rodilla",
+          "name": "Rodilla Entrance",
+          "name_es": "Entrada Rodilla",
+          "type": "entrance"
+        }
+      ]
+    },
+    "Capilla": {
+      "0": [
+        {
+          "id": "entrada_capilla",
+          "name": "Chapel Entrance",
+          "name_es": "Entrada Capilla",
+          "type": "entrance"
         }
       ]
     }

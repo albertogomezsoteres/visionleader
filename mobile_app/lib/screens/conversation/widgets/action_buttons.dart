@@ -102,7 +102,10 @@ class CompactMicButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return Semantics(
+      button: true,
+      label: isRecording ? 'Release to stop recording' : 'Hold to speak',
+      child: GestureDetector(
       onTapDown: (_) => onTapDown(),
       onTapUp: (_) => onTapUp(),
       onTapCancel: onTapUp,
@@ -149,7 +152,7 @@ class CompactMicButton extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

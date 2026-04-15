@@ -147,6 +147,24 @@
       ],
       "elevators": false,
       "stairs": true
+    },
+    {
+      "id": 15,
+      "name": "Rodilla",
+      "floors": [
+        0
+      ],
+      "elevators": false,
+      "stairs": false
+    },
+    {
+      "id": 16,
+      "name": "Capilla",
+      "floors": [
+        0
+      ],
+      "elevators": false,
+      "stairs": false
     }
   ],
   "locations": {
@@ -603,6 +621,22 @@
           "type": "stairs"
         }
       ]
+    },
+    "Rodilla": {
+      "0": [
+        {
+          "id": "entrada_rodilla",
+          "type": "entrance"
+        }
+      ]
+    },
+    "Capilla": {
+      "0": [
+        {
+          "id": "entrada_capilla",
+          "type": "entrance"
+        }
+      ]
     }
   },
   "connections": [
@@ -866,6 +900,50 @@
       },
       "to": {
         "building": 2,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 15,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 15,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 1,
+        "floor": 0
+      },
+      "to": {
+        "building": 16,
+        "floor": 0
+      },
+      "type": "hallway"
+    },
+    {
+      "from": {
+        "building": 16,
+        "floor": 0
+      },
+      "to": {
+        "building": 1,
         "floor": 0
       },
       "type": "hallway"

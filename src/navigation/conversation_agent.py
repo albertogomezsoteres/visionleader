@@ -60,10 +60,10 @@ _BUILDING_MAP = {
     "lcb": 14,
 }
 _BUILDING_NAMES = {
-    1: "G",  2: "CD",  3: "H",  4: "P",
-    5: "O",  6: "M",   7: "N",  8: "CSQ",
-    9: "K",  10: "CSC", 11: "C", 12: "E",
-    13: "CM", 14: "LCB",
+    1: "G",   2: "CD",  3: "H",   4: "P",
+    5: "O",   6: "M",   7: "N",   8: "CSQ",
+    9: "K",  10: "CSC", 11: "C",  12: "E",
+    13: "CM", 14: "LCB", 15: "Rodilla", 16: "Capilla",
 }
 _BUILDING_FULL = {
     1:  "Building G (EPS)",
@@ -80,6 +80,8 @@ _BUILDING_FULL = {
     12: "Building E",
     13: "Building CM",
     14: "Building LCB",
+    15: "Rodilla",
+    16: "Capilla (UFV Chapel)",
 }
 
 _FLOOR_WORDS = {
@@ -2044,6 +2046,18 @@ class ConversationAgent:
     def _parse_destination(self, msg: str) -> Optional[Dict]:
         """Parse a destination from user message."""
         low = msg.lower().strip()
+
+        # Outdoor-only destinations (GPS navigation to entrance)
+        if any(w in low for w in ("rodilla", "sandwich", "bocadillo")):
+            return {
+                "building": 15, "floor": 0, "location_id": "entrada_rodilla",
+                "label": "Rodilla",
+            }
+        if any(w in low for w in ("capilla", "chapel", "iglesia")):
+            return {
+                "building": 16, "floor": 0, "location_id": "entrada_capilla",
+                "label": "the UFV Chapel",
+            }
 
         # Functional destinations
         if any(w in low for w in ("cafeteria", "cafetería", "cafe", "coffee")):
