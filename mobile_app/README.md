@@ -1,16 +1,33 @@
-# visionleader_app
+# VisionLeader UFV — App móvil
 
-A new Flutter project.
+Cliente Flutter (Android / iOS) del sistema VisionLeader UFV. Permite a un usuario con discapacidad visual formular consultas por voz, capturar imágenes del entorno y recibir instrucciones de navegación paso a paso por TTS.
 
-## Getting Started
+## Requisitos
 
-This project is a starting point for a Flutter application.
+- Flutter SDK
+- Backend de planificación corriendo (ver `README.md` en la raíz del repo)
 
-A few resources to get you started if this is your first Flutter project:
+## Ejecución
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Configuración del backend
+
+La URL base de la API se define en `lib/core/app_config.dart`. Se puede sobreescribir en tiempo de build sin tocar el código:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://192.168.1.50:8000
+```
+
+En el emulador Android usa `http://10.0.2.2:8000` para alcanzar el host.
+
+## Estructura
+
+- `lib/screens/home_screen.dart` — pantalla inicial.
+- `lib/screens/conversation/` — flujo conversacional (voz, foto, TTS, pasos).
+- `lib/services/api_service.dart` — cliente HTTP del backend.
+- `lib/core/app_config.dart` — configuración de URL y timeouts.
+- `lib/core/app_theme.dart` — tema oscuro.
