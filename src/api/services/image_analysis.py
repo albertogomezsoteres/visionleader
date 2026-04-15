@@ -7,6 +7,7 @@ structured ImageAnalysisResponse returned to the app.
 """
 
 import re
+import time
 import requests
 from typing import Optional
 
@@ -44,6 +45,7 @@ def _callColab(
     if maxTokens is not None:
         payload["max_tokens"] = str(maxTokens)
 
+    started = time.time()
     try:
         response = requests.post(
             f"{colabUrl}/analyze",
@@ -51,14 +53,15 @@ def _callColab(
             data=payload,
             timeout=30,
         )
+        elapsed = time.time() - started
 
         if response.status_code != 200:
-            print(f"[PALIGEMMA][ERROR] HTTP {response.status_code}")
+            print(f"[PALIGEMMA][ERROR] HTTP {response.status_code} ({elapsed:.2f}s)")
             return None
 
         responseData = response.json()
         rawText = (responseData.get("response") or "").strip()
-        print(f"[PALIGEMMA][RESPONSE] {rawText!r}")
+        print(f"[PALIGEMMA][RESPONSE] {rawText!r}  ({elapsed:.2f}s)")
 
         if not responseData.get("success"):
             return None
@@ -66,7 +69,8 @@ def _callColab(
         return rawText or None
 
     except Exception as error:
-        print(f"[PALIGEMMA][EXCEPTION] {error}")
+        elapsed = time.time() - started
+        print(f"[PALIGEMMA][EXCEPTION] {error}  ({elapsed:.2f}s)")
         return None
 
 

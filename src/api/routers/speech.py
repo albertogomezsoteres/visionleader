@@ -1,5 +1,6 @@
 """Speech-to-text endpoint: receive audio, return transcribed text via Colab Whisper."""
 
+import time
 import requests
 from collections import Counter
 
@@ -65,7 +66,10 @@ async def transcribe_audio(file: UploadFile = File(...)):
         if not COLAB_API_URL:
             raise RuntimeError("COLAB_API_URL not configured in .env")
 
+        started = time.time()
         transcribed = _transcribeColab(audioData, file)
+        elapsed = time.time() - started
+        print(f"[TRANSCRIBE] colab roundtrip in {elapsed:.2f}s")
 
         if transcribed is None:
             return TranscribeResponse(
