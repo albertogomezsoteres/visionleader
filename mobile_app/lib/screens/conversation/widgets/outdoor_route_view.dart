@@ -94,6 +94,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
   @override
   void dispose() {
     _tts.stop();
+    _tts.dispose();
     _mapController?.dispose();
     super.dispose();
   }
@@ -248,7 +249,10 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                               final instruction = (step['instruction'] as String?) ?? '';
                               final distance = _normalizeDistance((step['distance'] as String?) ?? '');
                               final isActive = idx == _currentStepIdx;
-                              return GestureDetector(
+                              return Semantics(
+                                button: true,
+                                label: 'Step ${idx + 1}: $instruction${distance.isNotEmpty ? '. $distance' : ''}',
+                                child: GestureDetector(
                                 onTap: () {
                                   setState(() => _currentStepIdx = idx);
                                   _speakCurrentStep();
@@ -294,7 +298,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
                                     ],
                                   ),
                                 ),
-                              );
+                              ));
                             },
                           ),
                   ),

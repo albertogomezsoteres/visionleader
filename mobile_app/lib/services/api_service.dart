@@ -7,6 +7,21 @@ import '../core/app_config.dart';
 class ApiService {
   static String get _base => AppConfig.baseUrl;
 
+  static Map<String, dynamic> _decode(int statusCode, String body) {
+    if (statusCode >= 200 && statusCode < 300) {
+      return jsonDecode(body) as Map<String, dynamic>;
+    }
+    // Backend returned an error — surface it cleanly instead of crashing
+    String detail;
+    try {
+      final parsed = jsonDecode(body);
+      detail = (parsed as Map)['detail']?.toString() ?? body;
+    } catch (_) {
+      detail = body;
+    }
+    return {'success': false, 'error': 'Server error $statusCode: $detail'};
+  }
+
   static Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
     final request = http.MultipartRequest(
       'POST',
@@ -15,10 +30,10 @@ class ApiService {
     request.files.add(
       await http.MultipartFile.fromPath('file', imageFile.path),
     );
-    final response =
+    final streamed =
         await request.send().timeout(AppConfig.analyzeImageTimeout);
-    final body = await response.stream.bytesToString();
-    return jsonDecode(body) as Map<String, dynamic>;
+    final body = await streamed.stream.bytesToString();
+    return _decode(streamed.statusCode, body);
   }
 
   static Future<Map<String, dynamic>> transcribeAudio(File audioFile) async {
@@ -29,10 +44,10 @@ class ApiService {
     request.files.add(
       await http.MultipartFile.fromPath('file', audioFile.path),
     );
-    final response =
+    final streamed =
         await request.send().timeout(AppConfig.transcribeTimeout);
-    final body = await response.stream.bytesToString();
-    return jsonDecode(body) as Map<String, dynamic>;
+    final body = await streamed.stream.bytesToString();
+    return _decode(streamed.statusCode, body);
   }
 
   static Future<Map<String, dynamic>> generatePlan({
@@ -59,7 +74,7 @@ class ApiService {
           body: jsonEncode(body),
         )
         .timeout(AppConfig.planTimeout);
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response.statusCode, response.body);
   }
 
   static Future<Map<String, dynamic>> sendConversationTurn({
@@ -81,7 +96,7 @@ class ApiService {
           body: jsonEncode(body),
         )
         .timeout(AppConfig.conversationTimeout);
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response.statusCode, response.body);
   }
 
   static Future<Map<String, dynamic>> getGpsRoute({
@@ -96,6 +111,6 @@ class ApiService {
               {'from_building': fromBuilding, 'to_building': toBuilding}),
         )
         .timeout(AppConfig.gpsRouteTimeout);
-    return jsonDecode(response.body) as Map<String, dynamic>;
+    return _decode(response.statusCode, response.body);
   }
 }

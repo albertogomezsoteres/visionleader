@@ -54,7 +54,6 @@ async def analyze_image(
     except Exception as e:
         return ImageAnalysisResponse(
             success=False, raw_response="", error=f"Error processing image: {e}",
-            needs_clarification=False, clarification_question=None,
         )
 
 

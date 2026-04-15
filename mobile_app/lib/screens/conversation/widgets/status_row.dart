@@ -174,7 +174,9 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isKnown ? const Color(0xFF10B981) : const Color(0xFF94A3B8);
-    return Container(
+    return Semantics(
+      label: label,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
         color: isKnown
@@ -202,6 +204,6 @@ class _StatusChip extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
