@@ -1,20 +1,21 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img_lib;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../core/building_locations.dart';
+import '../../core/file_utils.dart';
 import '../../services/api_service.dart';
-import 'widgets/status_row.dart';
+import '../../services/image_processing.dart';
+import 'widgets/action_area.dart';
 import 'widgets/message_bubble.dart';
-import 'widgets/processing_overlay.dart';
-import 'widgets/action_buttons.dart';
 import 'widgets/nav_quick_actions.dart';
 import 'widgets/outdoor_route_view.dart';
+import 'widgets/processing_overlay.dart';
+import 'widgets/status_row.dart';
 
 /// The single interactive screen that drives the entire navigation flow:
 /// welcome → location → destination → plan → step-by-step guidance.
@@ -68,7 +69,6 @@ class _ConversationScreenState extends State<ConversationScreen>
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
 
-  static const Map<int, String> _buildingNames = {1: 'G', 2: 'CD', 3: 'H'};
 
   // Lifecycle
 
@@ -167,26 +167,6 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // Result handling
 
-  // GPS coordinates for buildings (mirrored from backend)
-  static const Map<int, Map<String, double>> _buildingGps = {
-    1:  {'lat': 40.441595,          'lng': -3.833650},           // G
-    2:  {'lat': 40.441412,          'lng': -3.833501},           // CD
-    3:  {'lat': 40.44188726971171,  'lng': -3.834391097938894},  // H
-    4:  {'lat': 40.44298858275285,  'lng': -3.835530301598534},  // P
-    5:  {'lat': 40.44316885736018,  'lng': -3.835200228598359},  // O
-    6:  {'lat': 40.44240864976504,  'lng': -3.834946704494870},  // M
-    7:  {'lat': 40.44220340611667,  'lng': -3.835944009359643},  // N
-    8:  {'lat': 40.44183583314631,  'lng': -3.835627725992759},  // CSQ
-    9:  {'lat': 40.44198871772325,  'lng': -3.835362731820506},  // K
-    10: {'lat': 40.44156909752000,  'lng': -3.835700385685151},  // CSC
-    11: {'lat': 40.44104538179100,  'lng': -3.834678875834694},  // C
-    12: {'lat': 40.43980926640134,  'lng': -3.835392650504404},  // E
-    13: {'lat': 40.43961734118567,  'lng': -3.833708655238037},  // CM
-    14: {'lat': 40.43988083159466,  'lng': -3.833195763291739},  // LCB
-    15: {'lat': 40.44074823643942,  'lng': -3.833941069721472},  // Rodilla
-    16: {'lat': 40.44072231214621,  'lng': -3.833342641737906},  // Capilla
-  };
-
   void _handleResult(Map<String, dynamic> result) {
     final tts = (result['tts_message'] as String?) ?? (result['response'] as String?) ?? '';
     final nextInput = (result['next_input'] as String?) ?? 'voice';
@@ -244,8 +224,8 @@ class _ConversationScreenState extends State<ConversationScreen>
     final from = _pendingGpsOrigin;
     final dest = _pendingGpsDestination;
     if (from == null || dest == null) return;
-    final fromCoords = _buildingGps[from];
-    final toCoords = _buildingGps[dest];
+    final fromCoords = BuildingLocations.gps[from];
+    final toCoords = BuildingLocations.gps[dest];
     if (fromCoords == null || toCoords == null) return;
     setState(() {
       _isProcessing = true;
@@ -277,7 +257,7 @@ class _ConversationScreenState extends State<ConversationScreen>
           destinationLat: toCoords['lat']!,
           destinationLng: toCoords['lng']!,
           polylineEncoded: (route['polyline'] as String?) ?? '',
-          destinationLabel: _buildingNames[dest] ?? 'destination',
+          destinationLabel: BuildingLocations.nameOf(dest),
           steps: steps,
           onArrived: _goNextStep,
         ),
@@ -295,7 +275,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       final floor = loc['floor'] as int?;
       final locationId = loc['location_id'] as String?;
       setState(() {
-        if (building != null) _knownBuilding = _buildingNames[building] ?? 'B$building';
+        if (building != null) _knownBuilding = BuildingLocations.nameOf(building);
         if (floor != null) _knownFloor = floor;
         if (locationId != null && locationId.isNotEmpty) _knownLocationId = locationId;
       });
@@ -305,7 +285,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       final floor = goal['floor'] as int?;
       final locationId = goal['location_id'] as String?;
       setState(() {
-        if (building != null) _goalBuilding = _buildingNames[building] ?? 'B$building';
+        if (building != null) _goalBuilding = BuildingLocations.nameOf(building);
         if (floor != null) _goalFloor = floor;
         if (locationId != null && locationId.isNotEmpty) _goalLocationId = locationId;
       });
@@ -331,30 +311,12 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // Photo actions
 
-  /// Center-crops to square and resizes to 800px before sending to PaliGemma.
-  /// PaliGemma 448 expects square input — without this the processor squishes
-  /// portrait photos and distorts text on door signs / directory boards.
-  Future<File> _cropSquare(File imageFile) async {
-    final bytes = await imageFile.readAsBytes();
-    final original = img_lib.decodeImage(bytes);
-    if (original == null) return imageFile;
-    final size = min(original.width, original.height);
-    final x = (original.width - size) ~/ 2;
-    final y = (original.height - size) ~/ 2;
-    final cropped = img_lib.copyCrop(original, x: x, y: y, width: size, height: size);
-    final resized = img_lib.copyResize(cropped, width: 800, interpolation: img_lib.Interpolation.linear);
-    final tmpDir = await getTemporaryDirectory();
-    final tmpFile = File('${tmpDir.path}/paligemma_input.jpg');
-    await tmpFile.writeAsBytes(img_lib.encodeJpg(resized, quality: 88));
-    return tmpFile;
-  }
-
   Future<void> _pickPhoto(ImageSource source) async {
     final picked = await ImagePicker().pickImage(source: source, imageQuality: 92, requestFullMetadata: false);
     if (picked == null) return;
     setState(() { _isProcessing = true; _processingMsg = 'Analyzing image...'; });
     try {
-      final cropped = await _cropSquare(File(picked.path));
+      final cropped = await ImageProcessing.cropToSquare(File(picked.path));
       final analysis = await ApiService.analyzeImage(cropped);
       if (!mounted) return;
       await _sendPhoto(analysis);
@@ -399,7 +361,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     final tempFile = finalPath != null ? File(finalPath) : null;
 
     if (elapsedMs < 1800) {
-      await _safeDelete(tempFile);
+      await safeDelete(tempFile);
       setState(() => _isProcessing = false);
       _setMessage(
         'Please hold the microphone longer (at least 2 seconds) and speak clearly.',
@@ -419,7 +381,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       return;
     }
     if (await tempFile.length() < 20000) {
-      await _safeDelete(tempFile);
+      await safeDelete(tempFile);
       setState(() => _isProcessing = false);
       _setMessage(
         "I couldn't hear your voice clearly. Speak louder, hold the button for 2-3 seconds, and keep the phone close to your mouth.",
@@ -429,13 +391,6 @@ class _ConversationScreenState extends State<ConversationScreen>
       return;
     }
     await _transcribeAndSend(tempFile);
-  }
-
-  Future<void> _safeDelete(File? file) async {
-    if (file == null) return;
-    try {
-      if (await file.exists()) await file.delete();
-    } catch (_) {}
   }
 
   Future<void> _transcribeAndSend(File audio) async {
@@ -462,7 +417,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       setState(() => _isProcessing = false);
       _setMessage('Transcription failed. Please try again.', _nextInput, _currentAction);
     } finally {
-      await _safeDelete(audio);
+      await safeDelete(audio);
     }
   }
 
@@ -542,7 +497,21 @@ class _ConversationScreenState extends State<ConversationScreen>
                             onLost: () => _sendVoice("I'm lost"),
                             onCancel: () => _sendVoice('cancel'),
                           ),
-                        _buildActionArea(),
+                        ActionArea(
+                          currentAction: _currentAction,
+                          nextInput: _nextInput,
+                          isRecording: _isRecording,
+                          pulseAnimation: _pulseAnim,
+                          pendingGpsDestinationId: _pendingGpsDestination,
+                          pendingGpsDestinationName: BuildingLocations.nameOf(_pendingGpsDestination),
+                          onStartRecording: _startRecording,
+                          onStopRecording: _stopRecording,
+                          onPickPhoto: _pickPhoto,
+                          onConfirmYes: () => _sendConfirmation(true),
+                          onConfirmNo: () => _sendConfirmation(false),
+                          onArrivedOutdoor: _goNextStep,
+                          onReopenOutdoorMap: _openOutdoorRouteInApp,
+                        ),
                       ],
                     ),
                   ),
@@ -554,120 +523,5 @@ class _ConversationScreenState extends State<ConversationScreen>
         ],
       ),
     );
-  }
-
-  // Action area: pick the right button layout for the current state
-
-  Widget _buildActionArea() {
-    if (_currentAction == 'goodbye' || _currentAction == 'error') return const SizedBox.shrink();
-
-    if (_currentAction == 'navigation_step_outdoor' && _pendingGpsDestination != null) {
-      final destName = _buildingNames[_pendingGpsDestination] ?? 'destination';
-      return Column(children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0C2E1F), Color(0xFF0A1F16)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
-          ),
-          child: Column(
-            children: [
-              Row(children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(Icons.directions_walk_rounded, color: Color(0xFF10B981), size: 28),
-                ),
-                const SizedBox(width: 14),
-                Expanded(child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Walking to Building $destName',
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 3),
-                    const Text('Google Maps is guiding you',
-                      style: TextStyle(color: Color(0xFF10B981), fontSize: 13, fontWeight: FontWeight.w500)),
-                  ],
-                )),
-              ]),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton.icon(
-                  onPressed: _goNextStep,
-                  icon: const Icon(Icons.check_circle_outline_rounded, size: 22),
-                  label: const Text("I've arrived", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF10B981),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                height: 40,
-                child: TextButton.icon(
-                  onPressed: _openOutdoorRouteInApp,
-                  icon: const Icon(Icons.map_outlined, size: 16),
-                  label: const Text('Re-open route map', style: TextStyle(fontSize: 13)),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981).withValues(alpha: 0.8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ]);
-    }
-
-    switch (_nextInput) {
-      case 'voice':
-        return VoiceButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording);
-      case 'photo':
-        return Column(children: [
-          PhotoButton(onTap: () => showPhotoSourceSheet(context, _pickPhoto)),
-          const SizedBox(height: 10),
-          CompactMicButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording),
-        ]);
-      case 'confirm':
-        return Column(children: [
-          ConfirmButtons(isConfirmPlan: _currentAction == 'confirm_plan', onConfirm: () => _sendConfirmation(true), onDeny: () => _sendConfirmation(false)),
-          const SizedBox(height: 16), const DividerOr(label: 'or speak'), const SizedBox(height: 12),
-          CompactMicButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording),
-        ]);
-      case 'voice_or_photo':
-        return Column(children: [
-          VoiceButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording),
-          const SizedBox(height: 16), const DividerOr(), const SizedBox(height: 16),
-          SizedBox(width: double.infinity, height: 54, child: OutlinedButton.icon(
-            onPressed: () => showPhotoSourceSheet(context, _pickPhoto),
-            icon: const Icon(Icons.photo_camera_outlined, size: 20),
-            label: const Text('Take a photo instead', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF3B82F6),
-              side: const BorderSide(color: Color(0xFF3B82F6)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-          )),
-        ]);
-      case 'none':
-        return const SizedBox.shrink();
-      default:
-        return VoiceButton(isRecording: _isRecording, pulseAnimation: _pulseAnim, onTapDown: _startRecording, onTapUp: _stopRecording);
-    }
   }
 }

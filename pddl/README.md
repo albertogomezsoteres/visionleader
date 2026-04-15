@@ -18,8 +18,8 @@ El flag `(modo_rapido)` cambia el modelo de costes: modo accesible preferirá as
 
 Los ficheros de problema se **generan dinámicamente** desde `config/campus_topology.json` y `config/campus_places.json`:
 
-- `src/navigation/pddl_converter.py::CampusGraphToPDDL` → outdoor
-- `src/navigation/pddl_converter.py::HierarchicalPDDLConverter` → indoor
+- `src/navigation/campus_graph_to_pddl.py::CampusGraphToPDDL` → outdoor
+- `src/navigation/hierarchical_pddl_converter.py::HierarchicalPDDLConverter` → indoor
 
 `pddl/problems/` contiene un problem file demo por edificio. Son ejemplos ilustrativos — el runtime nunca los lee, escribe tempfiles en cada petición.
 

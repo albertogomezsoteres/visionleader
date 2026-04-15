@@ -225,10 +225,8 @@ class ConversationAgent:
         """
         try:
             from navigation.fast_downward_client import FastDownwardPlanner
-            from navigation.pddl_converter import (
-                CampusGraphToPDDL,
-                HierarchicalPDDLConverter,
-            )
+            from navigation.campus_graph_to_pddl import CampusGraphToPDDL
+            from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 
             base_dir = Path(__file__).parent.parent.parent
             campus_json = base_dir / "config" / "campus_topology.json"
@@ -708,7 +706,7 @@ class ConversationAgent:
         enriched with the text from campus_graph.json local_connections
         (so the user still hears natural navigation instructions).
         """
-        from navigation.pddl_converter import HierarchicalPDDLConverter
+        from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 
         steps: List[Dict] = []
         bname = _BUILDING_NAMES.get(origin.get("building"), "G")

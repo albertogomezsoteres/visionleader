@@ -1,196 +1,23 @@
-"""
-PDDL problem generators — legacy floor-level and hierarchical room-level.
+"""Room-level PDDL problem generator for building-specific domains.
 
-Two classes live here:
+Used by ``pddl/domain_indoor.pddl``, which is shared by all 14 UFV buildings.
 
-- CampusGraphToPDDL:
-    Legacy converter used by pddl/domain_outdoor.pddl. Reasons at (building, floor)
-    level and is still used for inter-building plans and the /api/plan route.
-
-- HierarchicalPDDLConverter:
-    Room-level converter used by pddl/domain_indoor.pddl (all 14 buildings).
-    Encodes the full intra-building graph in the generated problem file's :init section.
-
-Both converters read config/campus_topology.json (topology-only data: buildings,
-connections, distances). All symbolic reasoning is delegated to Fast Downward.
+For Building G, the generated problem encodes the full room graph with
+measured metric distances (`distancia` fluents), supports dynamic closures
+via ``config/closed_rooms.json`` and the hurry-mode flag. For the rest of
+the campus, the problem is built from the same JSON topology with a
+default 15 m hop distance approximation.
 """
 
 import json
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-
-def _floor_str(floor: int) -> str:
-    """Convert a floor number to a valid PDDL identifier (e.g. -1 -> planta_m1)."""
-    if floor < 0:
-        return f"planta_m{abs(floor)}"
-    return f"planta_{floor}"
+from .pddl_helpers import floor_str
 
 
-# Legacy converter (global / floor-level domain)
-class CampusGraphToPDDL:
-    """Turns the campus JSON graph into floor-level PDDL problem files."""
-
-    def __init__(self, json_path: str):
-        with open(json_path, "r", encoding="utf-8") as f:
-            self.data = json.load(f)
-
-    def get_buildings(self) -> List[Dict]:
-        return self.data.get("buildings", [])
-
-    def get_connections(self) -> List[Dict]:
-        return self.data.get("connections", [])
-
-    def _find_functional_goal(self, goal_functional: str) -> Tuple[Optional[int], Optional[int]]:
-        """Look up a named facility (cafeteria, gym) and return (building_id, floor)."""
-        goal_lower = goal_functional.lower()
-        for b in self.get_buildings():
-            if goal_lower == "cafeteria":
-                f = b.get("cafeteria_floor")
-                if f is not None:
-                    return (b["id"], f)
-            elif goal_lower in ("gimnasio", "gym"):
-                f = b.get("gimnasio_floor")
-                if f is not None:
-                    return (b["id"], f)
-        return (None, None)
-
-    def _generate_objects(self) -> Dict[str, List[str]]:
-        """Collect every PDDL object from the campus graph."""
-        objects: Dict[str, list] = {
-            "robots": ["robot1"],
-            "edificios": [],
-            "plantas": set(),
-            "tipos_conexion": {"elevator", "stairs_up", "stairs_down", "hallway"},
-        }
-        for b in self.get_buildings():
-            objects["edificios"].append(f"edificio_{b['id']}")
-            for floor in b.get("floors", []):
-                objects["plantas"].add(_floor_str(floor))
-
-        objects["plantas"] = sorted(objects["plantas"])
-        objects["tipos_conexion"] = sorted(objects["tipos_conexion"])
-        return objects
-
-    def _generate_init(
-        self,
-        robot_location: Optional[Tuple[int, int]] = None,
-        hurry_mode: bool = False,
-    ) -> List[str]:
-        """Build the list of PDDL init propositions."""
-        init: List[str] = []
-
-        init.append("    (= (total-cost) 0)")
-
-        if robot_location:
-            bid, floor = robot_location
-            init.append(f"    (en robot1 edificio_{bid} {_floor_str(floor)})")
-
-        if hurry_mode:
-            init.append("    (modo_rapido)")
-
-        init.append("    (es_ascensor elevator)")
-        init.append("    (es_escalera_subir stairs_up)")
-        init.append("    (es_escalera_bajar stairs_down)")
-        init.append("    (es_pasillo hallway)")
-
-        for b in self.get_buildings():
-            bid = b["id"]
-            has_elev = b.get("elevators", False)
-            has_stairs = b.get("stairs", False)
-            caf_floor = b.get("cafeteria_floor")
-            gym_floor = b.get("gimnasio_floor")
-
-            for floor in b.get("floors", []):
-                fs = _floor_str(floor)
-                if has_elev:
-                    init.append(f"    (hay_ascensor edificio_{bid} {fs})")
-                if has_stairs:
-                    init.append(f"    (hay_escalera edificio_{bid} {fs})")
-
-        for conn in self.get_connections():
-            fb, ff = conn["from"]["building"], conn["from"]["floor"]
-            tb, tf = conn["to"]["building"],   conn["to"]["floor"]
-            ctype = conn["type"]
-            init.append(
-                f"    (conectado edificio_{fb} {_floor_str(ff)} "
-                f"edificio_{tb} {_floor_str(tf)} {ctype})"
-            )
-
-        return init
-
-    def generate_problem(
-        self,
-        initial_state: Tuple[int, int],
-        goal_state: Optional[Tuple[int, int]] = None,
-        goal_functional: Optional[str] = None,
-        problem_name: str = "campus-problem",
-        output_path: Optional[str] = None,
-        hurry_mode: bool = False,
-    ) -> str:
-        """Generate a complete floor-level PDDL problem file."""
-        objects = self._generate_objects()
-        init = self._generate_init(
-            robot_location=initial_state,
-            hurry_mode=hurry_mode,
-        )
-
-        if goal_functional:
-            gbid, gfloor = self._find_functional_goal(goal_functional)
-            if gbid is None or gfloor is None:
-                raise ValueError(f"Functional goal '{goal_functional}' not found in campus_graph.json")
-            goal = f"    (en robot1 edificio_{gbid} {_floor_str(gfloor)})"
-        elif goal_state:
-            gbid, gfloor = goal_state
-            goal = f"    (en robot1 edificio_{gbid} {_floor_str(gfloor)})"
-        else:
-            raise ValueError("Provide goal_state or goal_functional")
-
-        content = (
-            f"(define (problem {problem_name})\n"
-            f"  (:domain campus-outdoor)\n"
-            f"\n"
-            f"  (:objects\n"
-            f"    {' '.join(objects['robots'])} - robot\n"
-            f"    {' '.join(objects['edificios'])} - edificio\n"
-            f"    {' '.join(objects['plantas'])} - planta\n"
-            f"    {' '.join(objects['tipos_conexion'])} - tipo_conexion\n"
-            f"  )\n"
-            f"\n"
-            f"  (:init\n"
-            + "\n".join(init) + "\n"
-            f"  )\n"
-            f"\n"
-            f"  (:goal\n"
-            f"    (and\n"
-            f"  {goal}\n"
-            f"    )\n"
-            f"  )\n"
-            f"\n"
-            f"  (:metric minimize (total-cost))\n"
-            f")\n"
-        )
-
-        if output_path:
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(content)
-
-        return content
-
-
-# Hierarchical converter (building-specific, room-level domains)
 class HierarchicalPDDLConverter:
-    """
-    Room-level PDDL problem generator for building-specific domains.
-
-    One PDDL domain covers all 14 UFV buildings:
-      - domain_indoor.pddl : All buildings. Building G uses measured metric distances
-                             (full room graph, dynamic closures, hurry mode); all
-                             others use approximate 15 m hop distances.
-
-    This converter generates a PDDL *problem* file for the chosen building whose
-    :init section encodes the full intra-building graph. Fast Downward solves it.
-    """
+    """Builds a per-building PDDL problem with the full room graph in :init."""
 
     # Location IDs that repeat on several floors (same name in the JSON)
     # must be disambiguated with a floor suffix in PDDL.
@@ -200,12 +27,10 @@ class HierarchicalPDDLConverter:
     HAS_ELEVATOR: Set[int] = {1, 4, 5, 6}   # G, P, O, M
 
     # Default distance for non-G buildings (approximate, 15 m per hop).
-    # G uses exact measured distances from campus_graph.json.
+    # G uses exact measured distances from campus_topology.json.
     DEFAULT_DISTANCE_NON_G: int = 15
 
     # Per-building PDDL domain filenames — all buildings share domain_indoor.pddl.
-    # Building G uses the same action schema; what makes it special is that its
-    # problem file encodes real measured distances instead of the 15 m default.
     BUILDING_DOMAINS: Dict[int, str] = {
         i: "domain_indoor.pddl" for i in range(1, 15)
     }
@@ -215,7 +40,7 @@ class HierarchicalPDDLConverter:
         i: "building-indoor" for i in range(1, 15)
     }
 
-    # Mapping from numeric building id to the campus_graph.json "locations" key
+    # Mapping from numeric building id to the campus_topology.json "locations" key
     BUILDING_JSON_NAMES: Dict[int, str] = {
         1:  "G",  2:  "CD",  3:  "H",   4:  "P",
         5:  "O",  6:  "M",   7:  "N",   8:  "CSQ",
@@ -232,8 +57,6 @@ class HierarchicalPDDLConverter:
         with open(json_path, "r", encoding="utf-8") as f:
             self.data = json.load(f)
         self.pddl_dir = Path(pddl_dir)
-        # Resolve the closure file: default is config/closed_rooms.json next
-        # to the campus graph.
         if closed_rooms_path is None:
             closed_rooms_path = str(
                 Path(json_path).parent / "closed_rooms.json"
@@ -277,7 +100,6 @@ class HierarchicalPDDLConverter:
                 continue
             floor = entry.get("floor")
             if floor is None:
-                # No floor specified → close every floor with that id
                 for f, locs in self.building_locations(
                     self._building_id_from_name(building_name)
                 ).items():
@@ -307,11 +129,10 @@ class HierarchicalPDDLConverter:
     def json_name(self, building_id: int) -> str:
         return self.BUILDING_JSON_NAMES.get(building_id, "G")
 
-    # Room id translation (PDDL <-> campus_graph.json)
+    # Room id translation (PDDL <-> campus_topology.json)
     @classmethod
     def location_to_pddl(cls, location_id: str, floor: int) -> str:
-        """
-        Convert a campus_graph location_id + floor to a unique PDDL ubicacion name.
+        """Convert a campus location_id + floor to a unique PDDL ubicacion name.
 
         Locations that appear on multiple floors (ascensor, escaleras, bano)
         get a floor suffix: ascensor -> ascensor_p0 / ascensor_pm1.
@@ -325,12 +146,10 @@ class HierarchicalPDDLConverter:
 
     @classmethod
     def pddl_to_location(cls, pddl_id: str) -> Tuple[str, Optional[int]]:
-        """
-        Reverse mapping: PDDL ubicacion id -> (json location_id, floor or None).
+        """Reverse mapping: PDDL ubicacion id -> (json location_id, floor or None).
 
         For shared ids like ascensor_p0 returns ('ascensor', 0).
-        For unique ids like aula_1_4 returns ('aula_1_4', None) — the caller
-        must look up the floor separately in campus_graph.json.
+        For unique ids like aula_1_4 returns ('aula_1_4', None).
         """
         for base in cls.SHARED_LOC_IDS:
             prefix = f"{base}_p"
@@ -362,8 +181,7 @@ class HierarchicalPDDLConverter:
     def find_functional_room(
         self, building_id: int, goal_functional: str
     ) -> Optional[Tuple[str, int]]:
-        """
-        Resolve a functional goal (cafeteria, gym) to (location_id, floor)
+        """Resolve a functional goal (cafeteria, gym) to (location_id, floor)
         inside a specific building. Returns None if not found.
         """
         target_types = {
@@ -375,14 +193,13 @@ class HierarchicalPDDLConverter:
         if not target:
             return None
 
-        # Look up in the building's locations for a type match.
         for floor, locs in self.building_locations(building_id).items():
             for loc in locs:
                 if loc.get("type") == target:
                     return (loc["id"], floor)
         return None
 
-    # Building G problem generation
+    # Building-G problem generation
     def generate_building_problem(
         self,
         building_id: int,
@@ -395,24 +212,21 @@ class HierarchicalPDDLConverter:
         problem_name: Optional[str] = None,
         output_path: Optional[str] = None,
     ) -> str:
-        """
-        Build an intra-building PDDL problem file with the full room graph
+        """Build an intra-building PDDL problem file with the full room graph
         in :init. Only Building G is fully detailed.
 
-        origin_room / dest_room are campus_graph location_ids. The converter
+        origin_room / dest_room are campus_topology location_ids. The converter
         translates them into PDDL ubicacion ids using location_to_pddl.
         """
         building_name = self.json_name(building_id)
         locations_by_floor = self.building_locations(building_id)
         if not locations_by_floor:
             raise ValueError(
-                f"No locations found in campus_graph.json for building '{building_name}'"
+                f"No locations found in campus_topology.json for building '{building_name}'"
             )
 
-        # Resolve origin PDDL id
         origin_pddl = self.location_to_pddl(origin_room, origin_floor)
 
-        # Resolve destination (explicit room or functional goal)
         if goal_functional and not dest_room:
             func = self.find_functional_room(building_id, goal_functional)
             if not func:
@@ -426,8 +240,7 @@ class HierarchicalPDDLConverter:
 
         dest_pddl = self.location_to_pddl(dest_room, dest_floor)
 
-        # Collect all PDDL rooms for this building
-        all_rooms: List[Tuple[str, int, str]] = []  # (pddl_id, floor, json_id)
+        all_rooms: List[Tuple[str, int, str]] = []
         seen_pddl: Set[str] = set()
         for floor in sorted(locations_by_floor.keys()):
             for loc in locations_by_floor[floor]:
@@ -439,24 +252,21 @@ class HierarchicalPDDLConverter:
                 all_rooms.append((pddl_id, floor, json_id))
 
         floors_set = sorted({r[1] for r in all_rooms})
-        planta_names = [_floor_str(f) for f in floors_set]
+        planta_names = [floor_str(f) for f in floors_set]
         pddl_room_names = sorted(r[0] for r in all_rooms)
 
-        # Objects section
         objects_lines = [
             f"    robot1 - robot",
             f"    {' '.join(pddl_room_names)} - ubicacion",
             f"    {' '.join(planta_names)} - planta",
         ]
 
-        # Load current closure state and build a set of closed (pddl_id)
         closed_set = self._build_closed_set(building_name)
         closed_pddl_ids: Set[str] = set()
         for pddl_id, floor, json_id in all_rooms:
             if (building_name, int(floor), json_id) in closed_set:
                 closed_pddl_ids.add(pddl_id)
 
-        # Init section
         init_lines: List[str] = ["    (= (total-cost) 0)"]
         init_lines.append(f"    (en robot1 {origin_pddl})")
 
@@ -470,13 +280,12 @@ class HierarchicalPDDLConverter:
             if pddl_id not in closed_pddl_ids:
                 init_lines.append(f"    (abierto {pddl_id})")
 
-        # Floor assignments for every room
         for pddl_id, floor, _json_id in sorted(all_rooms):
             init_lines.append(
-                f"    (en_planta {pddl_id} {_floor_str(floor)})"
+                f"    (en_planta {pddl_id} {floor_str(floor)})"
             )
 
-        # Elevator / stair tags — only for nodes that actually exist in this building.
+        # Elevator / stair tags — only for nodes that exist in this building.
         building_has_elevator = building_id in self.HAS_ELEVATOR
         for floor in floors_set:
             locs_on_floor = {
@@ -492,9 +301,9 @@ class HierarchicalPDDLConverter:
                     f"    (es_escalera {self.location_to_pddl('escaleras', floor)})"
                 )
 
-        # Hallway connections derived from local_connections (per-floor edges).
+        # Hallway connections from local_connections (per-floor edges).
         # Each edge emits BOTH the topology fact and the numeric distance
-        # so the PDDL planner can cost-optimise the path in meters.
+        # so the planner can cost-optimise the path in meters.
         # G uses exact measured distances; other buildings fall back to 15 m.
         default_distance = (
             10 if building_id == 1 else self.DEFAULT_DISTANCE_NON_G
@@ -519,7 +328,6 @@ class HierarchicalPDDLConverter:
             )
 
         # Elevator vertical connections (bidirectional, all-to-all between floors).
-        # Only generated when the building actually has an elevator.
         if building_has_elevator:
             elevator_ids = [
                 self.location_to_pddl("ascensor", f) for f in floors_set
@@ -530,7 +338,6 @@ class HierarchicalPDDLConverter:
                         init_lines.append(f"    (conectado_ascensor {a} {b})")
 
         # Stair directed connections between ADJACENT floors only.
-        # Only generated when the building has stair nodes.
         all_loc_ids = {
             loc["id"]
             for locs in locations_by_floor.values()
@@ -550,7 +357,6 @@ class HierarchicalPDDLConverter:
                     f"    (conectado_escalera_bajar {upper} {lower})"
                 )
 
-        # Build final PDDL problem text
         problem_name = problem_name or f"{building_name.lower()}-intra-problem"
         domain = self.domain_name(building_id)
 
@@ -582,7 +388,6 @@ class HierarchicalPDDLConverter:
 
 
 if __name__ == "__main__":
-    import sys
     BASE = Path(__file__).parent.parent.parent
     converter = HierarchicalPDDLConverter(
         json_path=str(BASE / "config" / "campus_topology.json"),

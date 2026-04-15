@@ -13,10 +13,8 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from navigation.fast_downward_client import FastDownwardPlanner
-from navigation.pddl_converter import (
-    CampusGraphToPDDL,
-    HierarchicalPDDLConverter,
-)
+from navigation.campus_graph_to_pddl import CampusGraphToPDDL
+from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 from navigation.conversation_agent import ConversationAgent
 
 BASE_DIR       = Path(__file__).resolve().parent.parent.parent
