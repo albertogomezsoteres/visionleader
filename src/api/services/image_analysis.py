@@ -39,7 +39,7 @@ def _callColab(
     if not promptText.strip().startswith("<image>"):
         promptText = "<image>\n" + promptText
 
-    print(f"[PALIGEMMA][PROMPT] {re.sub(r'\\s+', ' ', promptText).strip()[:200]}")
+    print(f"[PALIGEMMA][PROMPT] {re.sub(r'\\s+', ' ', promptText).strip()[:400]}")
 
     payload: dict = {"prompt": promptText}
     if maxTokens is not None:
@@ -151,6 +151,24 @@ def analyzeImageViaColab(
     # Prefer what the model found, fall back to what the app already knew
     buildingId = parsedSign["building"] if parsedSign["building"] is not None else knownBuilding
     floorNumber = parsedSign["floor"] if parsedSign["floor"] is not None else knownFloor
+
+    # If the sign prompt extracted nothing useful (no building, no floor), the
+    # image may be a door plate misclassified as 'sign'. Try the door prompt as
+    # a fallback — this covers the common case where a small room-number plaque
+    # triggers the sign branch.
+    if buildingId is None and floorNumber is None:
+        doorResponse = _query(VisionAnalyzer.getDoorPrompt(), maxTokens=16)
+        roomCode = VisionAnalyzer.parseDoor(doorResponse or "")
+        if roomCode:
+            floorFromCode = extractFloorFromRoomCode(roomCode)
+            print(f"[SIGN→DOOR fallback] roomCode={roomCode!r} floor={floorFromCode!r}")
+            return ImageAnalysisResponse(
+                success=True,
+                image_type="door",
+                raw_response=doorResponse or "",
+                floor=floorFromCode,
+                building=knownBuilding,
+            )
 
     return ImageAnalysisResponse(
         success=buildingId is not None and floorNumber is not None,

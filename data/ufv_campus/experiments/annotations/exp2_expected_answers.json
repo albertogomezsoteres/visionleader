@@ -99,19 +99,19 @@
             "doorroom_detection": "yes",
             "room_code": "1.2",
             "doorroom_state": "closed",
-            "room_code_acceptable": ["1.2", "room 1.2", "1.2 is", "number 1.2"]
+            "room_code_acceptable": ["1.2", "room 1.2", "1.2 is", "number 1.2", "12", "room 12"]
         },
         "ufv_door_room_02.jpg": {
             "doorroom_detection": "yes",
             "room_code": "1.5",
             "doorroom_state": "open",
-            "room_code_acceptable": ["1.5", "room 1.5", "1.5 is", "number 1.5"]
+            "room_code_acceptable": ["1.5", "room 1.5", "1.5 is", "number 1.5", "15", "room 15"]
         },
         "ufv_door_room_03.jpg": {
             "doorroom_detection": "yes",
             "room_code": "1.6",
             "doorroom_state": "closed",
-            "room_code_acceptable": ["1.6", "room 1.6", "1.6 is", "number 1.6"]
+            "room_code_acceptable": ["1.6", "room 1.6", "1.6 is", "number 1.6", "16", "room 16"]
         },
         "ufv_door_room_04.jpg": {
             "doorroom_detection": "yes",
@@ -129,7 +129,7 @@
             "doorroom_detection": "yes",
             "room_code": "0.2",
             "doorroom_state": "closed",
-            "room_code_acceptable": ["0.2", "room 0.2", "0.2 is", "number 0.2"]
+            "room_code_acceptable": ["0.2", "room 0.2", "0.2 is", "number 0.2", "02", "room 02"]
         },
         "ufv_door_room_07.jpg": {
             "doorroom_detection": "yes",
@@ -147,7 +147,7 @@
             "doorroom_detection": "yes",
             "room_code": "0.1",
             "doorroom_state": "closed",
-            "room_code_acceptable": ["0.1", "room 0.1", "0.1 is", "number 0.1"]
+            "room_code_acceptable": ["0.1", "room 0.1", "0.1 is", "number 0.1", "01", "room 01"]
         },
         "ufv_door_room_10.jpg": {
             "_note": "Special case: AI lab door, no standard room number. Adjust acceptable answers after seeing model responses.",

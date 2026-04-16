@@ -7,6 +7,15 @@ test/
 # Large dataset archives (upload separately, e.g. Colab)
 data/ufv_campus/images.zip
 data/ufv_campus/experiments/annotations.zip
+/images.zip
+/annotations.zip
+
+# Experiment results (kept local, not pushed)
+EXPERIMENT1_RESULTS/
+EXPERIMENT2_RESULTS/
+
+# Local helper scripts (not for remote)
+mobile_app/run_dev.bat
 
 # Python
 __pycache__/

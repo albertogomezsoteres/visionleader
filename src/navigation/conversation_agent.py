@@ -760,7 +760,12 @@ class ConversationAgent:
             return self._reply(ctx, tts, "photo", "waiting_step_photo")
 
         image_type = analysis.get("image_type", "")
-        if expected and image_type == expected:
+        # PaliGemma sometimes classifies a door plate as 'sign'; treat both as
+        # matching when the step expected a door.
+        effective_type = image_type
+        if expected == "door" and image_type == "sign":
+            effective_type = "door"
+        if expected and effective_type == expected:
             if step.get("arrival_strict_photo"):
                 expected_code = step.get("expected_room_code")
                 seen_code = extract_room_code_from_analysis(analysis)

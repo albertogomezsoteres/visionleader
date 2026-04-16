@@ -27,73 +27,49 @@ class VisionAnalyzer:
 
     @staticmethod
     def getClassifierPrompt() -> str:
-        """Stage 1 prompt. Identifies the type of navigation element in the image.
+        """Stage 1 prompt. Uses PaliGemma's native 'answer' task prefix with
+        inline descriptions so the model understands each category.
         Expected response: one word from {sign, door, elevator, stairs, other}."""
         return (
             "<image>\n"
-            "What type of navigation element is shown in this image?\n\n"
-            "Options:\n"
-            "- sign     : a directory board or information panel\n"
-            "- door     : a room door with a number or label\n"
-            "- elevator : elevator doors or elevator interior\n"
-            "- stairs   : a staircase\n"
-            "- other    : none of the above\n\n"
-            "Answer with ONE word only."
+            "answer with one word: is this a "
+            "sign (large wall-mounted directory board or floor map), "
+            "door (room door with a small number plate like 1.4), "
+            "elevator (lift doors or interior), "
+            "stairs (staircase), "
+            "or other?"
         )
 
     @staticmethod
     def getSignPrompt() -> str:
-        """Stage 2 prompt for directory signs.
+        """Stage 2 prompt for directory signs. Uses native 'answer' prefix.
         Expected response format: 'BUILDING FLOOR', e.g. 'G 1', 'CD -1', 'H 0'."""
         return (
             "<image>\n"
-            "This is a campus directory sign. What building and floor does it show?\n\n"
-            "Building options: G, CD, H\n"
-            "Floor options: -1 (basement), 0 (ground floor), 1 (first floor), 2 (second floor)\n\n"
-            "Answer format: BUILDING FLOOR\n"
-            "Examples: G 0 | G 1 | G 2 | CD -1 | CD 0 | H 1\n\n"
-            "If the sign is not readable, answer: unknown"
+            "answer what building letter and floor number does this directory sign show? "
+            "Building: G, CD, or H. "
+            "Floor: -1, 0, 1, or 2. "
+            "Answer as two values like G 0, G 1, CD -1, H 1, or unknown."
         )
 
     @staticmethod
     def getDoorPrompt() -> str:
-        """Stage 2 prompt for classroom doors.
-        Expected response: a room code like '1.4', or 'none' if not visible."""
-        return (
-            "<image>\n"
-            "What is the room code or label written on this door?\n\n"
-            "It could be a number code like: 0.1, 0.2, 0.3, 0.4, 0.5, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1\n"
-            "Or a named room like: AI Lab, Laboratorio IA, I.A, Telefonica, Computer Lab, Laboratorio Informatica\n\n"
-            "Write ONLY what you see on the door, for example: 1.4 or AI Lab\n"
-            "If nothing is visible, write: none"
-        )
+        """Stage 2 prompt for classroom doors. Uses native 'ocr' task prefix
+        so PaliGemma extracts all visible text from the door plate.
+        The existing parseDoor() parser then picks out the room code."""
+        return "<image>\nocr"
 
     @staticmethod
     def getElevatorPrompt() -> str:
-        """Stage 2 prompt for elevator images.
+        """Stage 2 prompt for elevator images. Uses native 'answer' task prefix.
         Expected response: 'open' or 'closed'."""
-        return (
-            "<image>\n"
-            "Look at the elevator doors in this image.\n\n"
-            "Are the doors open or closed?\n\n"
-            "Options: open / closed\n\n"
-            "Answer with ONE word only."
-        )
+        return "<image>\nanswer are the elevator doors open or closed?"
 
     @staticmethod
     def getStairsPrompt() -> str:
-        """Stage 2 prompt for staircase images.
+        """Stage 2 prompt for staircase images. Uses native 'answer' task prefix.
         Expected response: 'up', 'down', or 'both'."""
-        return (
-            "<image>\n"
-            "You are standing in front of this staircase.\n\n"
-            "From this position, which directions can you take?\n\n"
-            "Options:\n"
-            "- up   : stairs go upward from here\n"
-            "- down : stairs go downward from here\n"
-            "- both : stairs go in both directions\n\n"
-            "Answer with ONE word only."
-        )
+        return "<image>\nanswer from here can you go up, down, or both directions on these stairs?"
 
     # Parsers
 
