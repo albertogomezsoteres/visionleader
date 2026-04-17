@@ -13,12 +13,11 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from navigation.fast_downward_client import FastDownwardPlanner
-from navigation.campus_graph_to_pddl import CampusGraphToPDDL
 from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 from navigation.conversation_agent import ConversationAgent
 
 BASE_DIR       = Path(__file__).resolve().parent.parent.parent
-DOMAIN_PATH    = BASE_DIR / "pddl" / "domain_outdoor.pddl"
+DOMAIN_PATH    = BASE_DIR / "pddl" / "domain_indoor.pddl"
 TOPOLOGY_JSON  = BASE_DIR / "config" / "campus_topology.json"
 PLACES_JSON    = BASE_DIR / "config" / "campus_places.json"
 PDDL_DIR       = BASE_DIR / "pddl"
@@ -28,9 +27,6 @@ load_dotenv(BASE_DIR / ".env")
 COLAB_API_URL: str = (os.getenv("COLAB_API_URL") or "").strip().rstrip("/")
 
 planner = FastDownwardPlanner()
-# Legacy floor-level converter — reads topology only (outdoor domain)
-converter = CampusGraphToPDDL(str(TOPOLOGY_JSON))
-# Room-level hierarchical converter — reads topology only (indoor domain)
 hierarchical_converter = HierarchicalPDDLConverter(
     json_path=str(TOPOLOGY_JSON),
     pddl_dir=str(PDDL_DIR),

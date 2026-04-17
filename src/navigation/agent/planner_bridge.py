@@ -77,9 +77,9 @@ def _print_plan(actions: List[str], elapsed_s: float, cost: Any) -> None:
 
 def _print_plan_summary(actions: List[str], cost: Any) -> None:
     """One-line summary so the watcher sees the headline metric instantly."""
-    uses_elevator = any("ascensor" in a for a in actions)
-    uses_stairs = any("escaleras" in a for a in actions)
-    uses_outdoor = any("mover_edificio" in a for a in actions)
+    uses_elevator = any("use_elevator" in a for a in actions)
+    uses_stairs = any("climb_stairs" in a or "descend_stairs" in a for a in actions)
+    uses_outdoor = any("outdoor_walk" in a for a in actions)
     pieces = []
     if uses_elevator:
         pieces.append("uses elevator")
@@ -99,122 +99,41 @@ def _print_no_plan(elapsed_s: float, error: Any) -> None:
 # -- Public planner wrappers ------------------------------------------------
 
 
-def run_fast_downward(
-    planner: Any,
-    converter: Any,
-    domain_path: Path,
-    pddl_dir: Path,
-    origin_building: int,
-    origin_floor: int,
-    dest_building: int,
-    dest_floor: int,
-    goal_functional: Optional[str] = None,
-    hurry_mode: bool = False,
-) -> Optional[List[str]]:
-    """Generate a floor-level PDDL problem and solve it with Fast Downward.
-
-    Returns a list of action strings or ``None`` on any failure (planner
-    not initialised, no plan found, exception during execution).
-    """
-    if not planner or not converter:
-        logger.warning("FD planner not available")
-        return None
-
-    initial_state = (origin_building, origin_floor)
-    goal_state: Optional[Tuple[int, int]] = None if goal_functional else (dest_building, dest_floor)
-
-    _print_call_banner(
-        "outdoor (floor-level) planner call",
-        building=None,
-        origin=f"edificio_{origin_building}",
-        origin_floor=origin_floor,
-        destination=f"edificio_{dest_building}" if not goal_functional else None,
-        dest_floor=dest_floor if not goal_functional else None,
-        goal_functional=goal_functional,
-        hurry_mode=hurry_mode,
-    )
-
-    problem_path: Optional[str] = None
-    started = time.time()
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".pddl", dir=str(pddl_dir), delete=False
-        ) as f:
-            problem_path = f.name
-            converter.generate_problem(
-                initial_state=initial_state,
-                goal_state=goal_state,
-                goal_functional=goal_functional,
-                problem_name="conv-problem",
-                output_path=problem_path,
-                hurry_mode=hurry_mode,
-            )
-
-        result = planner.plan(
-            domain_path=str(domain_path),
-            problem_path=problem_path,
-        )
-        elapsed = time.time() - started
-
-        if result.get("success"):
-            actions = result.get("plan", [])
-            _print_plan(actions, elapsed, result.get("cost"))
-            logger.info(
-                "FD plan found: %d actions, cost=%s",
-                len(actions), result.get("cost"),
-            )
-            return actions
-        _print_no_plan(elapsed, result.get("error"))
-        logger.warning("FD no plan found: %s", result.get("error"))
-        return None
-    except Exception as e:
-        elapsed = time.time() - started
-        _print_no_plan(elapsed, f"exception: {e}")
-        logger.exception("FD error: %s", e)
-        return None
-    finally:
-        if problem_path:
-            try:
-                Path(problem_path).unlink(missing_ok=True)
-            except Exception:
-                pass
-
-
-def run_hierarchical_building_planner(
+def run_indoor_planner(
     planner: Any,
     hierarchical_converter: Any,
     pddl_dir: Path,
-    building_id: int,
+    origin_building: int,
     origin_room: str,
     origin_floor: int,
-    dest_room: Optional[str],
-    dest_floor: Optional[int],
+    dest_building: Optional[int] = None,
+    dest_room: Optional[str] = None,
+    dest_floor: Optional[int] = None,
     goal_functional: Optional[str] = None,
     hurry_mode: bool = False,
 ) -> Optional[List[str]]:
-    """Generate a room-level PDDL problem for a single building and solve it.
+    """Generate a room-level PDDL problem and solve it with Fast Downward.
 
-    Loads ``domain_indoor.pddl`` via the hierarchical converter and writes
-    a temp problem whose ``:init`` section encodes the full intra-building
-    graph. Returns the list of PDDL action strings or ``None`` on failure.
+    When ``dest_building`` differs from ``origin_building``, both buildings
+    are encoded in the same problem and linked by ``conectado_exterior``
+    edges between their entrances, so a single planner run finds the full
+    door-to-door route including any outdoor hop between buildings.
     """
     if not planner or not hierarchical_converter:
-        logger.warning("FD hierarchical planner/converter not available")
+        logger.warning("FD planner/converter not available")
         return None
 
-    try:
-        domain_path = hierarchical_converter.get_domain_path(building_id)
-    except ValueError as e:
-        logger.warning("FD hierarchical: %s", e)
-        return None
+    if dest_building is None:
+        dest_building = origin_building
 
+    domain_path = hierarchical_converter.get_domain_path()
     if not domain_path.exists():
-        logger.error("FD hierarchical domain file not found: %s", domain_path)
+        logger.error("PDDL domain file not found: %s", domain_path)
         return None
 
     _print_call_banner(
-        "indoor (room-level) hierarchical planner call",
-        building=building_id,
+        "campus (room-level) planner call",
+        building=origin_building,
         origin=origin_room,
         origin_floor=origin_floor,
         destination=dest_room,
@@ -231,9 +150,10 @@ def run_hierarchical_building_planner(
         ) as f:
             problem_path = f.name
             hierarchical_converter.generate_building_problem(
-                building_id=building_id,
+                origin_building=origin_building,
                 origin_room=origin_room,
                 origin_floor=origin_floor,
+                dest_building=dest_building,
                 dest_room=dest_room,
                 dest_floor=dest_floor,
                 goal_functional=goal_functional,
@@ -251,19 +171,17 @@ def run_hierarchical_building_planner(
             actions = result.get("plan", [])
             _print_plan(actions, elapsed, result.get("cost"))
             logger.info(
-                "FD hierarchical plan for building %d: %d actions, cost=%s",
-                building_id, len(actions), result.get("cost"),
+                "FD plan for %s -> %s: %d actions, cost=%s",
+                origin_building, dest_building, len(actions), result.get("cost"),
             )
             return actions
         _print_no_plan(elapsed, result.get("error"))
-        logger.warning(
-            "FD hierarchical no plan found: %s", result.get("error")
-        )
+        logger.warning("FD no plan found: %s", result.get("error"))
         return None
     except Exception as e:
         elapsed = time.time() - started
         _print_no_plan(elapsed, f"exception: {e}")
-        logger.exception("FD hierarchical error: %s", e)
+        logger.exception("FD error: %s", e)
         return None
     finally:
         if problem_path:

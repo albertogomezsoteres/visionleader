@@ -81,7 +81,16 @@ macos/Flutter/Flutter-Release.xcconfig
 macos/Flutter/GeneratedPluginRegistrant.swift
 macos/Flutter/ephemeral/
 
-# LaTeX report 
+# LaTeX report
 report/
 # Local test and one-shot scripts
 scriptsTest/
+
+# Local planning docs (not for remote)
+Lora.md
+nextSteps.md
+whisper_experiment*.md
+fast_downward_experiment_description.md
+
+# STT experiment outputs (kept local, not pushed)
+sttExperimentResults/

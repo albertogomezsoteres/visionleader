@@ -8,21 +8,19 @@ class PlanningRequest(BaseModel):
     """Request to generate a navigation plan.
 
     initial_state and goal_state accept:
-      - {'building': int, 'floor': int}                        (floor-level, legacy)
-      - {'building': int, 'floor': int, 'room': 'aula_1_4'}    (room-level, hierarchical)
+      {'building': int, 'floor': int, 'room': 'aula_1_4'}
 
-    When both initial_state and goal_state carry a 'room' and both belong
-    to the same building, the API uses domain_indoor.pddl and returns a
-    room-level plan. Otherwise it falls back to the global floor-level
-    domain (pddl/domain_outdoor.pddl).
+    The shared `domain_indoor.pddl` handles both intra- and cross-building
+    routes. When origin and goal are in different buildings the converter
+    emits rooms of both plus `conectado_exterior` edges between entrances.
     """
     initial_state: Dict[str, Any] = Field(
         ...,
-        description="Starting location. Required keys: building, floor. Optional: room (location_id).",
+        description="Starting location. Required: building, floor, room.",
     )
     goal_state: Optional[Dict[str, Any]] = Field(
         None,
-        description="Target location. Required keys: building, floor. Optional: room (location_id).",
+        description="Target location. Required: building, floor, room (unless goal_functional).",
     )
     goal_functional: Optional[str] = Field(
         None,
@@ -42,7 +40,7 @@ class PlanningResponse(BaseModel):
     plan: List[str] = Field(default_factory=list)
     steps: int = 0
     cost: int = 0
-    initial_state: Optional[Dict[str, int]] = None
+    initial_state: Optional[Dict[str, Any]] = None
     goal_state: Optional[Any] = None
     error: Optional[str] = None
     output: Optional[str] = None
