@@ -39,13 +39,9 @@ from .agent.closures import (
     find_open_alternative,
     is_room_closed,
 )
-from .agent.planner_bridge import (
-    run_fast_downward,
-    run_hierarchical_building_planner,
-)
+from .agent.planner_bridge import run_indoor_planner
 from .agent.plan_to_steps import (
     apply_arrival_strict_photo,
-    fd_plan_to_steps,
     fd_plan_to_steps_room_level,
 )
 
@@ -166,9 +162,7 @@ class ConversationAgent:
 
         # Fast Downward integration (lazy-loaded; tolerates a missing image)
         self._planner = None
-        self._converter = None                # legacy floor-level converter
-        self._hierarchical_converter = None   # room-level building converter
-        self._domain_path: Optional[Path] = None
+        self._hierarchical_converter = None   # shared campus PDDL converter
         self._pddl_dir: Optional[Path] = None
         self._init_planner()
 
@@ -179,37 +173,26 @@ class ConversationAgent:
         return building_id_from_name(name)
 
     def _init_planner(self) -> None:
-        """Initialise Fast Downward and both PDDL converters.
-
-        Two converters are created:
-          - CampusGraphToPDDL: used by domain_outdoor.pddl for inter-building
-            (building + floor level) plans.
-          - HierarchicalPDDLConverter: used by domain_indoor.pddl for
-            room-level planning inside a single building.
-        """
+        """Initialise Fast Downward and the shared PDDL converter."""
         try:
             from .fast_downward_client import FastDownwardPlanner
-            from .campus_graph_to_pddl import CampusGraphToPDDL
             from .hierarchical_pddl_converter import HierarchicalPDDLConverter
 
             base_dir = Path(__file__).parent.parent.parent
             campus_json = base_dir / "config" / "campus_topology.json"
-            self._domain_path = base_dir / "pddl" / "domain_outdoor.pddl"
             self._pddl_dir = base_dir / "pddl"
 
             self._planner = FastDownwardPlanner()
-            self._converter = CampusGraphToPDDL(str(campus_json))
             closed_rooms_path = base_dir / "config" / "closed_rooms.json"
             self._hierarchical_converter = HierarchicalPDDLConverter(
                 json_path=str(campus_json),
                 pddl_dir=str(self._pddl_dir),
                 closed_rooms_path=str(closed_rooms_path),
             )
-            logger.info("Fast Downward + hierarchical converter initialized OK")
+            logger.info("Fast Downward + PDDL converter initialized OK")
         except Exception as e:
             logger.warning("Could not init Fast Downward: %s", e)
             self._planner = None
-            self._converter = None
             self._hierarchical_converter = None
 
     # Session management
@@ -278,26 +261,18 @@ class ConversationAgent:
     # State handlers
 
     def _handle_welcome(self, ctx: ConversationContext) -> Dict:
-        tts = (
-            "Hello! I am your campus navigation assistant. "
-            "Do you know where you are right now?"
-        )
+        tts = "Hi. Do you know where you are?"
         ctx.state = ConversationState.ASK_KNOWS_LOCATION
         return self._reply(ctx, tts, "voice", "welcome")
 
     def _handle_ask_knows_location(self, ctx: ConversationContext, msg: str) -> Dict:
         if is_yes(msg):
-            tts = "Tell me your location. For example: classroom 0.3, building G."
+            tts = "Where are you? For example, classroom 0.3, building G."
             ctx.state = ConversationState.ASK_LOCATION_VOICE
             return self._reply(ctx, tts, "voice", "ask_location")
 
         if is_no(msg):
-            tts = (
-                "No problem, I will help you figure out your location. "
-                "Let me ask you a few questions. "
-                "Have you just come out of a classroom, or have you just exited "
-                "an elevator or walked up the stairs?"
-            )
+            tts = "Did you just leave a classroom, elevator, or stairs?"
             ctx.state = ConversationState.ASK_SITUATION
             return self._reply(ctx, tts, "voice", "ask_situation")
 
@@ -306,10 +281,7 @@ class ConversationAgent:
             ctx.origin = loc
             return self._confirm_origin(ctx)
 
-        tts = (
-            "I did not quite catch that. Do you know where you are? "
-            "Just say yes or no."
-        )
+        tts = "Do you know where you are? Yes or no."
         return self._reply(ctx, tts, "voice", "ask_knows_location")
 
     def _handle_ask_location_voice(self, ctx: ConversationContext, msg: str) -> Dict:
@@ -338,63 +310,37 @@ class ConversationAgent:
 
         ctx.voice_retries += 1
         if ctx.voice_retries >= 3:
-            tts = (
-                "I am having trouble understanding your location. "
-                "Would you like to take a photo instead? "
-                "You can photograph a room number sign on a door, "
-                "or a floor directory sign near the elevator."
-            )
+            tts = "Let's try a photo. Photograph a door sign, or a floor sign near the elevator."
             ctx.state = ConversationState.ASK_SITUATION
             ctx.voice_retries = 0
             return self._reply(ctx, tts, "voice", "ask_situation")
 
-        tts = (
-            "I could not understand your location. Please try again. "
-            "Say something like: classroom 0.3 in building G, "
-            "or main entrance of building G."
-        )
+        tts = "I didn't catch that. For example, 'classroom 0.3, building G'."
         return self._reply(ctx, tts, "voice", "ask_location")
 
     def _handle_ask_situation(self, ctx: ConversationContext, msg: str) -> Dict:
         low = msg.lower()
 
         if any(w in low for w in ("classroom", "door", "aula", "puerta", "room", "clase")):
-            tts = (
-                "Perfect. Please take a photo of the classroom door so I can "
-                "read the room number. Try to capture the sign clearly, "
-                "from about 2 to 3 metres away."
-            )
+            tts = "Take a photo of the classroom door."
             ctx.state = ConversationState.WAITING_PHOTO_DOOR
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_door")
 
         if any(w in low for w in ("elevator", "lift", "ascensor")):
-            tts = (
-                "If you just exited the elevator, the floor directory sign "
-                "is usually on the wall right next to it. Turn to your left and "
-                "walk about 2 metres. You should see a sign showing the building "
-                "letter and floor number, like G 0. Please take a photo of it."
-            )
+            tts = "Turn left, walk two metres, and photograph the floor sign."
             ctx.state = ConversationState.WAITING_PHOTO_SIGN
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_sign")
 
         if any(w in low for w in ("stairs", "stair", "escalera")):
-            tts = (
-                "If you just came up or down the stairs, look for a floor "
-                "directory sign nearby. It is usually on the wall right next "
-                "to the staircase. It shows the building letter and floor number, "
-                "like G 1. Please take a photo of it."
-            )
+            tts = "Find the floor sign near the stairs and photograph it."
             ctx.state = ConversationState.WAITING_PHOTO_SIGN
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_sign")
 
         if any(w in low for w in ("directory", "directorio", "sign", "cartel", "panel")):
-            tts = (
-                "Great. Please take a photo of the directory sign so I can "
-                "read the building and floor information."
-            )
+            tts = "Photograph the directory sign."
             ctx.state = ConversationState.WAITING_PHOTO_SIGN
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_sign")
@@ -403,13 +349,7 @@ class ConversationAgent:
             "don't know", "dont know", "no idea", "not sure",
             "no sé", "no se", "ni idea",
         )):
-            tts = (
-                "That is okay. Can you see any doors near you? If you are "
-                "near a classroom, the door should have a room number on it. "
-                "If not, try to find the elevator or stairs area, where there "
-                "is always a directory sign on the wall. "
-                "Just tell me what you see around you."
-            )
+            tts = "Tell me what you see. A classroom door, the elevator, or the stairs?"
             return self._reply(ctx, tts, "voice", "ask_situation")
 
         loc = parse_location(msg, self._room_lookup)
@@ -418,11 +358,8 @@ class ConversationAgent:
             return self._confirm_origin(ctx)
 
         tts = (
-            "I need a bit more detail to find you. "
-            "Are you near a classroom door where you can see a room number? "
-            "Or are you near the elevator or stairs area? "
-            "You can also just tell me your location by voice, for example: "
-            "classroom 0.3 in building G."
+            "Are you near a classroom door, the elevator, or the stairs? "
+            "Or say your location, like 'classroom 0.3, building G'."
         )
         return self._reply(ctx, tts, "voice", "ask_situation")
 
@@ -471,19 +408,12 @@ class ConversationAgent:
             return self._reply(ctx, tts, "voice", "ask_building")
 
         if ctx.photo_attempts >= 3:
-            tts = (
-                "I have not been able to determine your location from photos. "
-                "Let me try a different approach. Please tell me your location by voice. "
-                "For example: classroom 0.3 in building G."
-            )
+            tts = "Let's try voice. Say your location, like 'classroom 0.3, building G'."
             ctx.state = ConversationState.ASK_LOCATION_VOICE
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "voice", "fallback_to_voice")
 
-        tts = (
-            "I could not read your location from that photo. "
-            "Please try again. Make sure the sign or room number is clearly visible."
-        )
+        tts = "I couldn't read that photo. Try again with the sign clearly visible."
         return self._reply(ctx, tts, "photo", "retry_photo")
 
     def _handle_ask_building(self, ctx: ConversationContext, msg: str) -> Dict:
@@ -502,11 +432,7 @@ class ConversationAgent:
             ctx.state = ConversationState.ASK_FLOOR
             return self._reply(ctx, tts, "voice", "ask_floor")
 
-        tts = (
-            "I did not recognize that building. "
-            "Available buildings are: G (Escuela Politécnica), "
-            "CD (Centro Deportivo), and H. Which one?"
-        )
+        tts = "Which building? G, CD, or H."
         return self._reply(ctx, tts, "voice", "ask_building")
 
     def _handle_ask_floor(self, ctx: ConversationContext, msg: str) -> Dict:
@@ -521,10 +447,7 @@ class ConversationAgent:
             ctx.state = ConversationState.ASK_BUILDING
             return self._reply(ctx, tts, "voice", "ask_building")
 
-        tts = (
-            "I did not catch the floor number. "
-            "Please say something like: ground floor, floor 1, or floor 2."
-        )
+        tts = "Which floor? Ground, one, or two."
         return self._reply(ctx, tts, "voice", "ask_floor")
 
     def _confirm_origin(self, ctx: ConversationContext) -> Dict:
@@ -540,8 +463,7 @@ class ConversationAgent:
                 ctx.current_step_idx = 0
                 tts = (
                     f"Got it: {loc_text}. "
-                    f"I still have your destination as {location_text(ctx.destination)}. "
-                    "Recalculating the route now."
+                    f"Recalculating route to {location_text(ctx.destination)}."
                 )
                 ctx.add("system", tts)
                 return self._present_plan(ctx)
@@ -564,9 +486,8 @@ class ConversationAgent:
                     ctx.route_steps = route
                     ctx.current_step_idx = 0
                     tts = (
-                        f"Your location is confirmed: {loc_text}. "
-                        f"I still have your destination as {dest_text}. "
-                        "Let me recalculate the route."
+                        f"Confirmed: {loc_text}. "
+                        f"Recalculating route to {dest_text}."
                     )
                     ctx.add("system", tts)
                     return self._present_plan(ctx)
@@ -583,10 +504,7 @@ class ConversationAgent:
             ctx.partial_building = None
             ctx.partial_floor = None
             ctx.partial_location_id = None
-            tts = (
-                "Let me try again. Do you know your location, "
-                "or would you like to take a photo to help me identify it?"
-            )
+            tts = "Do you know your location? Or we can try a photo."
             ctx.state = ConversationState.ASK_KNOWS_LOCATION
             return self._reply(ctx, tts, "voice", "retry_location")
 
@@ -617,11 +535,7 @@ class ConversationAgent:
             ctx.current_step_idx = 0
             return self._present_plan(ctx)
 
-        tts = (
-            "I did not understand your destination. "
-            "You can say things like: classroom 1.4, the cafeteria, "
-            "the gym, the nearest restroom, or main entrance."
-        )
+        tts = "Where to? For example, classroom 1.4, the cafeteria, or main entrance."
         return self._reply(ctx, tts, "voice", "ask_destination")
 
     def _present_plan(self, ctx: ConversationContext) -> Dict:
@@ -646,19 +560,14 @@ class ConversationAgent:
         needs_stairs = "stairs" in overview_parts
         needs_outdoor = "outdoor walk" in overview_parts
         if needs_elevator:
-            requirement = "You will need to use the elevator."
+            requirement = "Uses the elevator."
         elif needs_stairs:
-            requirement = "You will need to use the stairs."
+            requirement = "Uses the stairs."
         elif needs_outdoor:
-            requirement = "You will need to walk outdoors."
+            requirement = "Includes an outdoor segment."
         else:
-            requirement = (
-                f"There {'is' if n == 1 else 'are'} {n} "
-                f"step{'s' if n != 1 else ''} required: {overview}."
-            )
+            requirement = f"{n} step{'s' if n != 1 else ''}: {overview}."
 
-        # If the route was substituted because the original destination was
-        # closed, prepend the announcement to the plan presentation.
         prefix = ""
         if ctx.pending_announcement:
             prefix = ctx.pending_announcement.rstrip() + " "
@@ -666,9 +575,9 @@ class ConversationAgent:
 
         tts = (
             f"{prefix}"
-            f"Perfect. I will guide you to {dest_text}. "
+            f"Route to {dest_text}. "
             f"{requirement} "
-            f"Click Start Navigation or say start.{hurry_note}"
+            f"Say start.{hurry_note}"
         )
         ctx.state = ConversationState.CONFIRMING_PLAN
         return self._reply(ctx, tts, "confirm", "confirm_plan")
@@ -708,10 +617,7 @@ class ConversationAgent:
             tts = self._planner_failure_message(ctx)
             return self._reply(ctx, tts, "voice", "confirm_plan")
 
-        tts = (
-            "Please say yes to start navigation, no to cancel, "
-            "or 'change destination' to pick a different place."
-        )
+        tts = "Say yes to start, no to cancel, or change destination."
         return self._reply(ctx, tts, "voice", "confirm_plan")
 
     def _handle_executing(
@@ -731,7 +637,7 @@ class ConversationAgent:
             ctx.state = ConversationState.EXECUTING
             return self._deliver_step(ctx)
 
-        tts = "Let me know when you are ready. Tap Next or say done to continue."
+        tts = "Say next when done."
         return self._reply(ctx, tts, "voice", "awaiting_step_done")
 
     def _handle_step_photo(
@@ -753,10 +659,7 @@ class ConversationAgent:
                 return self._deliver_step(ctx)
 
         if not analysis:
-            tts = (
-                f"Please take a photo of the {expected or 'area'} to verify your position. "
-                "Use the Photo button, or say done to continue without a photo."
-            )
+            tts = f"Photograph the {expected or 'area'}, or say done to skip."
             return self._reply(ctx, tts, "photo", "waiting_step_photo")
 
         image_type = analysis.get("image_type", "")
@@ -792,8 +695,8 @@ class ConversationAgent:
 
                 tts = (
                     f"I expected classroom {normalize_room_code(expected_code)}, "
-                    f"but the photo seems to show {normalize_room_code(seen_code) if seen_code else 'a different location'}. "
-                    "Please take another photo and make sure the classroom number is clearly visible."
+                    f"but I see {normalize_room_code(seen_code) if seen_code else 'a different location'}. "
+                    "Retake the photo."
                 )
                 return self._reply(ctx, tts, "photo", "retry_step_photo")
 
@@ -801,9 +704,7 @@ class ConversationAgent:
                 step["_phase2_started"] = True
                 post_tts = step.get("post_photo_instruction", step.get("instruction", ""))
                 tts = (
-                    f"Confirmed! I can see the {expected}. "
-                    f"{post_tts} "
-                    "Tap Next or say next when you have completed this step."
+                    f"Confirmed. {post_tts} Say next when done."
                 )
                 ctx.state = ConversationState.AWAITING_STEP_DONE
                 return self._reply(ctx, tts, "voice", "step_after_photo_confirm")
@@ -817,10 +718,8 @@ class ConversationAgent:
             return self._deliver_step(ctx, prefix=tts + " ")
 
         tts = (
-            f"I was expecting to see the {expected or 'checkpoint'}, "
-            f"but I see something different. "
-            "If you are at the right place, say 'done' to continue. "
-            "Otherwise, please take another photo."
+            f"That doesn't look like the {expected or 'checkpoint'}. "
+            "Retake the photo, or say done if you're there."
         )
         return self._reply(ctx, tts, "photo", "retry_step_photo")
 
@@ -848,13 +747,10 @@ class ConversationAgent:
             return self._reply(ctx, tts, "voice", "ask_destination")
 
         if any(w in low for w in ("no", "bye", "end", "exit", "adiós", "salir")):
-            tts = "Thank you for using VisionLeader. Have a great day! Goodbye."
+            tts = "Goodbye."
             return self._reply(ctx, tts, "none", "goodbye")
 
-        tts = (
-            "Would you like to navigate somewhere else? "
-            "Say yes and tell me where, or say goodbye to end."
-        )
+        tts = "Go somewhere else? Say a destination, or say goodbye."
         return self._reply(ctx, tts, "voice", "nav_complete")
 
     # Navigation helpers
@@ -880,7 +776,7 @@ class ConversationAgent:
                     "to_building": to_bld,
                     "auto_open": True,
                 }
-            tts += " Tap I've arrived when you reach the building."
+            tts += " Say done when you arrive."
             ctx.state = ConversationState.AWAITING_STEP_DONE
             return self._reply(ctx, tts, "voice", "navigation_step_outdoor", **extra)
 
@@ -891,8 +787,7 @@ class ConversationAgent:
                 aula_txt = f"classroom {rc}" if rc else "your classroom"
                 tts = (
                     f"{prefix}Step {idx} of {total}. {instruction} "
-                    f"When you arrive, please take a photo of the {expected} "
-                    f"to confirm {aula_txt}."
+                    f"On arrival, photograph the {expected} to confirm {aula_txt}."
                 )
                 ctx.state = ConversationState.WAITING_STEP_PHOTO
                 return self._reply(ctx, tts, "photo", "navigation_step")
@@ -900,21 +795,21 @@ class ConversationAgent:
                 pre_tts = step.get("pre_photo_instruction")
                 if pre_tts:
                     tts = f"{prefix}Step {idx} of {total}. {pre_tts}"
-                tts += f" Please take a photo of the {expected} to confirm."
+                tts += f" Photograph the {expected} to confirm."
             elif step.get("two_phase_photo") and not step.get("_phase2_started"):
                 pre_tts = step.get("pre_photo_instruction")
                 if pre_tts:
                     tts = f"{prefix}Step {idx} of {total}. {pre_tts}"
-                tts += f" Please take a photo of the {expected} to confirm."
+                tts += f" Photograph the {expected} to confirm."
             else:
                 if step.get("inline_photo_prompt"):
                     ctx.state = ConversationState.WAITING_STEP_PHOTO
                     return self._reply(ctx, tts, "photo", "navigation_step")
-                tts += f" When you arrive, please take a photo of the {expected} to confirm."
+                tts += f" On arrival, photograph the {expected}."
             ctx.state = ConversationState.WAITING_STEP_PHOTO
             next_input = "photo"
         else:
-            tts += " Tap Next or say next when you have completed this step."
+            tts += " Say next when done."
             ctx.state = ConversationState.AWAITING_STEP_DONE
             next_input = "voice"
 
@@ -931,22 +826,15 @@ class ConversationAgent:
                 "location_id": ctx.destination.get("location_id"),
             }
         ctx.destination = None
-        tts = (
-            f"You have arrived at {dest_text}! "
-            "Would you like to navigate somewhere else?"
-        )
+        tts = f"You have arrived at {dest_text}. Want to go somewhere else?"
         ctx.state = ConversationState.NAVIGATION_COMPLETE
         return self._reply(ctx, tts, "voice", "navigation_complete")
 
     def _handle_lost(self, ctx: ConversationContext) -> Dict:
         dest_text = location_text(ctx.destination) if ctx.destination else "your destination"
         tts = (
-            "No worries, I will help you get back on track. "
-            f"I still remember you want to go to {dest_text}. "
-            "First, let me figure out where you are now. "
-            "Have you just come out of a classroom, or are you near "
-            "the elevator or stairs area? You can also take a photo "
-            "of a door sign or directory sign."
+            f"Okay. Destination saved: {dest_text}. "
+            "Did you just leave a classroom, elevator, or stairs? Or photograph a sign."
         )
         ctx.state = ConversationState.ASK_SITUATION
         ctx.origin = None
@@ -955,10 +843,7 @@ class ConversationAgent:
         return self._reply(ctx, tts, "voice_or_photo", "replanning")
 
     def _cancel_navigation(self, ctx: ConversationContext) -> Dict:
-        tts = (
-            "Navigation cancelled. "
-            "Would you like to start a new route? Just tell me your destination."
-        )
+        tts = "Navigation cancelled. Tell me a new destination."
         ctx.state = ConversationState.ASK_DESTINATION
         ctx.route_steps = []
         ctx.current_step_idx = 0
@@ -982,11 +867,7 @@ class ConversationAgent:
 
     @staticmethod
     def _macro_planner_failed_message() -> str:
-        return (
-            "I could not compute a route with the symbolic planner. "
-            "Ensure Docker is running with the Fast Downward image "
-            "(fast-downward:latest), then try your destination again."
-        )
+        return "I couldn't compute a route. Please try a different destination."
 
     def _planner_failure_message(self, ctx: "ConversationContext") -> str:
         """User-facing error when ``_compute_route`` returns None.
@@ -1020,16 +901,12 @@ class ConversationAgent:
     ) -> Optional[List[Dict]]:
         """Build navigation steps for an (origin, destination) pair.
 
-        Hierarchical strategy:
-
-          - **Intra-building** (any building): use ``domain_indoor.pddl``
-            via the hierarchical converter. PDDL reasons over the full
-            room graph, so the resulting plan contains
-            ``caminar`` / ``usar_ascensor`` / ``subir_escaleras`` actions
-            at room (``ubicacion``) level.
-
-          - **Inter-building**: fall back to ``domain_outdoor.pddl`` via
-            Fast Downward at building-floor granularity.
+        A single Fast Downward call on ``domain_indoor.pddl`` resolves both
+        intra- and inter-building routes. For cross-building pairs the
+        converter emits rooms of both buildings plus ``conectado_exterior``
+        edges between their entrances, so the resulting plan interleaves
+        ``caminar`` / ``usar_ascensor`` / ``mover_exterior`` actions as
+        needed.
         """
         o_bld = origin.get("building")
         o_flr = origin.get("floor")
@@ -1081,9 +958,7 @@ class ConversationAgent:
                     )
                 else:
                     announcement = (
-                        f"{orig_name} is {reason}, and there is no equivalent "
-                        "alternative available right now. Please try a "
-                        "different destination."
+                        f"{orig_name} is {reason}. Try a different destination."
                     )
                     if matching_ctx:
                         matching_ctx.pending_announcement = announcement
@@ -1097,89 +972,50 @@ class ConversationAgent:
         goal_functional = destination.get("functional")
         ctx_hurry = matching_ctx.hurry_mode if matching_ctx else False
 
-        # Intra-building room-level planning (all buildings via domain_indoor)
-        if (
-            o_bld == d_bld
-            and o_loc
-            and (d_loc or goal_functional)
-            and self._hierarchical_converter is not None
-        ):
-            try:
-                domain_path = self._hierarchical_converter.get_domain_path(o_bld)
-                domain_exists = domain_path.exists()
-            except ValueError:
-                domain_exists = False
+        if self._hierarchical_converter is None or not o_loc:
+            return None
 
-            if domain_exists:
-                fd_actions = run_hierarchical_building_planner(
-                    planner=self._planner,
-                    hierarchical_converter=self._hierarchical_converter,
-                    pddl_dir=self._pddl_dir,
-                    building_id=o_bld,
-                    origin_room=o_loc, origin_floor=o_flr,
-                    dest_room=d_loc, dest_floor=d_flr,
-                    goal_functional=goal_functional,
-                    hurry_mode=ctx_hurry,
-                )
-                bname = BUILDING_NAMES.get(o_bld, str(o_bld))
-                if fd_actions:
-                    steps = fd_plan_to_steps_room_level(
-                        fd_actions, origin, destination,
-                        places_locations=self._locations,
-                        local_distance=self._local_distance,
-                        local_hint=self._local_hint,
-                    )
-                    if steps:
-                        print(
-                            f"[Route] Built {len(steps)} room-level steps "
-                            f"for building {bname}"
-                        )
-                        return apply_arrival_strict_photo(
-                            steps, destination, self._locations
-                        )
-                    print(
-                        f"[Route] Plan found for {bname} but could not be "
-                        "converted to steps -- falling back."
-                    )
-                else:
-                    print(
-                        f"[Route] Hierarchical planner failed for {bname} "
-                        "-- falling back to legacy routing."
-                    )
+        if not (d_loc or goal_functional):
+            return None
 
-        # Same building, same floor: trivial local instruction
-        if o_bld == d_bld and o_flr == d_flr:
-            steps = self._compute_same_floor(o_bld, o_flr)
-            return apply_arrival_strict_photo(steps, destination, self._locations)
-
-        # Different floor or building: legacy global Fast Downward
-        fd_actions = run_fast_downward(
+        fd_actions = run_indoor_planner(
             planner=self._planner,
-            converter=self._converter,
-            domain_path=self._domain_path,
+            hierarchical_converter=self._hierarchical_converter,
             pddl_dir=self._pddl_dir,
             origin_building=o_bld,
-            origin_floor=o_flr,
+            origin_room=o_loc, origin_floor=o_flr,
             dest_building=d_bld,
-            dest_floor=d_flr,
+            dest_room=d_loc, dest_floor=d_flr,
             goal_functional=goal_functional,
             hurry_mode=ctx_hurry,
         )
-        if fd_actions:
-            steps = fd_plan_to_steps(fd_actions, origin, destination)
-            if steps:
-                print(f"[Route] Built {len(steps)} navigation steps from FD plan")
-                return apply_arrival_strict_photo(steps, destination, self._locations)
+        if not fd_actions:
+            bname = BUILDING_NAMES.get(o_bld, str(o_bld))
             print(
-                "[Route] Fast Downward returned actions but they could not be "
-                "converted to navigation steps."
-            )
-        else:
-            print(
-                "[Route] Fast Downward did not return a plan "
+                f"[Route] Planner did not return a plan for {bname} -> "
+                f"{BUILDING_NAMES.get(d_bld, d_bld)} "
                 "(check Docker, domain, and problem generation)."
             )
-        return None
+            return None
+
+        steps = fd_plan_to_steps_room_level(
+            fd_actions, origin, destination,
+            places_locations=self._locations,
+            local_distance=self._local_distance,
+            local_hint=self._local_hint,
+        )
+        if not steps:
+            if o_bld == d_bld and o_flr == d_flr:
+                steps = self._compute_same_floor(o_bld, o_flr)
+            else:
+                print(
+                    "[Route] Planner returned actions but they could not be "
+                    "converted to navigation steps."
+                )
+                return None
+
+        print(f"[Route] Built {len(steps)} navigation steps from PDDL plan")
+        return apply_arrival_strict_photo(steps, destination, self._locations)
 
     @staticmethod
     def _compute_same_floor(bld: int, flr: int) -> List[Dict]:

@@ -1,38 +1,55 @@
 # PDDL del campus
 
-## Dominios
+## Dominio
 
-El sistema usa **dos dominios PDDL** separados que se cargan según el tipo de plan:
-
-- **`domain_outdoor.pddl`** (`campus-outdoor`) — Navegación entre edificios del campus. Razona al nivel de `(edificio, planta)` sin entrar en habitaciones concretas. Tipos: `robot`, `edificio`, `planta`, `tipo_conexion`. Se usa cuando el origen y el destino están en edificios distintos.
-
-- **`domain_indoor.pddl`** (`building-indoor`) — Navegación intra-edificio al nivel de sala (`ubicacion`). Compartido por los 14 edificios de UFV. Incluye distancias métricas en el fluente `(distancia ?u1 ?u2)` y cierres dinámicos vía el predicado `(abierto ?u)`. Edificio G usa distancias medidas reales; los demás usan una aproximación de 15 m por hop.
+`pddl/domain_indoor.pddl` (`campus-navigation`) — dominio único que cubre toda la navegación del campus: intra-edificio al nivel de sala (`location`) y cruces entre edificios vía la acción `outdoor_walk`.
 
 ## Acciones y costes
 
-Ambos dominios comparten el mismo esquema de acciones: `caminar`/`mover_edificio`, `verificar_ascensor`, `usar_ascensor`, `validar_escaleras`, `subir_escaleras`, `bajar_escaleras`, `subir_escaleras_rapido`, `bajar_escaleras_rapido`. Los costes de `domain_indoor` están en unidades de segundos de esfuerzo; los de `domain_outdoor` son arbitrarios pero internamente consistentes.
+Costes en segundos de esfuerzo:
 
-El flag `(modo_rapido)` cambia el modelo de costes: modo accesible preferirá ascensor frente a escaleras, modo rápido preferirá escaleras para distancias cortas.
+- `walk`: `(distance u1 u2)` metros
+- `verify_elevator`: 5
+- `use_elevator`: 15
+- `validate_stairs`: 5
+- `climb_stairs_accessible`: 30 — requiere `(not hurry_mode)`
+- `descend_stairs_accessible`: 25 — requiere `(not hurry_mode)`
+- `climb_stairs_fast`: 12 — requiere `(hurry_mode)`
+- `descend_stairs_fast`: 8 — requiere `(hurry_mode)`
+- `outdoor_walk`: 60 — hop exterior entre entradas de edificios distintos
+
+Todas las variantes de escalera exigen `(stairs_verified u)` como precondición, de modo que el check con VLM (`validate_stairs`) es obligatorio en ambos modos.
+
+## Predicados clave
+
+- `(at ?r ?u)` — posición del robot
+- `(open ?u)` — disponibilidad dinámica (clausura)
+- `(is_elevator ?u)` / `(is_stairs ?u)` — tipo de nodo
+- `(elevator_verified ?u)` / `(stairs_verified ?u)` — confirmación por VLM
+- `(hurry_mode)` — flag 0-ario
+- Aristas: `(hallway_connected …)`, `(elevator_connected …)`, `(stairs_up_connected …)`, `(stairs_down_connected …)`, `(outdoor_connected …)`
 
 ## Generación de problemas
 
-Los ficheros de problema se **generan dinámicamente** desde `config/campus_topology.json` y `config/campus_places.json`:
+`src/navigation/hierarchical_pddl_converter.py::HierarchicalPDDLConverter` construye cada problema dinámicamente en cada petición, leyendo:
 
-- `src/navigation/campus_graph_to_pddl.py::CampusGraphToPDDL` → outdoor
-- `src/navigation/hierarchical_pddl_converter.py::HierarchicalPDDLConverter` → indoor
+- `config/campus_topology.json` — edificios, plantas, salas, aristas `local_connections`, aristas exteriores `connections`
+- `config/closed_rooms.json` — estado de clausuras (releído en cada planning)
 
-`pddl/problems/` contiene un problem file demo por edificio. Son ejemplos ilustrativos — el runtime nunca los lee, escribe tempfiles en cada petición.
+Cuando origen y destino están en edificios distintos, el problema incluye las salas de ambos edificios y las aristas `outdoor_connected` entre sus entradas para que un solo plan resuelva la ruta completa.
 
-## Flujo de ejecución
+Los IDs de sala que se repiten entre edificios (`ascensor`, `escaleras`, `bano`) se prefijan con el nombre del edificio y el piso en PDDL: `ascensor_G_p0`, `escaleras_CD_pm1`. Los IDs únicos (`aula_1_4`, `entrada_principal`) se mantienen tal cual.
 
-1. `ConversationAgent._compute_route` decide si el plan es intra o inter-edificio.
-2. El converter adecuado genera un problem tempfile en `pddl/`.
-3. `FastDownwardPlanner.plan()` ejecuta Fast Downward en Docker con `astar(lmcut())`.
-4. El plan se parsea a acciones PDDL y se convierte a pasos TTS.
+## Ejemplos en `problems/`
+
+- `problem_g_intra_demo.pddl` — intra-G: entrada principal → aula 2.1
+- `problem_g_to_cd_demo.pddl` — cross-building: aula 1.4 (G) → gym (CD)
+
+Son ejemplos ilustrativos; en runtime el planner nunca los lee — se escriben tempfiles por petición.
 
 ## Probar manualmente
 
 ```bash
-docker run --rm -v "$(pwd):/pddl" fast-downward:latest \
-  domain_indoor.pddl problems/problem_G_demo.pddl
+docker run --rm -v "$(pwd)/pddl:/pddl" fast-downward:latest \
+  domain_indoor.pddl problems/problem_g_intra_demo.pddl
 ```
