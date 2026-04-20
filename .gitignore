@@ -94,3 +94,20 @@ fast_downward_experiment_description.md
 
 # STT experiment outputs (kept local, not pushed)
 sttExperimentResults/
+sttResults/
+sttResultsFase2/
+faseFlutterResultsStt/
+/bench_fase2.csv
+/fase_flutter_results.csv
+
+# STT experiment local planning docs (not for remote)
+experimento_stt_completo.md
+experimentos_stt_guia_completa.md
+fase2_stt_resumen.md
+fase2_stt_ondevice_plan.md
+integracion_whisper_flutter_plan.md
+
+# whisper_smoke_test: exclude large assets and compiled native libs
+whisper_smoke_test/assets/models/
+whisper_smoke_test/assets/audios/
+whisper_smoke_test/android/app/src/main/jniLibs/
