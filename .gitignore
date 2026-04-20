@@ -14,6 +14,18 @@ data/ufv_campus/experiments/annotations.zip
 EXPERIMENT1_RESULTS/
 EXPERIMENT2_RESULTS/
 
+# VLM experiment outputs (regenerable, not for remote)
+VLMExperiemnt1 final results/
+VLMExperiment2 final results/
+
+# Colab upload artefacts (derived from repo sources)
+colab_upload/
+
+# Local VLM experiment notes and scratch
+gemma3nAnswers.txt
+gemma3n_smoke_test_plan.md
+vlmExperiment.md
+
 # Local helper scripts (not for remote)
 mobile_app/run_dev.bat
 

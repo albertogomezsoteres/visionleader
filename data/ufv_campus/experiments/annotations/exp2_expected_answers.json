@@ -7,7 +7,7 @@
             "type": "complete",
             "building": "EPS",
             "floor": "0",
-            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "building_acceptable": ["EPS", "eps", "building eps"],
             "bertscore_reference": "EPS 0"
         },
         "ufv_building_sign_02.jpg": {
@@ -15,7 +15,7 @@
             "type": "complete",
             "building": "EPS",
             "floor": "1",
-            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "building_acceptable": ["EPS", "eps", "building eps"],
             "bertscore_reference": "EPS 1"
         },
         "ufv_building_sign_03.jpg": {
@@ -23,7 +23,7 @@
             "type": "complete",
             "building": "EPS",
             "floor": "2",
-            "building_acceptable": ["EPS", "eps", "edificio eps", "building eps"],
+            "building_acceptable": ["EPS", "eps", "building eps"],
             "bertscore_reference": "EPS 2"
         },
         "ufv_building_sign_04.jpg": {
@@ -31,7 +31,7 @@
             "type": "complete",
             "building": "G",
             "floor": "0",
-            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "building_acceptable": ["G", "g", "building g"],
             "bertscore_reference": "G 0"
         },
         "ufv_building_sign_05.jpg": {
@@ -39,7 +39,7 @@
             "type": "complete",
             "building": "G",
             "floor": "1",
-            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "building_acceptable": ["G", "g", "building g"],
             "bertscore_reference": "G 1"
         },
         "ufv_building_sign_06.jpg": {
@@ -47,7 +47,7 @@
             "type": "complete",
             "building": "G",
             "floor": "1",
-            "building_acceptable": ["G", "g", "edificio g", "building g"],
+            "building_acceptable": ["G", "g", "building g"],
             "bertscore_reference": "G 1"
         },
         "ufv_building_sign_07.jpg": {
