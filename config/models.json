@@ -2,43 +2,8 @@
     "models": [
         {
             "id": 1,
-            "model_id": "google/paligemma-3b-pt-224",
-            "version": "v1",
-            "size": "3B",
-            "type": "pt",
-            "resolution": 224,
-            "description": "PaliGemma v1 - 3B pretrained - 224px"
-        },
-        {
-            "id": 2,
-            "model_id": "google/paligemma-3b-pt-448",
-            "version": "v1",
-            "size": "3B",
-            "type": "pt",
-            "resolution": 448,
-            "description": "PaliGemma v1 - 3B pretrained - 448px"
-        },
-        {
-            "id": 3,
-            "model_id": "google/paligemma-3b-mix-224",
-            "version": "v1",
-            "size": "3B",
-            "type": "mix",
-            "resolution": 224,
-            "description": "PaliGemma v1 - 3B fine-tuned mix - 224px"
-        },
-        {
-            "id": 4,
-            "model_id": "google/paligemma-3b-mix-448",
-            "version": "v1",
-            "size": "3B",
-            "type": "mix",
-            "resolution": 448,
-            "description": "PaliGemma v1 - 3B fine-tuned mix - 448px"
-        },
-        {
-            "id": 5,
             "model_id": "google/paligemma2-3b-pt-224",
+            "family": "paligemma",
             "version": "v2",
             "size": "3B",
             "type": "pt",
@@ -46,8 +11,9 @@
             "description": "PaliGemma v2 - 3B pretrained - 224px"
         },
         {
-            "id": 6,
+            "id": 2,
             "model_id": "google/paligemma2-3b-pt-448",
+            "family": "paligemma",
             "version": "v2",
             "size": "3B",
             "type": "pt",
@@ -55,8 +21,9 @@
             "description": "PaliGemma v2 - 3B pretrained - 448px"
         },
         {
-            "id": 7,
+            "id": 3,
             "model_id": "google/paligemma2-3b-mix-224",
+            "family": "paligemma",
             "version": "v2",
             "size": "3B",
             "type": "mix",
@@ -64,8 +31,9 @@
             "description": "PaliGemma v2 - 3B fine-tuned mix - 224px"
         },
         {
-            "id": 8,
+            "id": 4,
             "model_id": "google/paligemma2-3b-mix-448",
+            "family": "paligemma",
             "version": "v2",
             "size": "3B",
             "type": "mix",
@@ -73,8 +41,9 @@
             "description": "PaliGemma v2 - 3B fine-tuned mix - 448px"
         },
         {
-            "id": 9,
+            "id": 5,
             "model_id": "google/paligemma2-10b-pt-448",
+            "family": "paligemma",
             "version": "v2",
             "size": "10B",
             "type": "pt",
@@ -82,8 +51,9 @@
             "description": "PaliGemma v2 - 10B pretrained - 448px"
         },
         {
-            "id": 10,
+            "id": 6,
             "model_id": "google/paligemma2-10b-mix-224",
+            "family": "paligemma",
             "version": "v2",
             "size": "10B",
             "type": "mix",
@@ -91,8 +61,9 @@
             "description": "PaliGemma v2 - 10B fine-tuned mix - 224px"
         },
         {
-            "id": 11,
+            "id": 7,
             "model_id": "google/paligemma2-10b-mix-448",
+            "family": "paligemma",
             "version": "v2",
             "size": "10B",
             "type": "mix",
@@ -100,8 +71,9 @@
             "description": "PaliGemma v2 - 10B fine-tuned mix - 448px"
         },
         {
-            "id": 12,
+            "id": 8,
             "model_id": "google/paligemma2-10b-ft-docci-448",
+            "family": "paligemma",
             "version": "v2",
             "size": "10B",
             "type": "ft-docci",
@@ -111,10 +83,16 @@
     ],
     "test_model": "google/paligemma2-3b-pt-448",
     "metadata": {
-        "total_models": 12,
-        "versions": ["v1", "v2"],
+        "total_models": 8,
+        "families": ["paligemma"],
+        "versions": ["v2"],
         "sizes": ["3B", "10B"],
         "types": ["pt", "mix", "ft-docci"],
-        "resolutions": [224, 448]
+        "resolutions": [224, 448],
+        "notes": [
+            "PaliGemma v2 candidates for the server-side indoor navigation pipeline.",
+            "Variants cover sizes (3B, 10B), fine-tunes (pt, mix, ft-docci) and resolutions (224, 448).",
+            "Selection criterion: quality on the evaluation set balanced with inference cost."
+        ]
     }
 }

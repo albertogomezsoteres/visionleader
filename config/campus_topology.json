@@ -4,6 +4,9 @@
     {
       "id": 1,
       "name": "G",
+      "aliases": [
+        "EPS"
+      ],
       "floors": [
         0,
         1,
