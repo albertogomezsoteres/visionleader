@@ -1,39 +1,3 @@
-# Results (generated during evaluation)
-results/
-reports/
-
-# Session diaries and planning notes — only README.md is tracked at root
-/*.md
-!/README.md
-
-# Local experiment outputs / scratch (not for remote)
-test/
-
-# Large dataset archives (upload separately, e.g. Colab)
-data/ufv_campus/images.zip
-data/ufv_campus/experiments/annotations.zip
-/images.zip
-/annotations.zip
-
-# Experiment results (kept local, not pushed)
-EXPERIMENT1_RESULTS/
-EXPERIMENT2_RESULTS/
-
-# VLM experiment outputs (regenerable, not for remote)
-VLMExperiemnt1 final results/
-VLMExperiment2 final results/
-
-# Colab upload artefacts (derived from repo sources)
-colab_upload/
-
-# Local VLM experiment notes and scratch
-gemma3nAnswers.txt
-gemma3n_smoke_test_plan.md
-vlmExperiment.md
-
-# Local helper scripts (not for remote)
-mobile_app/run_dev.bat
-
 # Python
 __pycache__/
 *.py[cod]
@@ -44,22 +8,13 @@ __pycache__/
 .eggs/
 *.egg
 
-# Jupyter Notebook
+# Jupyter
 .ipynb_checkpoints/
-*.ipynb_checkpoints
 
 # Virtual environments
 venv/
 env/
 .env
-
-# Local assistant notes (not for remote)
-
-# Personal demo and local docs (not for remote)
-demo.ps1
-demo-Alberto-Asus.ps1
-appMovil.md
-mobile_app/android/build.gradle-Alberto-Asus.kts
 
 # IDE
 .idea/
@@ -72,59 +27,44 @@ mobile_app/android/build.gradle-Alberto-Asus.kts
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs and temporary files
 *.log
-
-# Temporary files
 *.tmp
 *.temp
 
-# HuggingFace cache (if any)
+# Caches and build artefacts
 .cache/
-
-# Flutter/Dart
-build/
 .dart_tool/
-*.iml
-android/local.properties
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Flutter.framework
-ios/Flutter/Flutter.podspec
-ios/Flutter/Generated.xcconfig
-ios/Flutter/ephemeral/
-macos/Flutter/Flutter-Debug.xcconfig
-macos/Flutter/Flutter-Release.xcconfig
-macos/Flutter/GeneratedPluginRegistrant.swift
-macos/Flutter/ephemeral/
+**/build/
 
-# LaTeX report
-report/
-# Local test and one-shot scripts
+# Hidden directories at repo root (whitelist git tooling)
+/.*/
+!/.git/
+!/.github/
+
+# Local notes and planning documents (only README.md is tracked at root)
+/*.md
+!/README.md
+
+# Experiment outputs and downloaded artefacts (regenerable, kept local)
+results/
+reports/
+**/*[Rr]esults*/
+**/*RESULTS*/
+
+# Local archives, datasets and large binaries
+/*.zip
+/*.csv
+/*.txt
+*.bin
+*.task
+**/assets/models/
+**/assets/audios/
+
+# Personal scratch and local-only files
+/test/
 scriptsTest/
-
-# Local planning docs (not for remote)
-Lora.md
-nextSteps.md
-whisper_experiment*.md
-fast_downward_experiment_description.md
-
-# STT experiment outputs (kept local, not pushed)
-sttExperimentResults/
-sttResults/
-sttResultsFase2/
-faseFlutterResultsStt/
-/bench_fase2.csv
-/fase_flutter_results.csv
-
-# STT experiment local planning docs (not for remote)
-experimento_stt_completo.md
-experimentos_stt_guia_completa.md
-fase2_stt_resumen.md
-fase2_stt_ondevice_plan.md
-integracion_whisper_flutter_plan.md
-
-# whisper_smoke_test: exclude large assets and compiled native libs
-whisper_smoke_test/assets/models/
-whisper_smoke_test/assets/audios/
-whisper_smoke_test/android/app/src/main/jniLibs/
+report/
+colab_upload/
+*.local.*
+*.bat
