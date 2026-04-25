@@ -13,7 +13,7 @@ BUILDING_NAMES: Dict[int, str] = {
     1: "G",   2: "CD",  3: "H",   4: "P",
     5: "O",   6: "M",   7: "N",   8: "CSQ",
     9: "K",  10: "CSC", 11: "C",  12: "E",
-    13: "CM", 14: "LCB", 15: "Rodilla", 16: "Capilla",
+    13: "CM", 14: "LCB", 15: "Rodilla", 16: "Chapel",
 }
 
 BUILDING_FULL: Dict[int, str] = {
@@ -32,7 +32,7 @@ BUILDING_FULL: Dict[int, str] = {
     13: "Building CM",
     14: "Building LCB",
     15: "Rodilla",
-    16: "Capilla (UFV Chapel)",
+    16: "Chapel (UFV Chapel)",
 }
 
 
@@ -53,22 +53,22 @@ def get_building_name(building_id: int) -> str:
 def nice_location_name(loc_id: str) -> str:
     """Render a campus_topology location id as a natural English name."""
     mapping = {
-        "entrada_principal": "the main entrance",
-        "entrada_cd": "the Sports Centre entrance",
-        "ascensor": "the elevator",
-        "escaleras": "the stairs",
-        "bano": "the restroom",
+        "entrance_main": "the main entrance",
+        "entrance_cd": "the Sports Centre entrance",
+        "elevator": "the elevator",
+        "stairs": "the stairs",
+        "bathroom": "the restroom",
         "lab_ia": "the AI Laboratory",
-        "despachos": "the faculty offices",
-        "despachos_eps": "the EPS Faculty Offices",
-        "secretaria": "the Secretary Office",
-        "sala_mentorias": "the Mentoring Room",
+        "offices": "the faculty offices",
+        "eps_offices": "the EPS Faculty Offices",
+        "admin_office": "the Secretary Office",
+        "mentoring_room": "the Mentoring Room",
         "cafeteria": "the cafeteria",
-        "gimnasio": "the gym",
+        "gym": "the gym",
     }
     if loc_id in mapping:
         return mapping[loc_id]
-    m = re.match(r"aula_(\d+)_(\d+)", loc_id)
+    m = re.match(r"classroom_(\d+)_(\d+)", loc_id)
     if m:
         return f"Classroom {m.group(1)}.{m.group(2)}"
     return loc_id.replace("_", " ")
@@ -100,21 +100,17 @@ def normalize_instruction(text: str) -> str:
     if not text:
         return text
     out = text
-    out = out.replace("ascensor", "elevator").replace("escaleras", "stairs")
-    out = out.replace("entrada_principal", "main entrance").replace(
+    out = out.replace("elevator", "elevator").replace("stairs", "stairs")
+    out = out.replace("entrance_main", "main entrance").replace(
         "entrada principal", "main entrance"
     )
-    out = (
-        out.replace("directorio_0", "directory sign")
-        .replace("directorio_1", "directory sign")
-        .replace("directorio_2", "directory sign")
-    )
+    out = re.sub(r"directory_sign_g_\w+", "directory sign", out)
     out = out.replace("lab_ia", "AI laboratory").replace("lab ia", "AI laboratory")
-    out = out.replace("bano", "restroom")
-    out = out.replace("despachos_eps", "EPS faculty offices").replace(
-        "despachos eps", "EPS faculty offices"
+    out = out.replace("bathroom", "restroom")
+    out = out.replace("eps_offices", "EPS faculty offices").replace(
+        "offices eps", "EPS faculty offices"
     )
-    out = out.replace("sala_mentorias", "mentoring room").replace(
+    out = out.replace("mentoring_room", "mentoring room").replace(
         "sala mentorias", "mentoring room"
     )
     out = re.sub(

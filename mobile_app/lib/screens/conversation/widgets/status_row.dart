@@ -28,32 +28,33 @@ class StatusRow extends StatelessWidget {
 
   String _locationText(String locationId) {
     switch (locationId) {
-      case 'entrada_principal':
+      case 'entrance_main':
         return 'Main Entrance';
-      case 'entrada_cd':
+      case 'entrance_cd':
         return 'CD Entrance';
-      case 'ascensor':
+      case 'elevator':
         return 'Elevator';
-      case 'escaleras':
+      case 'stairs':
         return 'Stairs';
-      case 'bano':
+      case 'bathroom':
         return 'Restroom';
       case 'lab_ia':
         return 'AI Laboratory';
-      case 'despachos':
+      case 'offices':
         return 'Faculty Offices';
-      case 'despachos_eps':
+      case 'eps_offices':
         return 'EPS Faculty Offices';
-      case 'secretaria':
+      case 'admin_office':
         return 'Secretary Office';
-      case 'sala_mentorias':
+      case 'mentoring_room':
         return 'Mentoring Room';
       case 'cafeteria':
         return 'Cafeteria';
-      case 'gimnasio':
+      case 'gym':
         return 'Gym';
       default:
-        final roomMatch = RegExp(r'^aula_(\d+)_(\d+)$').firstMatch(locationId);
+        final roomMatch =
+            RegExp(r'^classroom_(\d+)_(\d+)$').firstMatch(locationId);
         if (roomMatch != null) {
           return 'Classroom ${roomMatch.group(1)}.${roomMatch.group(2)}';
         }

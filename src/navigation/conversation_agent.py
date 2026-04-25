@@ -16,7 +16,7 @@ state machine itself, the routing decision, and the reply builder.
 import logging
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .agent.text_formatting import (
     BUILDING_FULL,
@@ -28,6 +28,7 @@ from .agent.text_formatting import (
 from .agent.parsing import (
     extract_building,
     extract_floor,
+    extract_location_id_from_pddl,
     extract_room_code_from_analysis,
     is_no,
     is_yes,
@@ -327,7 +328,7 @@ class ConversationAgent:
             ctx.photo_attempts = 0
             return self._reply(ctx, tts, "photo", "request_photo_door")
 
-        if any(w in low for w in ("elevator", "lift", "ascensor")):
+        if any(w in low for w in ("elevator", "lift", "elevator")):
             tts = "Turn left, walk two metres, and photograph the floor sign."
             ctx.state = ConversationState.WAITING_PHOTO_SIGN
             ctx.photo_attempts = 0
@@ -363,6 +364,25 @@ class ConversationAgent:
         )
         return self._reply(ctx, tts, "voice", "ask_situation")
 
+    def _resolve_location_id(
+        self, location_id: str
+    ) -> Optional[Tuple[int, int, str]]:
+        """Resolve a bare PDDL ``location_id`` to ``(building, floor, id)``.
+
+        The on-device VLM emits atoms like ``(at user1 classroom_1_4)``
+        where the building is implicit (G/CD, validated scope of the
+        smoke-test prompts). This helper scans G first, then CD, and
+        returns the first match. Only G is scanned today for door/sign
+        prompts because Gemma 3n was trained only against building G.
+        """
+        for bid in (1, 2):  # G, CD — the validated scope
+            fnum = self._hierarchical_converter.find_location_floor(
+                bid, location_id
+            )
+            if fnum is not None:
+                return (bid, fnum, location_id)
+        return None
+
     def _handle_waiting_photo(
         self, ctx: ConversationContext, analysis: Optional[Dict]
     ) -> Dict:
@@ -375,6 +395,21 @@ class ConversationAgent:
         floor = analysis.get("floor")
         image_type = analysis.get("image_type")
 
+        # Preferred path: the VLM gave us a PDDL atom. Use the location_id
+        # directly and resolve (building, floor) from topology — this is
+        # the clean on-device Gemma 3n path.
+        location_id = analysis.get("location_id") or extract_location_id_from_pddl(
+            analysis.get("raw_response", "")
+        )
+        if location_id:
+            resolved = self._resolve_location_id(location_id)
+            if resolved:
+                bid, fnum, loc_id = resolved
+                ctx.origin = {"building": bid, "floor": fnum, "location_id": loc_id}
+                return self._confirm_origin(ctx)
+
+        # Legacy path: PaliGemma backend used to return a room code like
+        # "1.4" — kept for robustness while both paths coexist.
         room_code = extract_room_code_from_analysis(analysis)
         if room_code and room_code.lower() in self._room_lookup:
             bid, fnum, loc_id = self._room_lookup[room_code.lower()]
@@ -384,9 +419,9 @@ class ConversationAgent:
         if building is not None and floor is not None:
             ctx.origin = {"building": building, "floor": floor, "location_id": None}
             if image_type == "elevator":
-                ctx.origin["location_id"] = "ascensor"
+                ctx.origin["location_id"] = "elevator"
             elif image_type == "stairs":
-                ctx.origin["location_id"] = "escaleras"
+                ctx.origin["location_id"] = "stairs"
             return self._confirm_origin(ctx)
 
         if building is not None and floor is None:
@@ -784,10 +819,10 @@ class ConversationAgent:
             expected = step.get("expected_photo_type", "area")
             if step.get("arrival_strict_photo"):
                 rc = step.get("expected_room_code")
-                aula_txt = f"classroom {rc}" if rc else "your classroom"
+                classroom_txt = f"classroom {rc}" if rc else "your classroom"
                 tts = (
                     f"{prefix}Step {idx} of {total}. {instruction} "
-                    f"On arrival, photograph the {expected} to confirm {aula_txt}."
+                    f"On arrival, photograph the {expected} to confirm {classroom_txt}."
                 )
                 ctx.state = ConversationState.WAITING_STEP_PHOTO
                 return self._reply(ctx, tts, "photo", "navigation_step")
@@ -1050,5 +1085,27 @@ class ConversationAgent:
             "action": action,
             "context": ctx.to_dict(),
         }
+        # Hint for the mobile client: which VLM prompt should it run on the
+        # next photo? Derived from the state + current step — the FSM is the
+        # single source of truth so the client does not need a classifier.
+        expect_photo = self._compute_expect_photo(ctx)
+        if expect_photo:
+            result["expect_photo"] = expect_photo
         result.update(extra)
         return result
+
+    def _compute_expect_photo(self, ctx: ConversationContext) -> Optional[str]:
+        """Maps the current FSM state to the VLM prompt the client should run.
+
+        Returns one of ``'door'``, ``'sign'``, ``'elevator'``, ``'stairs'`` or
+        ``None`` if no photo is currently expected.
+        """
+        if ctx.state == ConversationState.WAITING_PHOTO_DOOR:
+            return "door"
+        if ctx.state == ConversationState.WAITING_PHOTO_SIGN:
+            return "sign"
+        if ctx.state == ConversationState.WAITING_STEP_PHOTO:
+            if 0 <= ctx.current_step_idx < len(ctx.route_steps):
+                step = ctx.route_steps[ctx.current_step_idx]
+                return step.get("expected_photo_type")
+        return None

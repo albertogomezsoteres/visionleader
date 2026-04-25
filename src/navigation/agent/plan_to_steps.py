@@ -120,7 +120,7 @@ def fd_plan_to_steps_room_level(
         base, floor, bname = HierarchicalPDDLConverter.pddl_to_location(pddl_id)
         if floor is not None:
             return base, floor, bname or default_bname
-        # Unique id (aula_X, lab_Y, entrada_*): look it up in places.
+        # Unique id (classroom_X, lab_Y, entrance_*): look it up in places.
         for bn, floors in (places_locations or {}).items():
             for f_str, locs in (floors or {}).items():
                 for loc in locs:
@@ -281,6 +281,6 @@ def _building_id_from_name(name: Optional[str]) -> int:
         "g": 1,   "cd": 2,  "h": 3,   "p": 4,   "o": 5,
         "m": 6,   "n": 7,   "csq": 8, "k": 9,   "csc": 10,
         "c": 11,  "e": 12,  "cm": 13, "lcb": 14,
-        "rodilla": 15, "capilla": 16,
+        "rodilla": 15, "chapel": 16,
     }
     return mapping.get(name.lower(), 0)

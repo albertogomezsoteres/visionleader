@@ -37,8 +37,11 @@ async def conversation(request: ConversationRequest):
             context=ctx,
             tts_message=result.get("tts_message"),
             next_input=result.get("next_input"),
+            expect_photo=result.get("expect_photo"),
             plan_request=result.get("plan_request"),
             location_partial=result.get("location_partial"),
+            auto_fill=result.get("auto_fill"),
+            auto_fill_goal=result.get("auto_fill_goal"),
             gps_route=result.get("gps_route"),
         )
 

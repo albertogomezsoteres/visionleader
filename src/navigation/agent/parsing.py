@@ -46,9 +46,9 @@ FLOOR_WORDS: Dict[str, int] = {
 }
 
 ENTRANCE_IDS: Dict[int, str] = {
-    1: "entrada_principal",
-    2: "entrada_cd",
-    3: "entrada_principal",
+    1: "entrance_main",
+    2: "entrance_cd",
+    3: "entrance_main",
 }
 
 
@@ -73,7 +73,7 @@ def building_id_from_name(name: str) -> int:
 
 def entrance_id(building_id: int) -> str:
     """Canonical entrance location_id for a given building."""
-    return ENTRANCE_IDS.get(building_id, "entrada_principal")
+    return ENTRANCE_IDS.get(building_id, "entrance_main")
 
 
 def extract_building(msg: str) -> Optional[int]:
@@ -122,14 +122,46 @@ def normalize_room_code(code: str) -> str:
     return s.strip()
 
 
-def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
-    """Try to recover a canonical room code from a PaliGemma analysis dict.
+def extract_location_id_from_pddl(raw: str) -> Optional[str]:
+    """Extract a PDDL ``location_id`` from a VLM response atom.
 
-    Looks first at the structured ``landmarks`` field, then falls back to
-    the raw response text. Handles both '1.4' and bare '14' forms.
+    The on-device Gemma 3n prompts emit responses like
+    ``(at user1 classroom_1_4)``, ``(at user1 directory_sign_g_0)`` or
+    ``(at user1 lab_ia)``. This helper pulls out the bare location id
+    (``classroom_1_4`` / ``directory_sign_g_0`` / ``lab_ia``) so that
+    callers can hand it straight to HierarchicalPDDLConverter.
+
+    Returns None when the string doesn't match the expected shape.
+    """
+    if not raw:
+        return None
+    match = re.search(
+        r"\(\s*at\s+\w+\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\)",
+        str(raw),
+        re.IGNORECASE,
+    )
+    return match.group(1).lower() if match else None
+
+
+def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
+    """Try to recover a canonical room code from a VLM analysis dict.
+
+    Accepts three input shapes, in order of preference:
+      1. A PDDL-style location_id field (``classroom_1_4`` -> ``1.4``),
+         which is what the on-device Gemma 3n pipeline emits.
+      2. Structured ``landmarks`` entries (legacy PaliGemma output).
+      3. The raw response text (``'1.4'`` or bare ``'14'``).
     """
     if not analysis:
         return None
+
+    # Preferred: explicit location_id field from LocalVlmService.
+    location_id = analysis.get("location_id")
+    if location_id:
+        match = re.match(r"classroom_(\d+)_(\d+)", str(location_id).lower())
+        if match:
+            return normalize_room_code(f"{match.group(1)}.{match.group(2)}")
+
     for lm in analysis.get("landmarks", []) or []:
         match = re.search(r"(\d+\.\d+)", str(lm))
         if match:
@@ -137,7 +169,13 @@ def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
         compact = re.search(r"\b(\d{2})\b", str(lm))
         if compact:
             return normalize_room_code(compact.group(1))
+
     raw = analysis.get("raw_response") or analysis.get("raw") or ""
+    # Gemma 3n PDDL style: "(at user1 classroom_1_4)" -> "1.4"
+    classroom = re.search(r"classroom_(\d+)_(\d+)", str(raw).lower())
+    if classroom:
+        return normalize_room_code(f"{classroom.group(1)}.{classroom.group(2)}")
+
     match = re.search(r"(\d+\.\d+)", str(raw))
     if match:
         return normalize_room_code(match.group(1))
@@ -193,17 +231,17 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
 
     if result["location_id"] is None:
         if any(w in low for w in ("entrance", "entrada", "main entrance", "entrada principal")):
-            result["location_id"] = "entrada_principal"
+            result["location_id"] = "entrance_main"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
                 result["floor"] = 0
-        elif any(w in low for w in ("elevator", "ascensor", "lift")):
-            result["location_id"] = "ascensor"
+        elif any(w in low for w in ("elevator", "elevator", "lift")):
+            result["location_id"] = "elevator"
         elif any(w in low for w in ("stair", "escalera")):
-            result["location_id"] = "escaleras"
+            result["location_id"] = "stairs"
         elif any(w in low for w in ("restroom", "bathroom", "baño", "aseo", "toilet")):
-            result["location_id"] = "bano"
+            result["location_id"] = "bathroom"
         elif any(w in low for w in (
             "ai lab", "laboratorio ia", "laboratorio de ia",
             "lab ia", "ia lab", "ai laboratory",
@@ -214,27 +252,27 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
             if result["floor"] is None:
                 result["floor"] = 0
         elif any(w in low for w in ("office", "despacho", "faculty", "profesor")):
-            result["location_id"] = "despachos"
+            result["location_id"] = "offices"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
                 result["floor"] = 1
         elif any(w in low for w in ("secretary", "secretar")):
-            result["location_id"] = "secretaria"
+            result["location_id"] = "admin_office"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
                 result["floor"] = 2
         elif any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
-            result["location_id"] = "sala_mentorias"
+            result["location_id"] = "mentoring_room"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
                 result["floor"] = 2
         elif any(w in low for w in (
-            "eps office", "eps faculty", "despacho eps", "despachos eps",
+            "eps office", "eps faculty", "despacho eps", "offices eps",
         )):
-            result["location_id"] = "despachos_eps"
+            result["location_id"] = "eps_offices"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
@@ -245,7 +283,7 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
         and result["floor"] is not None
         and result["location_id"]
     ):
-        if result["location_id"].startswith("aula_"):
+        if result["location_id"].startswith("classroom_"):
             result["building"] = 1
 
     if result["building"] is None and result["floor"] is None and result["location_id"] is None:
@@ -272,12 +310,12 @@ def parse_destination(
 
     if any(w in low for w in ("rodilla", "sandwich", "bocadillo")):
         return {
-            "building": 15, "floor": 0, "location_id": "entrada_rodilla",
+            "building": 15, "floor": 0, "location_id": "entrance_rodilla",
             "label": "Rodilla",
         }
     if any(w in low for w in ("capilla", "chapel", "iglesia")):
         return {
-            "building": 16, "floor": 0, "location_id": "entrada_capilla",
+            "building": 16, "floor": 0, "location_id": "entrance_chapel",
             "label": "the UFV Chapel",
         }
 
@@ -290,14 +328,14 @@ def parse_destination(
             "label": "the cafeteria",
             "functional": "cafeteria",
         }
-    if any(w in low for w in ("gym", "gimnasio", "gymnasium", "sport")):
-        fl = fl_data.get("gimnasio", {})
+    if any(w in low for w in ("gym", "gym", "gymnasium", "sport")):
+        fl = fl_data.get("gym", {})
         return {
             "building": fl.get("building", 2),
             "floor": fl.get("floor", -1),
-            "location_id": "gimnasio",
+            "location_id": "gym",
             "label": "the gym",
-            "functional": "gimnasio",
+            "functional": "gym",
         }
 
     if any(w in low for w in (
@@ -310,30 +348,30 @@ def parse_destination(
         }
     if any(w in low for w in (
         "eps office", "eps faculty", "despacho eps",
-        "despachos eps", "eps professor",
+        "offices eps", "eps professor",
     )):
         return {
-            "building": 1, "floor": 2, "location_id": "despachos_eps",
+            "building": 1, "floor": 2, "location_id": "eps_offices",
             "label": "the EPS Faculty Offices",
         }
     if any(w in low for w in ("faculty office", "despacho", "profesor")):
         return {
-            "building": 1, "floor": 1, "location_id": "despachos",
+            "building": 1, "floor": 1, "location_id": "offices",
             "label": "the faculty offices",
         }
     if any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
         return {
-            "building": 1, "floor": 2, "location_id": "sala_mentorias",
+            "building": 1, "floor": 2, "location_id": "mentoring_room",
             "label": "the Mentoring Room",
         }
     if any(w in low for w in ("secretary", "secretar")):
         return {
-            "building": 1, "floor": 2, "location_id": "secretaria",
+            "building": 1, "floor": 2, "location_id": "admin_office",
             "label": "the Secretary Office",
         }
     if any(w in low for w in ("main entrance", "entrance", "entrada")):
         return {
-            "building": 1, "floor": 0, "location_id": "entrada_principal",
+            "building": 1, "floor": 0, "location_id": "entrance_main",
             "label": "the main entrance",
         }
 
@@ -342,11 +380,11 @@ def parse_destination(
             return {
                 "building": last_origin["building"],
                 "floor": last_origin["floor"],
-                "location_id": "bano",
+                "location_id": "bathroom",
                 "label": "the nearest restroom",
             }
         return {
-            "building": 1, "floor": 0, "location_id": "bano",
+            "building": 1, "floor": 0, "location_id": "bathroom",
             "label": "the restroom",
         }
 
