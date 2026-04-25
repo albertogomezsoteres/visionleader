@@ -5,15 +5,16 @@
 (define (domain campus-navigation)
   (:requirements :strips :typing :action-costs)
 
-  (:types robot location - object)
+  (:types user location - object)
 
   (:functions
     (total-cost) - number
     (distance ?u1 - location ?u2 - location) - number
+    (distance_outdoor ?u1 - location ?u2 - location) - number
   )
 
   (:predicates
-    (at ?r - robot ?u - location)
+    (at ?p - user ?u - location)
 
     (hallway_connected     ?u1 ?u2 - location)
     (elevator_connected    ?u1 ?u2 - location)
@@ -33,73 +34,73 @@
   )
 
   (:action walk
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (hallway_connected ?u1 ?u2) (open ?u2))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (hallway_connected ?u1 ?u2) (open ?u2))
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (increase (total-cost) (distance ?u1 ?u2)))
   )
 
   (:action verify_elevator
-    :parameters (?r - robot ?u - location)
-    :precondition (and (at ?r ?u) (is_elevator ?u) (open ?u))
+    :parameters (?p - user ?u - location)
+    :precondition (and (at ?p ?u) (is_elevator ?u) (open ?u))
     :effect (and (elevator_verified ?u) (increase (total-cost) 5))
   )
 
   (:action use_elevator
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (is_elevator ?u1) (elevator_verified ?u1)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (is_elevator ?u1) (elevator_verified ?u1)
                        (elevator_connected ?u1 ?u2))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (not (elevator_verified ?u1))
                  (increase (total-cost) 15))
   )
 
   (:action validate_stairs
-    :parameters (?r - robot ?u - location)
-    :precondition (and (at ?r ?u) (is_stairs ?u) (open ?u))
+    :parameters (?p - user ?u - location)
+    :precondition (and (at ?p ?u) (is_stairs ?u) (open ?u))
     :effect (and (stairs_verified ?u) (increase (total-cost) 5))
   )
 
   (:action climb_stairs_accessible
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (is_stairs ?u1) (stairs_verified ?u1)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (is_stairs ?u1) (stairs_verified ?u1)
                        (stairs_up_connected ?u1 ?u2) (not (hurry_mode)))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (not (stairs_verified ?u1))
                  (increase (total-cost) 30))
   )
 
   (:action descend_stairs_accessible
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (is_stairs ?u1) (stairs_verified ?u1)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (is_stairs ?u1) (stairs_verified ?u1)
                        (stairs_down_connected ?u1 ?u2) (not (hurry_mode)))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (not (stairs_verified ?u1))
                  (increase (total-cost) 25))
   )
 
   (:action climb_stairs_fast
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (is_stairs ?u1) (stairs_verified ?u1)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (is_stairs ?u1) (stairs_verified ?u1)
                        (stairs_up_connected ?u1 ?u2) (hurry_mode))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (not (stairs_verified ?u1))
                  (increase (total-cost) 12))
   )
 
   (:action descend_stairs_fast
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (is_stairs ?u1) (stairs_verified ?u1)
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (is_stairs ?u1) (stairs_verified ?u1)
                        (stairs_down_connected ?u1 ?u2) (hurry_mode))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
                  (not (stairs_verified ?u1))
                  (increase (total-cost) 8))
   )
 
   (:action outdoor_walk
-    :parameters (?r - robot ?u1 - location ?u2 - location)
-    :precondition (and (at ?r ?u1) (outdoor_connected ?u1 ?u2) (open ?u2))
-    :effect (and (not (at ?r ?u1)) (at ?r ?u2)
-                 (increase (total-cost) 60))
+    :parameters (?p - user ?u1 - location ?u2 - location)
+    :precondition (and (at ?p ?u1) (outdoor_connected ?u1 ?u2) (open ?u2))
+    :effect (and (not (at ?p ?u1)) (at ?p ?u2)
+                 (increase (total-cost) (distance_outdoor ?u1 ?u2)))
   )
 )

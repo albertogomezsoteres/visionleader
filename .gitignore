@@ -1,5 +1,10 @@
 # Results (generated during evaluation)
 results/
+reports/
+
+# Session diaries and planning notes — only README.md is tracked at root
+/*.md
+!/README.md
 
 # Local experiment outputs / scratch (not for remote)
 test/

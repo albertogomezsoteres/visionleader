@@ -312,8 +312,23 @@ class _ConversationScreenState extends State<ConversationScreen>
   // Photo actions
 
   Future<void> _pickPhoto(ImageSource source) async {
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 92, requestFullMetadata: false);
+    XFile? picked;
+    try {
+      picked = await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 92,
+        requestFullMetadata: false,
+      );
+    } catch (e) {
+      _setMessage(
+        'Could not open the ${source == ImageSource.gallery ? 'gallery' : 'camera'}: $e',
+        _nextInput,
+        _currentAction,
+      );
+      return;
+    }
     if (picked == null) return;
+
     setState(() { _isProcessing = true; _processingMsg = 'Analyzing image...'; });
     try {
       final cropped = await ImageProcessing.cropToSquare(File(picked.path));

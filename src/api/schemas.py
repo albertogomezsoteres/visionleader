@@ -8,7 +8,7 @@ class PlanningRequest(BaseModel):
     """Request to generate a navigation plan.
 
     initial_state and goal_state accept:
-      {'building': int, 'floor': int, 'room': 'aula_1_4'}
+      {'building': int, 'floor': int, 'room': 'classroom_1_4'}
 
     The shared `domain_indoor.pddl` handles both intra- and cross-building
     routes. When origin and goal are in different buildings the converter
@@ -24,7 +24,7 @@ class PlanningRequest(BaseModel):
     )
     goal_functional: Optional[str] = Field(
         None,
-        description="Named destination: 'cafeteria' or 'gimnasio'",
+        description="Named destination: 'cafeteria' or 'gym'",
     )
     hurry_mode: bool = Field(
         False,
@@ -114,6 +114,10 @@ class ConversationResponse(BaseModel):
     context: Dict[str, Any]
     tts_message: Optional[str] = None
     next_input: Optional[str] = None
+    # Hint for the mobile client about which VLM prompt to run for the next
+    # photo. Values: 'door', 'sign', 'elevator', 'stairs'. Present only when
+    # the FSM is in a state that expects a specific kind of photo.
+    expect_photo: Optional[str] = None
     plan_request: Optional[Dict[str, Any]] = None
     location_partial: Optional[Dict[str, Any]] = None
     auto_fill: Optional[Dict[str, Any]] = None

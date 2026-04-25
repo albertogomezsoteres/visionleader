@@ -22,7 +22,7 @@ Todas las variantes de escalera exigen `(stairs_verified u)` como precondición,
 
 ## Predicados clave
 
-- `(at ?r ?u)` — posición del robot
+- `(at ?p ?u)` — posición del usuario
 - `(open ?u)` — disponibilidad dinámica (clausura)
 - `(is_elevator ?u)` / `(is_stairs ?u)` — tipo de nodo
 - `(elevator_verified ?u)` / `(stairs_verified ?u)` — confirmación por VLM
@@ -38,12 +38,12 @@ Todas las variantes de escalera exigen `(stairs_verified u)` como precondición,
 
 Cuando origen y destino están en edificios distintos, el problema incluye las salas de ambos edificios y las aristas `outdoor_connected` entre sus entradas para que un solo plan resuelva la ruta completa.
 
-Los IDs de sala que se repiten entre edificios (`ascensor`, `escaleras`, `bano`) se prefijan con el nombre del edificio y el piso en PDDL: `ascensor_G_p0`, `escaleras_CD_pm1`. Los IDs únicos (`aula_1_4`, `entrada_principal`) se mantienen tal cual.
+Los IDs de sala que se repiten entre edificios (`elevator`, `stairs`, `bathroom`) se prefijan con el nombre del edificio y el piso en PDDL: `elevator_G_f0`, `stairs_CD_fm1`. Los IDs únicos (`classroom_1_4`, `entrance_main`) se mantienen tal cual.
 
 ## Ejemplos en `problems/`
 
-- `problem_g_intra_demo.pddl` — intra-G: entrada principal → aula 2.1
-- `problem_g_to_cd_demo.pddl` — cross-building: aula 1.4 (G) → gym (CD)
+- `problem_g_intra_demo.pddl` — intra-G: entrance_main → classroom_2_1
+- `problem_g_to_cd_demo.pddl` — cross-building: classroom_1_4 (G) → gym (CD)
 
 Son ejemplos ilustrativos; en runtime el planner nunca los lee — se escriben tempfiles por petición.
 

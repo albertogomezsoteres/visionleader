@@ -69,13 +69,18 @@ class FastDownwardPlanner:
         except (OSError, subprocess.SubprocessError):
             pass
 
+        # Bypass the image entrypoint (which hard-codes astar(lmcut())) so
+        # that callers can pick the ``search_config``. Going straight to
+        # fast-downward.py lets us pass --search explicitly.
         cmd = [
             "docker", "run",
             "--name", container_name,
+            "--entrypoint", "/fast-downward/fast-downward.py",
             "-v", f"{pddl_dir}:/pddl",
             self.docker_image,
-            domain_path.name,
-            problem_path.name,
+            f"/pddl/{domain_path.name}",
+            f"/pddl/{problem_path.name}",
+            "--search", search_config,
         ]
 
         try:
@@ -113,6 +118,11 @@ class FastDownwardPlanner:
                 "steps":   plan_info["steps"],
                 "output":  output,
                 "error":   plan_info.get("error"),
+                "expanded":       plan_info.get("expanded"),
+                "generated":      plan_info.get("generated"),
+                "evaluated":      plan_info.get("evaluated"),
+                "search_time_s":  plan_info.get("search_time_s"),
+                "total_time_s":   plan_info.get("total_time_s"),
             }
 
         except subprocess.TimeoutExpired:
@@ -127,7 +137,7 @@ class FastDownwardPlanner:
     # ── parsing ───────────────────────────────────────────────────────────────
 
     def _parse_plan(self, output: str) -> Dict:
-        """Extract plan actions, step count and cost from Fast Downward output."""
+        """Extract plan actions, step count, cost, and search stats."""
         plan:    List[str] = []
         cost  = 0
         steps = 0
@@ -162,12 +172,33 @@ class FastDownwardPlanner:
             if matches:
                 plan = [m.strip() for m in matches]
 
+        # Search statistics (useful for heuristic comparison). FD prints these
+        # regardless of success; parse them best-effort.
+        stats: Dict[str, Optional[float]] = {
+            "expanded":       None,
+            "generated":      None,
+            "evaluated":      None,
+            "search_time_s":  None,
+            "total_time_s":   None,
+        }
+        m = re.search(r"Expanded\s+(\d+)\s+state", output)
+        if m: stats["expanded"] = int(m.group(1))
+        m = re.search(r"Generated\s+(\d+)\s+state", output)
+        if m: stats["generated"] = int(m.group(1))
+        m = re.search(r"Evaluated\s+(\d+)\s+state", output)
+        if m: stats["evaluated"] = int(m.group(1))
+        m = re.search(r"Search time:\s+([\d.]+)s", output)
+        if m: stats["search_time_s"] = float(m.group(1))
+        m = re.search(r"Total time:\s+([\d.]+)s", output)
+        if m: stats["total_time_s"] = float(m.group(1))
+
         return {
             "success": success,
             "plan":    plan,
             "cost":    cost,
             "steps":   steps,
             "error":   None if success else "No solution found",
+            **stats,
         }
 
     # ── helpers ───────────────────────────────────────────────────────────────
