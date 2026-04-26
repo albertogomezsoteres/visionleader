@@ -2,16 +2,6 @@
     "models": [
         {
             "id": 1,
-            "model_id": "google/paligemma2-3b-pt-224",
-            "family": "paligemma",
-            "version": "v2",
-            "size": "3B",
-            "type": "pt",
-            "resolution": 224,
-            "description": "PaliGemma v2 - 3B pretrained - 224px"
-        },
-        {
-            "id": 2,
             "model_id": "google/paligemma2-3b-pt-448",
             "family": "paligemma",
             "version": "v2",
@@ -21,17 +11,7 @@
             "description": "PaliGemma v2 - 3B pretrained - 448px"
         },
         {
-            "id": 3,
-            "model_id": "google/paligemma2-3b-mix-224",
-            "family": "paligemma",
-            "version": "v2",
-            "size": "3B",
-            "type": "mix",
-            "resolution": 224,
-            "description": "PaliGemma v2 - 3B fine-tuned mix - 224px"
-        },
-        {
-            "id": 4,
+            "id": 2,
             "model_id": "google/paligemma2-3b-mix-448",
             "family": "paligemma",
             "version": "v2",
@@ -41,7 +21,7 @@
             "description": "PaliGemma v2 - 3B fine-tuned mix - 448px"
         },
         {
-            "id": 5,
+            "id": 3,
             "model_id": "google/paligemma2-10b-pt-448",
             "family": "paligemma",
             "version": "v2",
@@ -51,17 +31,7 @@
             "description": "PaliGemma v2 - 10B pretrained - 448px"
         },
         {
-            "id": 6,
-            "model_id": "google/paligemma2-10b-mix-224",
-            "family": "paligemma",
-            "version": "v2",
-            "size": "10B",
-            "type": "mix",
-            "resolution": 224,
-            "description": "PaliGemma v2 - 10B fine-tuned mix - 224px"
-        },
-        {
-            "id": 7,
+            "id": 4,
             "model_id": "google/paligemma2-10b-mix-448",
             "family": "paligemma",
             "version": "v2",
@@ -71,7 +41,7 @@
             "description": "PaliGemma v2 - 10B fine-tuned mix - 448px"
         },
         {
-            "id": 8,
+            "id": 5,
             "model_id": "google/paligemma2-10b-ft-docci-448",
             "family": "paligemma",
             "version": "v2",
@@ -81,7 +51,7 @@
             "description": "PaliGemma v2 - 10B fine-tuned DOCCI - 448px"
         },
         {
-            "id": 9,
+            "id": 6,
             "model_id": "google/gemma-4-E2B-it",
             "family": "gemma4",
             "version": "v1",
@@ -91,7 +61,7 @@
             "description": "Gemma 4 - E2B effective params, instruction-tuned, multimodal"
         },
         {
-            "id": 10,
+            "id": 7,
             "model_id": "google/gemma-4-E4B-it",
             "family": "gemma4",
             "version": "v1",
@@ -103,18 +73,36 @@
     ],
     "test_model": "google/paligemma2-3b-pt-448",
     "metadata": {
-        "total_models": 10,
-        "families": ["paligemma", "gemma4"],
-        "versions": ["v1", "v2"],
-        "sizes": ["3B", "10B", "E2B", "E4B"],
-        "types": ["pt", "mix", "ft-docci", "it"],
-        "resolutions": [224, 448, 768],
+        "total_models": 7,
+        "families": [
+            "paligemma",
+            "gemma4"
+        ],
+        "versions": [
+            "v1",
+            "v2"
+        ],
+        "sizes": [
+            "3B",
+            "10B",
+            "E2B",
+            "E4B"
+        ],
+        "types": [
+            "pt",
+            "mix",
+            "ft-docci",
+            "it"
+        ],
+        "resolutions": [
+            448,
+            768
+        ],
         "notes": [
-            "PaliGemma v2 candidates evaluated by the experiment1_paligemma / experiment2_paligemma notebooks.",
-            "Gemma 4 candidates evaluated by the experiment1_gemma / experiment2_gemma notebooks.",
-            "Notebooks filter this file by 'family' so PaliGemma and Gemma runs stay isolated.",
-            "Gemma 3n was excluded from the main evaluation because it is optimized for on-device deployment, which is out of scope for the cloud-based production architecture.",
-            "Selection criterion: quality on the evaluation set balanced with inference cost."
+            "Models restricted to 448 px PaliGemma 2 variants and Gemma 4 instruction-tuned variants.",
+            "224 px variants are dropped because preliminary results showed marginal differences (<1pp) versus their 448 counterparts; 448 px is preferred for tasks requiring fine text reading.",
+            "Includes pretrained (pt), mix-tuned (mix) and DOCCI-tuned (ft-docci) PaliGemma variants in both sizes (3B, 10B) plus both Gemma 4 effective-parameter sizes (E2B, E4B), to compare fine-tune type and scale across families.",
+            "Notebooks filter this file by 'family' so PaliGemma and Gemma evaluations stay isolated where needed."
         ]
     }
 }

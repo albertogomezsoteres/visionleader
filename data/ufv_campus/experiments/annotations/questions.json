@@ -1,305 +1,160 @@
 {
-  "_comment": "Questions for UFV Campus Dataset evaluation. Two experiments: Exp1 (navigation element recognition) and Exp2 (location state extraction). Prompts use constrained format for closed questions and free format for extraction tasks.",
+  "_comment": "Questions for the UFV Campus VLM evaluation. Two perception experiments (Exp1, Exp2). Production-aligned structured-output prompts live in prompts.json (Exp3). Each question declares which categories it applies to and the metric subset it contributes to.",
   "experiment1": {
-    "name": "Navigation Element Recognition",
-    "description": "Evaluates PaliGemma ability to recognize and classify navigation elements in indoor campus images.",
-    "categories": {
-      "staircase": {
-        "display_name": "Staircases",
-        "questions": [
-          {
-            "id": "staircase_detection",
-            "type": "closed",
-            "question": "Is there a staircase visible in this image? Answer yes or no.",
-            "expected_answer_key": "staircase_detection",
-            "metrics": [
-              "exact_match",
-              "precision",
-              "recall",
-              "tp_fp_tn_fn"
-            ],
-            "note": "Applies to all images including negatives. Negatives expected answer: no."
-          },
-          {
-            "id": "staircase_direction",
-            "type": "closed",
-            "question": "Are the stairs going up or down as seen from the camera? Answer with one word: up or down.",
-            "expected_answer_key": "staircase_direction",
-            "metrics": [
-              "exact_match"
-            ],
-            "note": "Only applies to positive images."
-          },
-          {
-            "id": "staircase_handrails",
-            "type": "closed",
-            "question": "Does the staircase have handrails? Answer yes or no.",
-            "expected_answer_key": "staircase_handrails",
-            "metrics": [
-              "exact_match"
-            ],
-            "note": "Only applies to positive images."
-          },
-          {
-            "id": "staircase_element",
-            "type": "element",
-            "question": "What is the main navigation element visible in this image? Answer with one word.",
-            "expected_answer_key": "staircase_element",
-            "expected_keywords": [
-              "staircase",
-              "stairs"
-            ],
-            "bertscore_reference": "staircase",
-            "metrics": [
-              "keyword_recall",
-              "bertscore"
-            ],
-            "note": "Keywords kept strict (2 terms) so BERTScore captures additional variants like stair, steps, flight."
-          }
-        ]
+    "name": "Perception (state and element classification)",
+    "description": "Evaluates the VLM's generic perception capability: identifying the main element shown in the image (multi-class) and classifying state or sub-type for each element (binary closed-class).",
+    "questions": [
+      {
+        "id": "element_identification",
+        "applies_to_categories": [
+          "stairs",
+          "elevators"
+        ],
+        "question_text": "What type of object is shown in this image? Reply with exactly one word from this list: stairs, elevator.",
+        "expected_answer_field": "element",
+        "task_type": "multiclass",
+        "expected_keywords": {
+          "stairs": [
+            "stairs",
+            "staircase",
+            "stair",
+            "steps"
+          ],
+          "elevator": [
+            "elevator",
+            "lift"
+          ]
+        },
+        "metric_classes_for_f1": [
+          "stairs",
+          "elevator"
+        ],
+        "metrics": [
+          "accuracy",
+          "macro_precision",
+          "macro_recall",
+          "macro_f1",
+          "keyword_recall",
+          "confusion_matrix",
+          "avg_output_length_words"
+        ],
+        "note": "Multi-class classification over the two architectural elements (stairs, elevator). Bathroom verification is moved to Phase B with a dedicated arrival-verification prompt."
       },
-      "elevator": {
-        "display_name": "Elevators",
-        "questions": [
-          {
-            "id": "elevator_detection",
-            "type": "closed",
-            "question": "Is there an elevator visible in this image? Answer yes or no.",
-            "expected_answer_key": "elevator_detection",
-            "metrics": [
-              "exact_match",
-              "precision",
-              "recall",
-              "tp_fp_tn_fn"
-            ],
-            "note": "Applies to all images including negatives."
-          },
-          {
-            "id": "elevator_doors",
-            "type": "closed",
-            "question": "Are the elevator doors open or closed? Answer with one word: open or closed.",
-            "expected_answer_key": "elevator_doors",
-            "metrics": [
-              "exact_match"
-            ],
-            "note": "Only applies to positive images."
-          },
-          {
-            "id": "elevator_element",
-            "type": "element",
-            "question": "What is the main navigation element visible in this image? Answer with one word.",
-            "expected_answer_key": "elevator_element",
-            "expected_keywords": [
-              "elevator",
-              "lift"
-            ],
-            "bertscore_reference": "elevator",
-            "metrics": [
-              "keyword_recall",
-              "bertscore"
-            ]
-          }
-        ]
+      {
+        "id": "stairs_direction",
+        "applies_to_categories": [
+          "stairs"
+        ],
+        "question_text": "Looking at the staircase from the camera's point of view, are the stairs going up or down? Reply with exactly one word from this list: up, down.",
+        "expected_answer_field": "stairs_direction",
+        "task_type": "binary",
+        "valid_classes": [
+          "up",
+          "down"
+        ],
+        "metrics": [
+          "accuracy",
+          "macro_precision",
+          "macro_recall",
+          "macro_f1",
+          "confusion_matrix"
+        ],
+        "safety_critical": true
       },
-      "door": {
-        "display_name": "Doors",
-        "questions": [
-          {
-            "id": "door_detection",
-            "type": "closed",
-            "question": "Is there a door visible in this image? Answer yes or no.",
-            "expected_answer_key": "door_detection",
-            "metrics": [
-              "exact_match",
-              "precision",
-              "recall",
-              "tp_fp_tn_fn"
-            ],
-            "note": "Applies to all images including negatives."
-          },
-          {
-            "id": "door_state",
-            "type": "closed",
-            "question": "Is the door open or closed? Answer with one word: open or closed.",
-            "expected_answer_key": "door_state",
-            "metrics": [
-              "exact_match"
-            ],
-            "note": "Only applies to positive images."
-          },
-          {
-            "id": "door_element",
-            "type": "element",
-            "question": "What is the main navigation element visible in this image? Answer with one word.",
-            "expected_answer_key": "door_element",
-            "expected_keywords": [
-              "door"
-            ],
-            "bertscore_reference": "door",
-            "metrics": [
-              "keyword_recall",
-              "bertscore"
-            ]
-          }
-        ]
-      },
-      "door_sign": {
-        "display_name": "Doors with Signs",
-        "questions": [
-          {
-            "id": "doorsign_bathroom",
-            "type": "closed",
-            "question": "Is this a bathroom door? Answer yes or no.",
-            "expected_answer_key": "doorsign_bathroom",
-            "metrics": [
-              "exact_match",
-              "precision",
-              "recall",
-              "tp_fp_tn_fn"
-            ],
-            "note": "Applies to all images including negatives. Negatives expected answer: no."
-          },
-          {
-            "id": "doorsign_exit",
-            "type": "closed",
-            "question": "Is this an exit door? Answer yes or no.",
-            "expected_answer_key": "doorsign_exit",
-            "metrics": [
-              "exact_match",
-              "precision",
-              "recall",
-              "tp_fp_tn_fn"
-            ],
-            "note": "Applies to all images including negatives. Negatives expected answer: no."
-          },
-          {
-            "id": "doorsign_state",
-            "type": "closed",
-            "question": "Is the door open or closed? Answer with one word: open or closed.",
-            "expected_answer_key": "doorsign_state",
-            "metrics": [
-              "exact_match"
-            ],
-            "note": "Only applies to positive images."
-          },
-          {
-            "id": "doorsign_element",
-            "type": "element",
-            "question": "What navigation sign is visible on this door? Answer with one word.",
-            "expected_answer_key": "doorsign_element",
-            "expected_keywords": [
-              "bathroom",
-              "restroom",
-              "exit",
-              "toilet",
-              "door"
-            ],
-            "bertscore_reference": "bathroom",
-            "metrics": [
-              "keyword_recall",
-              "bertscore"
-            ],
-            "note": "Per-image keyword overrides defined in expected_answers (bathroom vs exit). BERTScore reference also overridden per image."
-          }
-        ]
+      {
+        "id": "elevator_state",
+        "applies_to_categories": [
+          "elevators"
+        ],
+        "question_text": "Look at the elevator doors in this image. Are they open or closed? Reply with exactly one word from this list: open, closed.",
+        "expected_answer_field": "elevator_state",
+        "task_type": "binary",
+        "valid_classes": [
+          "open",
+          "closed"
+        ],
+        "metrics": [
+          "accuracy",
+          "macro_precision",
+          "macro_recall",
+          "macro_f1",
+          "confusion_matrix"
+        ],
+        "safety_critical": true
       }
-    }
+    ]
   },
   "experiment2": {
-    "name": "Location State Extraction",
-    "description": "Evaluates PaliGemma ability to extract location information from building signs and room number signs. Free-format prompts used to allow BERTScore evaluation of flexible responses.",
-    "categories": {
-      "building_sign": {
-        "display_name": "Building Signs",
-        "questions": [
-          {
-            "id": "building_sign_combined",
-            "type": "extraction",
-            "question": "What building code and floor number are shown in this sign? Answer with the building code followed by the floor number, separated by a space (for example: EPS 0, G 1, EPS 2). If only the floor number is visible, answer with only the number (for example: -1, 0, 1, 2). If no information is visible, answer none.",
-            "expected_answer_key": "combined",
-            "metrics": [
-              "building_accuracy",
-              "floor_accuracy",
-              "location_accuracy",
-              "bertscore_f1"
-            ],
-            "note": "Combined building+floor extraction. Parse response to extract building and floor separately. BERTScore only for type=complete images (bertscore_reference != null). location_accuracy only for type=complete."
-          }
+    "name": "Location extraction",
+    "description": "Evaluates the VLM's ability to extract location information from directory signs and classroom door plates (free-form text extraction, scored by component accuracy and substring match).",
+    "questions": [
+      {
+        "id": "floor_extraction",
+        "applies_to_categories": [
+          "directory_signs"
+        ],
+        "question_text": "Look at this directory sign. The location indicator is shown in the top-right area of the sign. What location does it indicate? Reply with exactly one of these strings: G 0, G 1, G 2, or G Agora.",
+        "expected_answer_field": "expected_full",
+        "task_type": "extraction_multiclass",
+        "valid_classes": [
+          "G 0",
+          "G 1",
+          "G 2",
+          "G Agora"
+        ],
+        "metrics": [
+          "floor_accuracy",
+          "building_accuracy",
+          "location_accuracy",
+          "macro_precision",
+          "macro_recall",
+          "macro_f1",
+          "bertscore_f1",
+          "confusion_matrix",
+          "avg_output_length_words"
         ]
       },
-      "door_room": {
-        "display_name": "Classroom Doors",
-        "questions": [
-          {
-            "id": "doorroom_detection",
-            "type": "closed",
-            "question": "Is there a room code or number visible on this door or next to it? Answer yes or no.",
-            "expected_answer_key": "doorroom_detection",
-            "metrics": [
-              "exact_match"
-            ]
-          },
-          {
-            "id": "doorroom_code",
-            "type": "extraction",
-            "question": "What is the room code shown on or next to this door? Answer with only the room code (for example: 1.2, 0.4, or IA).",
-            "expected_answer_key": "room_code",
-            "metrics": [
-              "room_code_accuracy"
-            ],
-            "note": "Room Code Accuracy checks if expected code appears in model response. Free format to capture variants: 1.2, room 1.2, 1.2 is the room number."
-          },
-          {
-            "id": "doorroom_state",
-            "type": "closed",
-            "question": "Is the door open or closed? Answer with one word: open or closed.",
-            "expected_answer_key": "doorroom_state",
-            "metrics": [
-              "exact_match"
-            ]
-          }
-        ]
+      {
+        "id": "room_code_extraction",
+        "applies_to_categories": [
+          "room_plates"
+        ],
+        "question_text": "What room code is shown on this plate? Answer with only the room code.",
+        "expected_answer_field": "room_code",
+        "task_type": "extraction_freeform",
+        "metrics": [
+          "room_code_accuracy",
+          "avg_output_length_words"
+        ],
+        "note": "room_code_accuracy uses substring match with word-boundary against the expected code."
       }
-    }
+    ]
   },
   "metadata": {
-    "total_experiments": 2,
-    "exp1_categories": [
-      "staircase",
-      "elevator",
-      "door",
-      "door_sign"
-    ],
-    "exp2_categories": [
-      "building_sign",
-      "door_room"
-    ],
-    "metrics_exp1": [
-      "exact_match",
-      "accuracy",
-      "precision",
-      "recall",
-      "tp_fp_tn_fn",
-      "keyword_recall",
-      "bertscore_f1"
-    ],
-    "metrics_exp2": [
-      "exact_match",
-      "building_accuracy",
-      "floor_accuracy",
-      "location_accuracy",
-      "room_code_accuracy",
-      "bertscore_f1",
-      "hallucination_rate"
-    ],
-    "efficiency_metrics": [
+    "ground_truth_file": "ground_truth.json",
+    "total_categories": 5,
+    "total_images": 80,
+    "category_image_counts": {
+      "stairs": 15,
+      "elevators": 10,
+      "facility_signs": 9,
+      "directory_signs": 20,
+      "room_plates": 26
+    },
+    "exp1_questions_count": 3,
+    "exp2_questions_count": 2,
+    "operational_metrics": [
+      "mean_inference_time_ms",
+      "avg_inference_time_ms_std",
       "vram_peak_gb",
-      "inference_time_ms",
-      "throughput_img_per_s",
-      "parameters_b",
-      "disk_size_gb"
+      "model_load_time_s",
+      "throughput_inf_per_s",
+      "n_parameters_billions"
     ],
-    "prompt_strategy": "Constrained prompting for closed questions (yes/no, open/closed, up/down). Combined extraction for building_sign (building code + floor in one prompt). Free format for room code.",
-    "bertscore_usage": "Exp1: applied to element questions (keyword strict + BERTScore flexible). Exp2: applied to building_sign combined response for type=complete images only (bertscore_reference = 'EPS 0', 'G 1', etc.). Not used for room_code (too short, exact match sufficient)."
+    "notes": [
+      "Each question declares its applicable categories and (optionally) a sub-set filter via 'applies_only_when_field_equals'.",
+      "Ground-truth values per image live in ground_truth.json (referenced by 'ground_truth_file' in this metadata).",
+      "Production-aligned structured-output prompts (PDDL atoms, JSON objects) live in prompts.json and are evaluated by Exp3."
+    ]
   }
 }
