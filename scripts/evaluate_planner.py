@@ -66,24 +66,24 @@ PROBLEMS: List[Dict] = [
     # -- Intra-G, aulas (p0, p1, p2 — no ágora) --
     {
         "key": "g_same_floor",
-        "label": "G p0: classroom_0_1 → classroom_0_4 (misma planta)",
+        "label": "G p0: classroom_g_0_1 → classroom_g_0_4 (misma planta)",
         "category": "intra-g",
-        "kwargs": {"origin_building": 1, "origin_room": "classroom_0_1", "origin_floor": 0,
-                   "dest_room": "classroom_0_4", "dest_floor": 0},
+        "kwargs": {"origin_building": 1, "origin_room": "classroom_g_0_1", "origin_floor": 0,
+                   "dest_room": "classroom_g_0_4", "dest_floor": 0},
     },
     {
         "key": "g_one_floor",
-        "label": "G: entrance_2 p0 → classroom_1_4 p1",
+        "label": "G: entrance_2 p0 → classroom_g_1_4 p1",
         "category": "intra-g",
         "kwargs": {"origin_building": 1, "origin_room": "entrance_2", "origin_floor": 0,
-                   "dest_room": "classroom_1_4", "dest_floor": 1},
+                   "dest_room": "classroom_g_1_4", "dest_floor": 1},
     },
     {
         "key": "g_two_floors",
-        "label": "G: classroom_0_1 p0 → classroom_2_1 p2",
+        "label": "G: classroom_g_0_1 p0 → classroom_g_2_1 p2",
         "category": "intra-g",
-        "kwargs": {"origin_building": 1, "origin_room": "classroom_0_1", "origin_floor": 0,
-                   "dest_room": "classroom_2_1", "dest_floor": 2},
+        "kwargs": {"origin_building": 1, "origin_room": "classroom_g_0_1", "origin_floor": 0,
+                   "dest_room": "classroom_g_2_1", "dest_floor": 2},
     },
     # -- Intra-CD, aulas (p0 entrance + p1/p2 aulas) --
     {
@@ -118,27 +118,27 @@ PROBLEMS: List[Dict] = [
     },
     {
         "key": "hybrid_aula_p1",
-        "label": "Hybrid: classroom_1_4 G p1 → classroom_cd_1_3 CD p1 (aula↔aula)",
+        "label": "Hybrid: classroom_g_1_4 G p1 → classroom_cd_1_3 CD p1 (aula↔aula)",
         "category": "hybrid",
-        "kwargs": {"origin_building": 1, "origin_room": "classroom_1_4", "origin_floor": 1,
+        "kwargs": {"origin_building": 1, "origin_room": "classroom_g_1_4", "origin_floor": 1,
                    "dest_building": 2,
                    "dest_room": "classroom_cd_1_3", "dest_floor": 1},
     },
     {
         "key": "hybrid_deep",
-        "label": "Hybrid deep: classroom_0_1 G p0 → classroom_cd_2_8 CD p2",
+        "label": "Hybrid deep: classroom_g_0_1 G p0 → classroom_cd_2_8 CD p2",
         "category": "hybrid",
-        "kwargs": {"origin_building": 1, "origin_room": "classroom_0_1", "origin_floor": 0,
+        "kwargs": {"origin_building": 1, "origin_room": "classroom_g_0_1", "origin_floor": 0,
                    "dest_building": 2,
                    "dest_room": "classroom_cd_2_8", "dest_floor": 2},
     },
     # -- Special (hurry mode + closure) --
     {
         "key": "g_hurry",
-        "label": "G hurry_mode: entrance_2 p0 → classroom_1_4 p1",
+        "label": "G hurry_mode: entrance_2 p0 → classroom_g_1_4 p1",
         "category": "special",
         "kwargs": {"origin_building": 1, "origin_room": "entrance_2", "origin_floor": 0,
-                   "dest_room": "classroom_1_4", "dest_floor": 1, "hurry_mode": True},
+                   "dest_room": "classroom_g_1_4", "dest_floor": 1, "hurry_mode": True},
     },
     {
         "key": "hybrid_closure",

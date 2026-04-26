@@ -58,7 +58,7 @@ def nice_location_name(loc_id: str) -> str:
         "elevator": "the elevator",
         "stairs": "the stairs",
         "bathroom": "the restroom",
-        "lab_ia": "the AI Laboratory",
+        "ai_lab": "the AI Laboratory",
         "offices": "the faculty offices",
         "eps_offices": "the EPS Faculty Offices",
         "admin_office": "the Secretary Office",
@@ -68,9 +68,12 @@ def nice_location_name(loc_id: str) -> str:
     }
     if loc_id in mapping:
         return mapping[loc_id]
-    m = re.match(r"classroom_(\d+)_(\d+)", loc_id)
+    m = re.match(r"classroom_g_(\d+)_(\d+)", loc_id)
     if m:
         return f"Classroom {m.group(1)}.{m.group(2)}"
+    m = re.match(r"classroom_cd_\d+_(\d+)", loc_id)
+    if m:
+        return f"Classroom {m.group(1)} (CD)"
     return loc_id.replace("_", " ")
 
 
@@ -105,7 +108,7 @@ def normalize_instruction(text: str) -> str:
         "entrada principal", "main entrance"
     )
     out = re.sub(r"directory_sign_g_\w+", "directory sign", out)
-    out = out.replace("lab_ia", "AI laboratory").replace("lab ia", "AI laboratory")
+    out = out.replace("ai_lab", "AI laboratory").replace("lab ia", "AI laboratory")
     out = out.replace("bathroom", "restroom")
     out = out.replace("eps_offices", "EPS faculty offices").replace(
         "offices eps", "EPS faculty offices"

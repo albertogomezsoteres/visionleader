@@ -147,15 +147,17 @@ class HierarchicalPDDLConverter:
         """Convert a campus location_id + floor to a unique PDDL location name.
 
         Shared ids (elevator, stairs, bathroom) repeat across buildings and
-        floors. They get both a building prefix and a floor suffix in PDDL:
-        ``elevator_G_f0``, ``stairs_CD_fm1``.
+        floors. They get both a lowercase building prefix and a floor suffix in
+        PDDL: ``elevator_g_f0``, ``stairs_cd_fm1``. Lowercase keeps the source
+        in sync with Fast Downward's plan output, which downcases every id.
 
-        Unique ids (classroom_0_1, lab_ia, entrance_cd, …) are returned unchanged.
+        Unique ids (classroom_g_0_1, ai_lab, entrance_cd, …) are returned
+        unchanged.
         """
         if location_id in cls.SHARED_LOC_IDS:
             suffix = f"fm{abs(floor)}" if floor < 0 else f"f{floor}"
             if building_name:
-                return f"{location_id}_{building_name}_{suffix}"
+                return f"{location_id}_{building_name.lower()}_{suffix}"
             return f"{location_id}_{suffix}"
         return location_id
 
@@ -163,10 +165,10 @@ class HierarchicalPDDLConverter:
     def _canonical_building_name(cls, name: str) -> str:
         """Match a (possibly lowercased) building name to its canonical form.
 
-        Fast Downward lowercases every id in its plan output, so a PDDL id
-        that was generated as ``elevator_CD_fm1`` comes back as
-        ``elevator_cd_fm1``. This helper maps ``'cd'`` back to ``'CD'`` so
-        lookups in distance/hint tables keyed by canonical names succeed.
+        Building suffixes in PDDL ids are lowercase by convention (matching
+        Fast Downward's plan output). This helper maps ``'cd'`` back to
+        ``'CD'`` so downstream lookups in tables keyed by canonical names
+        (BUILDING_NAMES, building_locations, etc.) succeed.
         """
         if not name:
             return name
@@ -183,11 +185,11 @@ class HierarchicalPDDLConverter:
         """Reverse mapping: PDDL id -> (json location_id, floor, building_name).
 
         Examples:
-          ``elevator_G_f0``       -> ('elevator', 0, 'G')
-          ``elevator_g_f0``       -> ('elevator', 0, 'G')   (lowercased by FD)
-          ``stairs_CD_fm1``       -> ('stairs', -1, 'CD')
-          ``elevator_rear_CD_f1`` -> ('elevator_rear', 1, 'CD')
-          ``classroom_1_4``       -> ('classroom_1_4', None, None)
+          ``elevator_g_f0``       -> ('elevator', 0, 'G')
+          ``stairs_cd_fm1``       -> ('stairs', -1, 'CD')
+          ``elevator_rear_cd_f1`` -> ('elevator_rear', 1, 'CD')
+          ``classroom_g_1_4``     -> ('classroom_g_1_4', None, None)
+          ``ai_lab``              -> ('ai_lab', None, None)
 
         Longer ids are tried first so that ``elevator_rear`` is not
         mis-matched by the ``elevator`` prefix.
@@ -364,7 +366,7 @@ class HierarchicalPDDLConverter:
         pddl_room_names = sorted(r[0] for r in all_rooms)
 
         objects_lines = [
-            f"    user1 - user",
+            f"    user - person",
             f"    {' '.join(pddl_room_names)} - location",
         ]
 
@@ -378,7 +380,7 @@ class HierarchicalPDDLConverter:
                 closed_pddl_ids.add(pddl_id)
 
         init_lines: List[str] = ["    (= (total-cost) 0)"]
-        init_lines.append(f"    (at user1 {origin_pddl})")
+        init_lines.append(f"    (at user {origin_pddl})")
 
         if hurry_mode:
             init_lines.append("    (hurry_mode)")
@@ -523,7 +525,7 @@ class HierarchicalPDDLConverter:
             f"  )\n"
             f"\n"
             f"  (:goal\n"
-            f"    (at user1 {dest_pddl})\n"
+            f"    (at user {dest_pddl})\n"
             f"  )\n"
             f"\n"
             f"  (:metric minimize (total-cost))\n"
@@ -544,19 +546,30 @@ if __name__ == "__main__":
         pddl_dir=str(BASE / "pddl"),
     )
 
-    print("=== Building G: entrance_main (floor 0) -> classroom_1_4 (floor 1) ===")
-    print(converter.generate_building_problem(
-        origin_building=1,
-        origin_room="entrance_main", origin_floor=0,
-        dest_room="classroom_1_4", dest_floor=1,
-        problem_name="g-entrance-to-classroom14",
-    ))
+    problems_dir = BASE / "pddl" / "problems"
+    problems_dir.mkdir(parents=True, exist_ok=True)
 
-    print("=== Cross-building: classroom_1_4 of G -> gym of CD ===")
-    print(converter.generate_building_problem(
+    intra_path = problems_dir / "problem_g_intra_demo.pddl"
+    print(f"=== Building G: entrance_2 (floor 0) -> classroom_g_1_4 (floor 1) ===")
+    intra_pddl = converter.generate_building_problem(
         origin_building=1,
-        origin_room="classroom_1_4", origin_floor=1,
+        origin_room="entrance_2", origin_floor=0,
+        dest_room="classroom_g_1_4", dest_floor=1,
+        problem_name="g_intra",
+        output_path=str(intra_path),
+    )
+    print(intra_pddl)
+    print(f"Wrote {intra_path}")
+
+    cross_path = problems_dir / "problem_g_to_cd_demo.pddl"
+    print(f"=== Cross-building: classroom_g_1_4 of G -> gym of CD ===")
+    cross_pddl = converter.generate_building_problem(
+        origin_building=1,
+        origin_room="classroom_g_1_4", origin_floor=1,
         dest_building=2,
         goal_functional="gym",
-        problem_name="g-to-cd-gym",
-    ))
+        problem_name="g_to_cd_gym",
+        output_path=str(cross_path),
+    )
+    print(cross_pddl)
+    print(f"Wrote {cross_path}")

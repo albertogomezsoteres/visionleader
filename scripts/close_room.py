@@ -8,7 +8,7 @@ the API.
 Usage:
 
     # Close a classroom (globally unique id, no floor needed)
-    python scripts/close_room.py close G classroom_1_4 --reason "class in session"
+    python scripts/close_room.py close G classroom_g_1_4 --reason "class in session"
 
     # Close a shared-name id on a specific floor (elevator on floor 0)
     python scripts/close_room.py close G elevator --floor 0 --reason "maintenance"
@@ -123,7 +123,7 @@ def main() -> None:
 
     p_close = sub.add_parser("close", help="close a room")
     p_close.add_argument("building", help="G | CD | H")
-    p_close.add_argument("location_id", help="e.g. classroom_1_4, elevator, stairs")
+    p_close.add_argument("location_id", help="e.g. classroom_g_1_4, elevator, stairs")
     p_close.add_argument("--floor", type=int, default=None,
                          help="floor, required only for ids shared across floors")
     p_close.add_argument("--reason", default="currently unavailable")

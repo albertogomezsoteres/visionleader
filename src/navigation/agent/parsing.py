@@ -125,10 +125,10 @@ def normalize_room_code(code: str) -> str:
 def extract_location_id_from_pddl(raw: str) -> Optional[str]:
     """Extract a PDDL ``location_id`` from a VLM response atom.
 
-    The on-device Gemma 3n prompts emit responses like
-    ``(at user1 classroom_1_4)``, ``(at user1 directory_sign_g_0)`` or
-    ``(at user1 lab_ia)``. This helper pulls out the bare location id
-    (``classroom_1_4`` / ``directory_sign_g_0`` / ``lab_ia``) so that
+    The on-device VLM prompts emit responses like
+    ``(at user classroom_g_1_4)``, ``(at user directory_sign_g_0)`` or
+    ``(at user ai_lab)``. This helper pulls out the bare location id
+    (``classroom_g_1_4`` / ``directory_sign_g_0`` / ``ai_lab``) so that
     callers can hand it straight to HierarchicalPDDLConverter.
 
     Returns None when the string doesn't match the expected shape.
@@ -147,7 +147,7 @@ def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
     """Try to recover a canonical room code from a VLM analysis dict.
 
     Accepts three input shapes, in order of preference:
-      1. A PDDL-style location_id field (``classroom_1_4`` -> ``1.4``),
+      1. A PDDL-style location_id field (``classroom_g_1_4`` -> ``1.4``),
          which is what the on-device Gemma 3n pipeline emits.
       2. Structured ``landmarks`` entries (legacy PaliGemma output).
       3. The raw response text (``'1.4'`` or bare ``'14'``).
@@ -158,7 +158,7 @@ def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
     # Preferred: explicit location_id field from LocalVlmService.
     location_id = analysis.get("location_id")
     if location_id:
-        match = re.match(r"classroom_(\d+)_(\d+)", str(location_id).lower())
+        match = re.match(r"classroom_g_(\d+)_(\d+)", str(location_id).lower())
         if match:
             return normalize_room_code(f"{match.group(1)}.{match.group(2)}")
 
@@ -171,8 +171,8 @@ def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
             return normalize_room_code(compact.group(1))
 
     raw = analysis.get("raw_response") or analysis.get("raw") or ""
-    # Gemma 3n PDDL style: "(at user1 classroom_1_4)" -> "1.4"
-    classroom = re.search(r"classroom_(\d+)_(\d+)", str(raw).lower())
+    # On-device VLM PDDL style: "(at user classroom_g_1_4)" -> "1.4"
+    classroom = re.search(r"classroom_g_(\d+)_(\d+)", str(raw).lower())
     if classroom:
         return normalize_room_code(f"{classroom.group(1)}.{classroom.group(2)}")
 
@@ -246,7 +246,7 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
             "ai lab", "laboratorio ia", "laboratorio de ia",
             "lab ia", "ia lab", "ai laboratory",
         )):
-            result["location_id"] = "lab_ia"
+            result["location_id"] = "ai_lab"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:
@@ -283,8 +283,10 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
         and result["floor"] is not None
         and result["location_id"]
     ):
-        if result["location_id"].startswith("classroom_"):
+        if result["location_id"].startswith("classroom_g_"):
             result["building"] = 1
+        elif result["location_id"].startswith("classroom_cd_"):
+            result["building"] = 2
 
     if result["building"] is None and result["floor"] is None and result["location_id"] is None:
         return None
@@ -343,7 +345,7 @@ def parse_destination(
         "lab ia", "ia lab", "ai laboratory",
     )):
         return {
-            "building": 1, "floor": 0, "location_id": "lab_ia",
+            "building": 1, "floor": 0, "location_id": "ai_lab",
             "label": "the AI Laboratory",
         }
     if any(w in low for w in (

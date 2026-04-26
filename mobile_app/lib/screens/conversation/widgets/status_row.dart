@@ -38,7 +38,7 @@ class StatusRow extends StatelessWidget {
         return 'Stairs';
       case 'bathroom':
         return 'Restroom';
-      case 'lab_ia':
+      case 'ai_lab':
         return 'AI Laboratory';
       case 'offices':
         return 'Faculty Offices';

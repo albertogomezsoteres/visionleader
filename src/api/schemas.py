@@ -8,7 +8,7 @@ class PlanningRequest(BaseModel):
     """Request to generate a navigation plan.
 
     initial_state and goal_state accept:
-      {'building': int, 'floor': int, 'room': 'classroom_1_4'}
+      {'building': int, 'floor': int, 'room': 'classroom_g_1_4'}
 
     The shared `domain_indoor.pddl` handles both intra- and cross-building
     routes. When origin and goal are in different buildings the converter
