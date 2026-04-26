@@ -1,0 +1,448 @@
+{
+  "stairs/ufv_stairs_down_01.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_02.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_03.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_04.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_05.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_06.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_down_07.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "down"
+  },
+  "stairs/ufv_stairs_up_01.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_02.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_03.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_04.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_05.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_06.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_07.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "stairs/ufv_stairs_up_08.jpg": {
+    "category": "stairs",
+    "element": "stairs",
+    "stairs_direction": "up"
+  },
+  "elevators/ufv_elevator_closed_01.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "closed"
+  },
+  "elevators/ufv_elevator_closed_02.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "closed"
+  },
+  "elevators/ufv_elevator_closed_03.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "closed"
+  },
+  "elevators/ufv_elevator_closed_04.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "closed"
+  },
+  "elevators/ufv_elevator_closed_05.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "closed"
+  },
+  "elevators/ufv_elevator_open_01.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "open"
+  },
+  "elevators/ufv_elevator_open_02.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "open"
+  },
+  "elevators/ufv_elevator_open_03.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "open"
+  },
+  "elevators/ufv_elevator_open_04.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "open"
+  },
+  "elevators/ufv_elevator_open_05.jpg": {
+    "category": "elevators",
+    "element": "elevator",
+    "elevator_state": "open"
+  },
+  "facility_signs/facility_bathroom_female_01.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "female"
+  },
+  "facility_signs/facility_bathroom_female_02.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "female"
+  },
+  "facility_signs/facility_bathroom_female_03.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "female"
+  },
+  "facility_signs/facility_bathroom_female_04.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "female"
+  },
+  "facility_signs/facility_bathroom_male_01.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "male"
+  },
+  "facility_signs/facility_bathroom_male_02.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "male"
+  },
+  "facility_signs/facility_bathroom_male_03.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "male"
+  },
+  "facility_signs/facility_bathroom_male_04.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "male"
+  },
+  "facility_signs/facility_bathroom_male_05.jpg": {
+    "category": "facility_signs",
+    "element": "bathroom",
+    "bathroom_subtype": "male"
+  },
+  "directory_signs/g_sign_agora_01.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "agora",
+    "expected_full": "G Agora"
+  },
+  "directory_signs/g_sign_agora_02.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "agora",
+    "expected_full": "G Agora"
+  },
+  "directory_signs/g_sign_agora_03.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "agora",
+    "expected_full": "G Agora"
+  },
+  "directory_signs/g_sign_agora_04.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "agora",
+    "expected_full": "G Agora"
+  },
+  "directory_signs/g_sign_agora_05.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "agora",
+    "expected_full": "G Agora"
+  },
+  "directory_signs/g_sign_floor_0_01.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "0",
+    "expected_full": "G 0"
+  },
+  "directory_signs/g_sign_floor_0_02.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "0",
+    "expected_full": "G 0"
+  },
+  "directory_signs/g_sign_floor_0_03.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "0",
+    "expected_full": "G 0"
+  },
+  "directory_signs/g_sign_floor_0_04.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "0",
+    "expected_full": "G 0"
+  },
+  "directory_signs/g_sign_floor_0_05.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "0",
+    "expected_full": "G 0"
+  },
+  "directory_signs/g_sign_floor_1_01.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "1",
+    "expected_full": "G 1"
+  },
+  "directory_signs/g_sign_floor_1_02.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "1",
+    "expected_full": "G 1"
+  },
+  "directory_signs/g_sign_floor_1_03.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "1",
+    "expected_full": "G 1"
+  },
+  "directory_signs/g_sign_floor_1_04.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "1",
+    "expected_full": "G 1"
+  },
+  "directory_signs/g_sign_floor_1_05.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "1",
+    "expected_full": "G 1"
+  },
+  "directory_signs/g_sign_floor_2_01.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "2",
+    "expected_full": "G 2"
+  },
+  "directory_signs/g_sign_floor_2_02.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "2",
+    "expected_full": "G 2"
+  },
+  "directory_signs/g_sign_floor_2_03.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "2",
+    "expected_full": "G 2"
+  },
+  "directory_signs/g_sign_floor_2_04.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "2",
+    "expected_full": "G 2"
+  },
+  "directory_signs/g_sign_floor_2_05.jpg": {
+    "category": "directory_signs",
+    "building": "G",
+    "floor": "2",
+    "expected_full": "G 2"
+  },
+  "room_plates/cd_room_1_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "1"
+  },
+  "room_plates/cd_room_2_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "2"
+  },
+  "room_plates/cd_room_2_02.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "2"
+  },
+  "room_plates/cd_room_3_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "3"
+  },
+  "room_plates/cd_room_3_02.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "3"
+  },
+  "room_plates/cd_room_4_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "4"
+  },
+  "room_plates/cd_room_5_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "5"
+  },
+  "room_plates/cd_room_6_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "6"
+  },
+  "room_plates/cd_room_7_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "7"
+  },
+  "room_plates/cd_room_8_01.jpg": {
+    "category": "room_plates",
+    "building": "CD",
+    "floor": null,
+    "room_code": "8"
+  },
+  "room_plates/g_room_0_1_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.1"
+  },
+  "room_plates/g_room_0_1_02.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.1"
+  },
+  "room_plates/g_room_0_2_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.2"
+  },
+  "room_plates/g_room_0_3_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.3"
+  },
+  "room_plates/g_room_0_4_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.4"
+  },
+  "room_plates/g_room_0_4_02.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "0",
+    "room_code": "0.4"
+  },
+  "room_plates/g_room_1_1_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.1"
+  },
+  "room_plates/g_room_1_2_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.2"
+  },
+  "room_plates/g_room_1_2_02.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.2"
+  },
+  "room_plates/g_room_1_3_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.3"
+  },
+  "room_plates/g_room_1_4_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.4"
+  },
+  "room_plates/g_room_1_4_02.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.4"
+  },
+  "room_plates/g_room_1_5_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.5"
+  },
+  "room_plates/g_room_1_6_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "1",
+    "room_code": "1.6"
+  },
+  "room_plates/g_room_2_1_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": "2",
+    "room_code": "2.1"
+  },
+  "room_plates/g_room_ai_lab_01.jpg": {
+    "category": "room_plates",
+    "building": "G",
+    "floor": null,
+    "room_code": "ai_lab"
+  }
+}
