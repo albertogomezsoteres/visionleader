@@ -38,12 +38,12 @@ Todas las variantes de escalera exigen `(stairs_verified u)` como precondición,
 
 Cuando origen y destino están en edificios distintos, el problema incluye las salas de ambos edificios y las aristas `outdoor_connected` entre sus entradas para que un solo plan resuelva la ruta completa.
 
-Los IDs de sala que se repiten entre edificios (`elevator`, `stairs`, `bathroom`) se prefijan con el nombre del edificio y el piso en PDDL: `elevator_G_f0`, `stairs_CD_fm1`. Los IDs únicos (`classroom_1_4`, `entrance_main`) se mantienen tal cual.
+Los IDs de sala que se repiten entre edificios (`elevator`, `stairs`, `bathroom`) se prefijan con el nombre del edificio (en minúscula) y el piso en PDDL: `elevator_g_f0`, `stairs_cd_fm1`. Los IDs únicos (`classroom_g_1_4`, `ai_lab`, `entrance_2`) se mantienen tal cual. El objeto `user` (de tipo `person`) representa al único usuario.
 
 ## Ejemplos en `problems/`
 
-- `problem_g_intra_demo.pddl` — intra-G: entrance_main → classroom_2_1
-- `problem_g_to_cd_demo.pddl` — cross-building: classroom_1_4 (G) → gym (CD)
+- `problem_g_intra_demo.pddl` — intra-G: entrance_2 → classroom_g_1_4
+- `problem_g_to_cd_demo.pddl` — cross-building: classroom_g_1_4 (G) → gym (CD)
 
 Son ejemplos ilustrativos; en runtime el planner nunca los lee — se escriben tempfiles por petición.
 

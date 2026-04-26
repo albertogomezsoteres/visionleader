@@ -25,11 +25,11 @@ const List<NamedPrompt> kPrompts = [
         'Read the number carefully. It contains a DOT in the middle.\n'
         'The DOT separates two digits. Keep both digits and put _ where the DOT is.\n'
         '\n'
-        'Plate says 3.7 → output: (at user1 classroom_3_7)\n'
-        'Plate says 0.2 → output: (at user1 classroom_0_2)\n'
-        'Plate says IA  → output: (at user1 lab_ia)\n'
+        'Plate says 1.4 → output: (at user classroom_g_1_4)\n'
+        'Plate says 0.2 → output: (at user classroom_g_0_2)\n'
+        'Plate says IA  → output: (at user ai_lab)\n'
         '\n'
-        'Output ONLY the (at user1 ...) line.',
+        'Output ONLY the (at user ...) line.',
   ),
   NamedPrompt(
     'sign_pddl',
@@ -41,12 +41,12 @@ const List<NamedPrompt> kPrompts = [
         '- Bottom line: either a floor number (0, 1, or 2) OR the word "Agora"\n'
         '\n'
         'Read the bottom line and map it to the answer:\n'
-        '- "0" → (at user1 directory_sign_g_0)\n'
-        '- "1" → (at user1 directory_sign_g_1)\n'
-        '- "2" → (at user1 directory_sign_g_2)\n'
-        '- "Agora" → (at user1 directory_sign_g_agora)\n'
+        '- "0" → (at user directory_sign_g_0)\n'
+        '- "1" → (at user directory_sign_g_1)\n'
+        '- "2" → (at user directory_sign_g_2)\n'
+        '- "Agora" → (at user directory_sign_g_agora)\n'
         '\n'
-        'Output ONLY the (at user1 ...) line. Nothing else.',
+        'Output ONLY the (at user ...) line. Nothing else.',
   ),
   NamedPrompt(
     'stairs_text',

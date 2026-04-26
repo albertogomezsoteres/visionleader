@@ -369,11 +369,10 @@ class ConversationAgent:
     ) -> Optional[Tuple[int, int, str]]:
         """Resolve a bare PDDL ``location_id`` to ``(building, floor, id)``.
 
-        The on-device VLM emits atoms like ``(at user1 classroom_1_4)``
-        where the building is implicit (G/CD, validated scope of the
-        smoke-test prompts). This helper scans G first, then CD, and
-        returns the first match. Only G is scanned today for door/sign
-        prompts because Gemma 3n was trained only against building G.
+        The on-device VLM emits atoms like ``(at user classroom_g_1_4)``
+        where the building is implicit in the prefix (G or CD, validated
+        scope of the smoke-test prompts). This helper scans G first, then
+        CD, and returns the first match.
         """
         for bid in (1, 2):  # G, CD — the validated scope
             fnum = self._hierarchical_converter.find_location_floor(

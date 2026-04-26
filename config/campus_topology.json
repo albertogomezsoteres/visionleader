@@ -178,15 +178,15 @@
           "type": "entrance_secondary"
         },
         {
-          "id": "classroom_agora_1",
+          "id": "classroom_g_agora_1",
           "type": "classroom"
         },
         {
-          "id": "classroom_agora_2",
+          "id": "classroom_g_agora_2",
           "type": "classroom"
         },
         {
-          "id": "classroom_agora_3",
+          "id": "classroom_g_agora_3",
           "type": "classroom"
         },
         {
@@ -244,23 +244,23 @@
           "type": "entrance_secondary"
         },
         {
-          "id": "lab_ia",
+          "id": "ai_lab",
           "type": "laboratory"
         },
         {
-          "id": "classroom_0_1",
+          "id": "classroom_g_0_1",
           "type": "classroom"
         },
         {
-          "id": "classroom_0_2",
+          "id": "classroom_g_0_2",
           "type": "classroom"
         },
         {
-          "id": "classroom_0_3",
+          "id": "classroom_g_0_3",
           "type": "classroom"
         },
         {
-          "id": "classroom_0_4",
+          "id": "classroom_g_0_4",
           "type": "classroom"
         },
         {
@@ -294,27 +294,27 @@
           "type": "entrance_interior"
         },
         {
-          "id": "classroom_1_1",
+          "id": "classroom_g_1_1",
           "type": "classroom"
         },
         {
-          "id": "classroom_1_2",
+          "id": "classroom_g_1_2",
           "type": "classroom"
         },
         {
-          "id": "classroom_1_3",
+          "id": "classroom_g_1_3",
           "type": "classroom"
         },
         {
-          "id": "classroom_1_4",
+          "id": "classroom_g_1_4",
           "type": "classroom"
         },
         {
-          "id": "classroom_1_5",
+          "id": "classroom_g_1_5",
           "type": "classroom"
         },
         {
-          "id": "classroom_1_6",
+          "id": "classroom_g_1_6",
           "type": "classroom"
         },
         {
@@ -344,7 +344,7 @@
           "type": "entrance_interior"
         },
         {
-          "id": "classroom_2_1",
+          "id": "classroom_g_2_1",
           "type": "classroom"
         },
         {
@@ -1383,13 +1383,13 @@
       "building": "G",
       "floor": -1,
       "from": "entrance_agora_1",
-      "to": "classroom_agora_2",
+      "to": "classroom_g_agora_2",
       "distance_m": 6
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_2",
+      "from": "classroom_g_agora_2",
       "to": "entrance_agora_1",
       "distance_m": 6
     },
@@ -1397,34 +1397,34 @@
       "building": "G",
       "floor": -1,
       "from": "entrance_agora_1",
-      "to": "classroom_agora_3",
+      "to": "classroom_g_agora_3",
       "distance_m": 6
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_3",
+      "from": "classroom_g_agora_3",
       "to": "entrance_agora_1",
       "distance_m": 6
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_2",
-      "to": "classroom_agora_3",
+      "from": "classroom_g_agora_2",
+      "to": "classroom_g_agora_3",
       "distance_m": 4
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_3",
-      "to": "classroom_agora_2",
+      "from": "classroom_g_agora_3",
+      "to": "classroom_g_agora_2",
       "distance_m": 4
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_2",
+      "from": "classroom_g_agora_2",
       "to": "directory_sign_g_agora",
       "distance_m": 9
     },
@@ -1432,13 +1432,13 @@
       "building": "G",
       "floor": -1,
       "from": "directory_sign_g_agora",
-      "to": "classroom_agora_2",
+      "to": "classroom_g_agora_2",
       "distance_m": 9
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_3",
+      "from": "classroom_g_agora_3",
       "to": "directory_sign_g_agora",
       "distance_m": 9
     },
@@ -1446,7 +1446,7 @@
       "building": "G",
       "floor": -1,
       "from": "directory_sign_g_agora",
-      "to": "classroom_agora_3",
+      "to": "classroom_g_agora_3",
       "distance_m": 9
     },
     {
@@ -1495,20 +1495,20 @@
       "building": "G",
       "floor": -1,
       "from": "entrance_agora_2",
-      "to": "classroom_agora_1",
+      "to": "classroom_g_agora_1",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_1",
+      "from": "classroom_g_agora_1",
       "to": "entrance_agora_2",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": -1,
-      "from": "classroom_agora_1",
+      "from": "classroom_g_agora_1",
       "to": "computer_lab",
       "distance_m": 5
     },
@@ -1516,7 +1516,7 @@
       "building": "G",
       "floor": -1,
       "from": "computer_lab",
-      "to": "classroom_agora_1",
+      "to": "classroom_g_agora_1",
       "distance_m": 5
     },
     {
@@ -1606,7 +1606,7 @@
     {
       "building": "G",
       "floor": 0,
-      "from": "lab_ia",
+      "from": "ai_lab",
       "to": "entrance_1",
       "distance_m": 5
     },
@@ -1614,27 +1614,27 @@
       "building": "G",
       "floor": 0,
       "from": "entrance_1",
-      "to": "lab_ia",
+      "to": "ai_lab",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": 0,
       "from": "entrance_1",
-      "to": "classroom_0_4",
+      "to": "classroom_g_0_4",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_4",
+      "from": "classroom_g_0_4",
       "to": "entrance_1",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_4",
+      "from": "classroom_g_0_4",
       "to": "bathroom_women",
       "distance_m": 2
     },
@@ -1642,7 +1642,7 @@
       "building": "G",
       "floor": 0,
       "from": "bathroom_women",
-      "to": "classroom_0_4",
+      "to": "classroom_g_0_4",
       "distance_m": 2
     },
     {
@@ -1747,20 +1747,20 @@
       "building": "G",
       "floor": 0,
       "from": "bathroom_men",
-      "to": "classroom_0_3",
+      "to": "classroom_g_0_3",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_3",
+      "from": "classroom_g_0_3",
       "to": "bathroom_men",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_3",
+      "from": "classroom_g_0_3",
       "to": "entrance_3",
       "distance_m": 6
     },
@@ -1768,20 +1768,20 @@
       "building": "G",
       "floor": 0,
       "from": "entrance_3",
-      "to": "classroom_0_3",
+      "to": "classroom_g_0_3",
       "distance_m": 6
     },
     {
       "building": "G",
       "floor": 0,
       "from": "entrance_3",
-      "to": "classroom_0_2",
+      "to": "classroom_g_0_2",
       "distance_m": 4
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_2",
+      "from": "classroom_g_0_2",
       "to": "entrance_3",
       "distance_m": 4
     },
@@ -1789,28 +1789,28 @@
       "building": "G",
       "floor": 0,
       "from": "entrance_3",
-      "to": "classroom_0_1",
+      "to": "classroom_g_0_1",
       "distance_m": 4
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_1",
+      "from": "classroom_g_0_1",
       "to": "entrance_3",
       "distance_m": 4
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_1",
-      "to": "classroom_0_2",
+      "from": "classroom_g_0_1",
+      "to": "classroom_g_0_2",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 0,
-      "from": "classroom_0_2",
-      "to": "classroom_0_1",
+      "from": "classroom_g_0_2",
+      "to": "classroom_g_0_1",
       "distance_m": 2
     },
     {
@@ -1859,20 +1859,20 @@
       "building": "G",
       "floor": 1,
       "from": "bathroom_men",
-      "to": "classroom_1_3",
+      "to": "classroom_g_1_3",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_3",
+      "from": "classroom_g_1_3",
       "to": "bathroom_men",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_3",
+      "from": "classroom_g_1_3",
       "to": "entrance_2_p1",
       "distance_m": 5
     },
@@ -1880,35 +1880,35 @@
       "building": "G",
       "floor": 1,
       "from": "entrance_2_p1",
-      "to": "classroom_1_3",
+      "to": "classroom_g_1_3",
       "distance_m": 5
     },
     {
       "building": "G",
       "floor": 1,
       "from": "entrance_2_p1",
-      "to": "classroom_1_2",
+      "to": "classroom_g_1_2",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_2",
+      "from": "classroom_g_1_2",
       "to": "entrance_2_p1",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_2",
-      "to": "classroom_1_1",
+      "from": "classroom_g_1_2",
+      "to": "classroom_g_1_1",
       "distance_m": 1
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_1",
-      "to": "classroom_1_2",
+      "from": "classroom_g_1_1",
+      "to": "classroom_g_1_2",
       "distance_m": 1
     },
     {
@@ -1929,20 +1929,20 @@
       "building": "G",
       "floor": 1,
       "from": "bathroom_women",
-      "to": "classroom_1_4",
+      "to": "classroom_g_1_4",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_4",
+      "from": "classroom_g_1_4",
       "to": "bathroom_women",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_4",
+      "from": "classroom_g_1_4",
       "to": "entrance_1_p1",
       "distance_m": 6
     },
@@ -1950,20 +1950,20 @@
       "building": "G",
       "floor": 1,
       "from": "entrance_1_p1",
-      "to": "classroom_1_4",
+      "to": "classroom_g_1_4",
       "distance_m": 6
     },
     {
       "building": "G",
       "floor": 1,
       "from": "entrance_1_p1",
-      "to": "classroom_1_5",
+      "to": "classroom_g_1_5",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_5",
+      "from": "classroom_g_1_5",
       "to": "entrance_1_p1",
       "distance_m": 3
     },
@@ -1971,28 +1971,28 @@
       "building": "G",
       "floor": 1,
       "from": "entrance_1_p1",
-      "to": "classroom_1_6",
+      "to": "classroom_g_1_6",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_6",
+      "from": "classroom_g_1_6",
       "to": "entrance_1_p1",
       "distance_m": 3
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_5",
-      "to": "classroom_1_6",
+      "from": "classroom_g_1_5",
+      "to": "classroom_g_1_6",
       "distance_m": 1
     },
     {
       "building": "G",
       "floor": 1,
-      "from": "classroom_1_6",
-      "to": "classroom_1_5",
+      "from": "classroom_g_1_6",
+      "to": "classroom_g_1_5",
       "distance_m": 1
     },
     {
@@ -2069,13 +2069,13 @@
       "building": "G",
       "floor": 2,
       "from": "mentoring_room",
-      "to": "classroom_2_1",
+      "to": "classroom_g_2_1",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 2,
-      "from": "classroom_2_1",
+      "from": "classroom_g_2_1",
       "to": "mentoring_room",
       "distance_m": 2
     },
@@ -2083,13 +2083,13 @@
       "building": "G",
       "floor": 2,
       "from": "exit_p2",
-      "to": "classroom_2_1",
+      "to": "classroom_g_2_1",
       "distance_m": 2
     },
     {
       "building": "G",
       "floor": 2,
-      "from": "classroom_2_1",
+      "from": "classroom_g_2_1",
       "to": "exit_p2",
       "distance_m": 2
     },
