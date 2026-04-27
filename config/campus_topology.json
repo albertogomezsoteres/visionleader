@@ -448,19 +448,19 @@
       ],
       "1": [
         {
-          "id": "classroom_cd_1_1",
+          "id": "classroom_cd_1",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_1_2",
+          "id": "classroom_cd_2",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_1_3",
+          "id": "classroom_cd_3",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_1_4",
+          "id": "classroom_cd_4",
           "type": "classroom"
         },
         {
@@ -494,19 +494,19 @@
       ],
       "2": [
         {
-          "id": "classroom_cd_2_5",
+          "id": "classroom_cd_5",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_2_6",
+          "id": "classroom_cd_6",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_2_7",
+          "id": "classroom_cd_7",
           "type": "classroom"
         },
         {
-          "id": "classroom_cd_2_8",
+          "id": "classroom_cd_8",
           "type": "classroom"
         },
         {
@@ -2405,62 +2405,62 @@
       "building": "CD",
       "floor": 1,
       "from": "bathroom_men",
-      "to": "classroom_cd_1_1",
+      "to": "classroom_cd_1",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_1",
+      "from": "classroom_cd_1",
       "to": "bathroom_men",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_1",
-      "to": "classroom_cd_1_2",
+      "from": "classroom_cd_1",
+      "to": "classroom_cd_2",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_2",
-      "to": "classroom_cd_1_1",
+      "from": "classroom_cd_2",
+      "to": "classroom_cd_1",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_2",
-      "to": "classroom_cd_1_3",
+      "from": "classroom_cd_2",
+      "to": "classroom_cd_3",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_3",
-      "to": "classroom_cd_1_2",
+      "from": "classroom_cd_3",
+      "to": "classroom_cd_2",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_3",
-      "to": "classroom_cd_1_4",
+      "from": "classroom_cd_3",
+      "to": "classroom_cd_4",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_4",
-      "to": "classroom_cd_1_3",
+      "from": "classroom_cd_4",
+      "to": "classroom_cd_3",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 1,
-      "from": "classroom_cd_1_4",
+      "from": "classroom_cd_4",
       "to": "bathroom_women",
       "distance_m": 2
     },
@@ -2468,7 +2468,7 @@
       "building": "CD",
       "floor": 1,
       "from": "bathroom_women",
-      "to": "classroom_cd_1_4",
+      "to": "classroom_cd_4",
       "distance_m": 2
     },
     {
@@ -2545,62 +2545,62 @@
       "building": "CD",
       "floor": 2,
       "from": "bathroom_men",
-      "to": "classroom_cd_2_5",
+      "to": "classroom_cd_5",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_5",
+      "from": "classroom_cd_5",
       "to": "bathroom_men",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_5",
-      "to": "classroom_cd_2_6",
+      "from": "classroom_cd_5",
+      "to": "classroom_cd_6",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_6",
-      "to": "classroom_cd_2_5",
+      "from": "classroom_cd_6",
+      "to": "classroom_cd_5",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_6",
-      "to": "classroom_cd_2_7",
+      "from": "classroom_cd_6",
+      "to": "classroom_cd_7",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_7",
-      "to": "classroom_cd_2_6",
+      "from": "classroom_cd_7",
+      "to": "classroom_cd_6",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_7",
-      "to": "classroom_cd_2_8",
+      "from": "classroom_cd_7",
+      "to": "classroom_cd_8",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_8",
-      "to": "classroom_cd_2_7",
+      "from": "classroom_cd_8",
+      "to": "classroom_cd_7",
       "distance_m": 8
     },
     {
       "building": "CD",
       "floor": 2,
-      "from": "classroom_cd_2_8",
+      "from": "classroom_cd_8",
       "to": "bathroom_women",
       "distance_m": 2
     },
@@ -2608,7 +2608,7 @@
       "building": "CD",
       "floor": 2,
       "from": "bathroom_women",
-      "to": "classroom_cd_2_8",
+      "to": "classroom_cd_8",
       "distance_m": 2
     },
     {

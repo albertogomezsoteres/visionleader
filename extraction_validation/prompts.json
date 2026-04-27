@@ -1,0 +1,57 @@
+{
+  "_comment": "VLM extraction prompts for indoor navigation. Two output families: PDDL location atoms for prompts where the photo carries a unique campus-wide identifier (room plates, directory signs); structured JSON for prompts where the photo carries only state or attribute information (elevator, stairs, restroom). Each entry declares which image category it applies to, the response_format, and the expected output schema.",
+  "model_under_test": "google/gemma-4-E4B-it",
+  "prompts": {
+    "room_plate": {
+      "applies_to_category": "room_plates",
+      "response_format": "pddl_atom",
+      "expected_atom_pattern": "(at user <location_id>)",
+      "valid_location_ids": [
+        "classroom_g_0_1", "classroom_g_0_2", "classroom_g_0_3", "classroom_g_0_4",
+        "classroom_g_1_1", "classroom_g_1_2", "classroom_g_1_3", "classroom_g_1_4",
+        "classroom_g_1_5", "classroom_g_1_6",
+        "classroom_g_2_1",
+        "classroom_cd_1", "classroom_cd_2", "classroom_cd_3", "classroom_cd_4",
+        "classroom_cd_5", "classroom_cd_6", "classroom_cd_7", "classroom_cd_8",
+        "ai_lab"
+      ],
+      "prompt_text": "You are reading a classroom plate.\n\nOutput exactly one PDDL atom:\n\n(at user LOCATION_ID)\n\nRules:\n\n1. If a decimal room code is visible, it ALWAYS belongs to building G.\n\nValid decimal codes:\n0.1, 0.2, 0.3, 0.4\n1.1, 1.2, 1.3, 1.4, 1.5, 1.6\n2.1\n\nExamples:\n1.1 -> (at user classroom_g_1_1)\n1.3 -> (at user classroom_g_1_3)\n1.5 -> (at user classroom_g_1_5)\n2.1 -> (at user classroom_g_2_1)\n\n2. If the plate shows \"Aula\" followed by a number from 1 to 8, and no decimal code is visible, it belongs to building CD.\n\nExample:\nAula 4 -> (at user classroom_cd_4)\n\n3. If the plate says \"IA\":\n\n(at user ai_lab)\n\nPriority rule:\n\nIf any decimal room code is visible, NEVER output classroom_cd_*.\nDecimal room codes always take priority over the word \"Aula\".\n\nOutput only one valid PDDL atom. No explanation."
+    },
+    "directory_sign": {
+      "applies_to_category": "directory_signs",
+      "response_format": "pddl_atom",
+      "expected_atom_pattern": "(at user <location_id>)",
+      "valid_location_ids": [
+        "directory_sign_g_0",
+        "directory_sign_g_1",
+        "directory_sign_g_2",
+        "directory_sign_g_agora"
+      ],
+      "prompt_text": "You are reading a directory sign inside building G.\n\nThe sign contains the building letter G and one floor indicator.\n\nPossible floor indicators:\n\n0\n1\n2\nAgora\n\nReturn exactly one PDDL atom:\n\n0     -> (at user directory_sign_g_0)\n1     -> (at user directory_sign_g_1)\n2     -> (at user directory_sign_g_2)\nAgora -> (at user directory_sign_g_agora)\n\nOutput only the atom. No explanation."
+    },
+    "elevator_state": {
+      "applies_to_category": "elevators",
+      "response_format": "json_state",
+      "expected_json_schema": {"type": "elevator", "detail": ["open", "closed"]},
+      "prompt_text": "Look at the elevator doors.\n\nDetermine whether the elevator is OPEN or CLOSED.\n\nRules:\n\n- If the interior cabin is visible, the elevator is open.\n- If only the closed door surface is visible, the elevator is closed.\n\nValid outputs:\n\n{\"type\":\"elevator\",\"detail\":\"open\"}\n\n{\"type\":\"elevator\",\"detail\":\"closed\"}\n\nOutput only the JSON object."
+    },
+    "stair_direction": {
+      "applies_to_category": "stairs",
+      "response_format": "json_state",
+      "expected_json_schema": {"type": "stairs", "detail": ["up", "down"]},
+      "prompt_text": "Look at the staircase from the camera point of view.\n\nDetermine whether the stairs go UP or DOWN if the user walks forward.\n\nRules:\n\n- If the next visible steps are higher than the camera position -> UP\n- If the next visible steps are lower than the camera position -> DOWN\n\nVisual cues:\n\n- UP: the vertical front faces of the steps are dominant\n- DOWN: the flat top surfaces of the steps are dominant\n\nValid outputs:\n\n{\"type\":\"stairs\",\"detail\":\"up\"}\n\n{\"type\":\"stairs\",\"detail\":\"down\"}\n\nOutput only the JSON object."
+    },
+    "restroom_gender": {
+      "applies_to_category": "facility_signs",
+      "response_format": "json_state",
+      "expected_json_schema": {"type": "restroom", "detail": ["male", "female"]},
+      "prompt_text": "Look at this image of a sign on a restroom door. Decide if the restroom is for MALE or FEMALE.\n\nIMPORTANT — IGNORE wheelchair / accessibility / disability symbols. They tell you NOTHING about gender. Only the human figure (or its symbol or text) tells you the gender.\n  - If the sign has BOTH a wheelchair symbol AND a male figure -> male\n  - If the sign has BOTH a wheelchair symbol AND a female figure -> female\n  - The wheelchair never makes the answer \"accessible\" or anything else.\n\nMALE indicators (any of these means MALE):\n- A figure wearing PANTS (legs drawn separately, straight silhouette below the waist)\n- A stick figure with shoulders broader than hips and no skirt outline\n- The male symbol ♂ (circle with arrow pointing up-right)\n- Text: \"Hombres\", \"Caballeros\", \"Men\", \"Gentlemen\", \"Señores\", \"Varones\", \"Masculino\"\n\nFEMALE indicators (any of these means FEMALE):\n- A figure wearing a SKIRT or DRESS (triangular silhouette below the waist)\n- A figure with long hair or a pony tail\n- The female symbol ♀ (circle with cross below)\n- Text: \"Mujeres\", \"Señoras\", \"Women\", \"Ladies\", \"Damas\", \"Femenino\"\n\nIf you cannot tell, look at the SILHOUETTE BELOW THE WAIST. A triangle/dress shape -> female. Two separated legs/pants shape -> male.\n\nThe ONLY valid values for \"detail\" are \"male\" or \"female\". Never use \"accessible\", \"unisex\", \"both\" or anything else — those are not valid options.\n\nValid answers (output exactly one of these, nothing else):\n  {\"type\": \"restroom\", \"detail\": \"male\"}\n  {\"type\": \"restroom\", \"detail\": \"female\"}\n\nOutput ONLY the JSON object. Stop right after the closing brace }. No extra characters, no explanation, no extra words."
+    }
+  },
+  "metrics": {
+    "format_validity": "Per prompt: fraction of outputs that parse as the expected format. JSON parser extracts the first {...} block via regex before json.loads, so trailing junk tokens after the closing brace do not break parsing.",
+    "accuracy": "Per prompt: fraction of outputs whose extracted location_id (PDDL) or detail value (JSON) matches ground truth. A malformed output counts as incorrect.",
+    "operational": "Per prompt: mean / std / p95 inference time (ms), throughput (inf/s). Once at the end: model load time (s), peak VRAM (GB).",
+    "confusion_matrix": "Computed for the three JSON state prompts only (binary outputs: open/closed, up/down, male/female)."
+  }
+}
