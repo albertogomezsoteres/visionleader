@@ -71,7 +71,7 @@ def nice_location_name(loc_id: str) -> str:
     m = re.match(r"classroom_g_(\d+)_(\d+)", loc_id)
     if m:
         return f"Classroom {m.group(1)}.{m.group(2)}"
-    m = re.match(r"classroom_cd_\d+_(\d+)", loc_id)
+    m = re.match(r"classroom_cd_(\d+)", loc_id)
     if m:
         return f"Classroom {m.group(1)} (CD)"
     return loc_id.replace("_", " ")
