@@ -37,6 +37,15 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    // Extract native libs on install so the bundled whisper-server binary
+    // lives as an executable file in applicationInfo.nativeLibraryDir rather
+    // than being mmap'd from inside the APK (which prevents exec on Android).
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 flutter {

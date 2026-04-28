@@ -15,7 +15,6 @@ class AppConfig {
   );
 
   static const Duration analyzeImageTimeout = Duration(seconds: 60);
-  static const Duration transcribeTimeout = Duration(seconds: 45);
   static const Duration planTimeout = Duration(seconds: 60);
   static const Duration conversationTimeout = Duration(seconds: 30);
   static const Duration gpsRouteTimeout = Duration(seconds: 15);

@@ -42,20 +42,6 @@ class ApiService {
     return _decode(streamed.statusCode, body);
   }
 
-  static Future<Map<String, dynamic>> transcribeAudio(File audioFile) async {
-    final request = http.MultipartRequest(
-      'POST',
-      Uri.parse('$_base/api/transcribe-audio'),
-    );
-    request.files.add(
-      await http.MultipartFile.fromPath('file', audioFile.path),
-    );
-    final streamed =
-        await request.send().timeout(AppConfig.transcribeTimeout);
-    final body = await streamed.stream.bytesToString();
-    return _decode(streamed.statusCode, body);
-  }
-
   static Future<Map<String, dynamic>> sendConversationTurn({
     required String sessionId,
     String? userMessage,

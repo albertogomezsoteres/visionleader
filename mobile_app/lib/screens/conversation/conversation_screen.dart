@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -10,6 +11,7 @@ import '../../core/building_locations.dart';
 import '../../core/file_utils.dart';
 import '../../services/api_service.dart';
 import '../../services/image_processing.dart';
+import '../../services/whisper_service.dart';
 import 'widgets/action_area.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/nav_quick_actions.dart';
@@ -113,6 +115,12 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
     await _recorder.openRecorder();
     await _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
+
+    // Boot the on-device Whisper server in the background; the warmup hides
+    // the model load so the first user transcription is fast.
+    unawaited(WhisperService.instance.init().catchError((e) {
+      debugPrint('WhisperService init failed: $e');
+    }));
 
     if (mounted) {
       if (widget.seedImageAnalysis != null) {
@@ -425,27 +433,23 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   Future<void> _transcribeAndSend(File audio) async {
     try {
-      final result = await ApiService.transcribeAudio(audio);
-      final success = result['success'] as bool? ?? false;
-      final text = (result['text'] as String?) ?? '';
-      if (success && text.isNotEmpty) {
+      final text = await WhisperService.instance.transcribe(audio);
+      if (text.isNotEmpty) {
         setState(() { _transcription = text; _processingMsg = 'Processing...'; });
         await _sendVoice(text);
       } else {
         if (!mounted) return;
         setState(() => _isProcessing = false);
-        final err = (result['error'] as String?) ?? '';
         _setMessage(
-          err.isNotEmpty
-              ? "I couldn't hear you clearly. Please speak directly into the mic and try again."
-              : "I couldn't hear anything clearly. Please try again.",
+          "I couldn't hear you clearly. Please speak directly into the mic and try again.",
           _nextInput, _currentAction,
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _isProcessing = false);
       _setMessage('Transcription failed. Please try again.', _nextInput, _currentAction);
+      debugPrint('WhisperService.transcribe threw: $e');
     } finally {
       await safeDelete(audio);
     }
