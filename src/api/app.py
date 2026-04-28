@@ -8,11 +8,11 @@ Each router handles a specific domain (planning, image, speech, etc.).
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import plan, image, conversation, speech, gps
+from api.routers import plan, image, conversation, gps
 
 app = FastAPI(
     title="Campus Navigation Planning API",
-    description="Indoor navigation for the UFV campus: PDDL planner, Gemma 4 E4B vision and Whisper voice.",
+    description="Indoor navigation for the UFV campus: PDDL planner and Gemma 4 E4B vision. STT runs on-device.",
     version="1.0.0",
 )
 
@@ -27,7 +27,6 @@ app.add_middleware(
 app.include_router(plan.router, prefix="/api", tags=["Planning"])
 app.include_router(image.router, prefix="/api", tags=["Image Analysis"])
 app.include_router(conversation.router, prefix="/api", tags=["Conversation"])
-app.include_router(speech.router, prefix="/api", tags=["Speech"])
 app.include_router(gps.router, prefix="/api", tags=["GPS"])
 
 
@@ -42,7 +41,6 @@ async def root():
             "domain": "GET /api/domain",
             "validate": "POST /api/validate",
             "analyze-image": "POST /api/analyze-image",
-            "transcribe-audio": "POST /api/transcribe-audio",
             "conversation": "POST /api/conversation",
             "gps-route": "POST /api/gps-route",
             "docs": "GET /docs",

@@ -81,13 +81,6 @@ class ImageAnalysisResponse(BaseModel):
     error: Optional[str] = None
 
 
-class TranscribeResponse(BaseModel):
-    """Response from Whisper audio transcription."""
-    success: bool
-    text: str
-    error: Optional[str] = None
-
-
 class GPSRouteRequest(BaseModel):
     """Request for walking directions between two campus buildings."""
     from_building: int
