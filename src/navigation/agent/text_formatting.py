@@ -36,6 +36,22 @@ BUILDING_FULL: Dict[int, str] = {
 }
 
 
+PHOTO_LABELS: Dict[str, str] = {
+    "room_plate": "classroom door plate",
+    "directory_sign": "directory sign",
+    "elevator_state": "elevator",
+    "stair_direction": "stairs",
+    "restroom_gender": "restroom sign",
+}
+
+
+def photo_label(prompt_id: Optional[str]) -> str:
+    """TTS-friendly phrase for a VLM prompt id (e.g. 'elevator_state' -> 'elevator')."""
+    if not prompt_id:
+        return "area"
+    return PHOTO_LABELS.get(prompt_id, prompt_id.replace("_", " "))
+
+
 def floor_text(f: int) -> str:
     """Render a floor number as a human-readable English fragment."""
     if f == -1:

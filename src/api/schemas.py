@@ -65,13 +65,18 @@ class DomainResponse(BaseModel):
 
 
 class ImageAnalysisResponse(BaseModel):
-    """Response from the PaliGemma image analysis pipeline."""
+    """Result of running one validated VLM prompt on a photo.
+
+    For PDDL-atom prompts (`room_plate`, `directory_sign`) the model
+    returns a campus location identifier in ``location_id``. For JSON
+    state prompts (`elevator_state`, `stair_direction`, `restroom_gender`)
+    the model returns ``state_type`` and ``state_detail``.
+    """
     success: bool
-    image_type: Optional[str] = None
-    building: Optional[int] = None
-    floor: Optional[int] = None
-    elevator_state: Optional[str] = None
-    stairs_direction: Optional[str] = None
+    prompt_id: str
+    location_id: Optional[str] = None
+    state_type: Optional[str] = None
+    state_detail: Optional[str] = None
     raw_response: str = ""
     error: Optional[str] = None
 
@@ -114,9 +119,10 @@ class ConversationResponse(BaseModel):
     context: Dict[str, Any]
     tts_message: Optional[str] = None
     next_input: Optional[str] = None
-    # Hint for the mobile client about which VLM prompt to run for the next
-    # photo. Values: 'door', 'sign', 'elevator', 'stairs'. Present only when
-    # the FSM is in a state that expects a specific kind of photo.
+    # Tells the client which VLM prompt to run on the next photo. One of
+    # the prompt ids defined in extraction_validation/prompts.json
+    # (room_plate, directory_sign, elevator_state, stair_direction,
+    # restroom_gender). Null when no photo is expected.
     expect_photo: Optional[str] = None
     plan_request: Optional[Dict[str, Any]] = None
     location_partial: Optional[Dict[str, Any]] = None

@@ -4,10 +4,9 @@ import 'dart:math';
 import 'package:image/image.dart' as img_lib;
 import 'package:path_provider/path_provider.dart';
 
-/// Center-crops an image to a square and resizes it to 800px before sending
-/// it to PaliGemma. PaliGemma 448 expects square input — without this the
-/// processor squishes portrait photos and distorts text on door signs and
-/// directory boards.
+/// Center-crops an image to a square and resizes it before sending it to the
+/// VLM. The Colab endpoint expects a square input so portrait photos are not
+/// distorted by the model's image processor.
 class ImageProcessing {
   ImageProcessing._();
 
@@ -34,7 +33,7 @@ class ImageProcessing {
     );
 
     final tmpDir = await getTemporaryDirectory();
-    final tmpFile = File('${tmpDir.path}/paligemma_input.jpg');
+    final tmpFile = File('${tmpDir.path}/vlm_input.jpg');
     await tmpFile.writeAsBytes(img_lib.encodeJpg(resized, quality: 88));
     return tmpFile;
   }

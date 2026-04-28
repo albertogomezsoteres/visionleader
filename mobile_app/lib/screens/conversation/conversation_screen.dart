@@ -61,6 +61,11 @@ class _ConversationScreenState extends State<ConversationScreen>
   int _currentStep = 0;
   int _totalSteps = 0;
 
+  // VLM prompt the FSM expects for the next photo (one of the prompt ids
+  // declared in extraction_validation/prompts.json). Null when no photo is
+  // expected — the camera button refuses to fire in that case.
+  String? _expectedPromptId;
+
   // Recording helpers
   DateTime? _recordingStartedAt;
   String? _currentRecordingPath;
@@ -171,6 +176,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     final tts = (result['tts_message'] as String?) ?? (result['response'] as String?) ?? '';
     final nextInput = (result['next_input'] as String?) ?? 'voice';
     final action = (result['action'] as String?) ?? '';
+    _expectedPromptId = result['expect_photo'] as String?;
     _updateLocationChips(result);
 
     final ctx = result['context'] as Map<String, dynamic>?;
@@ -329,10 +335,19 @@ class _ConversationScreenState extends State<ConversationScreen>
     }
     if (picked == null) return;
 
+    final promptId = _expectedPromptId;
+    if (promptId == null) {
+      _setMessage(
+        "I'm not expecting a photo right now. Use voice or follow the next instruction.",
+        _nextInput, _currentAction,
+      );
+      return;
+    }
+
     setState(() { _isProcessing = true; _processingMsg = 'Analyzing image...'; });
     try {
       final cropped = await ImageProcessing.cropToSquare(File(picked.path));
-      final analysis = await ApiService.analyzeImage(cropped);
+      final analysis = await ApiService.analyzeImage(cropped, promptId);
       if (!mounted) return;
       await _sendPhoto(analysis);
     } catch (_) {

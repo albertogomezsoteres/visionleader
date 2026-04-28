@@ -12,7 +12,7 @@ from api.routers import plan, image, conversation, speech, gps
 
 app = FastAPI(
     title="Campus Navigation Planning API",
-    description="Navigation planning for the UFV campus using PDDL, PaliGemma and voice",
+    description="Indoor navigation for the UFV campus: PDDL planner, Gemma 4 E4B vision and Whisper voice.",
     version="1.0.0",
 )
 
