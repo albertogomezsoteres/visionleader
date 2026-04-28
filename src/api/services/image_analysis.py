@@ -1,178 +1,91 @@
-"""
-Image analysis service: orchestrates the PaliGemma 2 vision pipeline.
+"""Image analysis service: thin proxy to the Colab VLM endpoint.
 
-Sits between the HTTP router and VisionAnalyzer. Sends the image to
-the Colab GPU endpoint, runs the two-stage pipeline, and builds the
-structured ImageAnalysisResponse returned to the app.
+The mobile FSM tells us which prompt to run via ``prompt_id``. We build
+the prompt text from the validated catalogue, forward image + prompt to
+the Colab Gemma 4 E4B endpoint, and parse the response into the shape
+the conversation agent expects.
+
+One model call per photo. No classifier stage.
 """
 
-import re
+from __future__ import annotations
+
 import time
-import requests
 from typing import Optional
 
+import requests
+
 from api.schemas import ImageAnalysisResponse
-from api.services.vision_analyzer import VisionAnalyzer
+from api.services.vlm_prompts import build_prompt, parse_response
+
+_REQUEST_TIMEOUT_S = 30
+_MAX_TOKENS_BY_FORMAT = {"pddl_atom": 32, "json_state": 24}
 
 
-def extractFloorFromRoomCode(roomCode: str) -> Optional[int]:
-    """Infers the floor from a room code string.
-    Room codes follow FLOOR.NUMBER format, so '1.4' -> floor 1."""
-    if not roomCode:
-        return None
-    match = re.search(r"\b([0-4])\.\d+\b", roomCode)
-    if match:
-        return int(match.group(1))
-    return None
-
-
-def _callColab(
-    colabUrl: str,
-    imageData: bytes,
+def analyze_image(
+    image_data: bytes,
     filename: str,
-    contentType: str,
-    promptText: str,
-    maxTokens: Optional[int] = None,
-) -> Optional[str]:
-    """Sends one prompt and image to the Colab endpoint and returns the response text.
-    Returns None if the request failed or the response was empty."""
-    if not promptText.strip().startswith("<image>"):
-        promptText = "<image>\n" + promptText
+    content_type: str,
+    prompt_id: str,
+    colab_url: str,
+) -> ImageAnalysisResponse:
+    prompt = build_prompt(prompt_id)
+    max_tokens = _MAX_TOKENS_BY_FORMAT.get(_response_format(prompt_id), 32)
 
-    print(f"[PALIGEMMA][PROMPT] {re.sub(r'\\s+', ' ', promptText).strip()[:400]}")
-
-    payload: dict = {"prompt": promptText}
-    if maxTokens is not None:
-        payload["max_tokens"] = str(maxTokens)
+    print(f"\n[VLM] prompt_id={prompt_id} size={len(image_data)} bytes")
 
     started = time.time()
     try:
-        response = requests.post(
-            f"{colabUrl}/analyze",
-            files={"file": (filename, imageData, contentType)},
-            data=payload,
-            timeout=30,
+        http_response = requests.post(
+            f"{colab_url}/analyze",
+            files={"file": (filename, image_data, content_type)},
+            data={"prompt": prompt, "max_tokens": str(max_tokens)},
+            timeout=_REQUEST_TIMEOUT_S,
         )
-        elapsed = time.time() - started
-
-        if response.status_code != 200:
-            print(f"[PALIGEMMA][ERROR] HTTP {response.status_code} ({elapsed:.2f}s)")
-            return None
-
-        responseData = response.json()
-        rawText = (responseData.get("response") or "").strip()
-        print(f"[PALIGEMMA][RESPONSE] {rawText!r}  ({elapsed:.2f}s)")
-
-        if not responseData.get("success"):
-            return None
-
-        return rawText or None
-
-    except Exception as error:
-        elapsed = time.time() - started
-        print(f"[PALIGEMMA][EXCEPTION] {error}  ({elapsed:.2f}s)")
-        return None
-
-
-def analyzeImageViaColab(
-    imageData: bytes,
-    filename: str,
-    contentType: str,
-    campusGraph: dict,
-    knownBuilding: Optional[int],
-    knownFloor: Optional[int],
-    colabUrl: str,
-) -> ImageAnalysisResponse:
-    """Analyses a photo using PaliGemma 2 on Colab.
-
-    Stage 1: classify the image type (sign, door, elevator, stairs, other).
-    Stage 2: extract the relevant detail for that type.
-    Maximum 2 model calls per photo."""
-
-    def _query(prompt: str, maxTokens: Optional[int] = None) -> Optional[str]:
-        return _callColab(colabUrl, imageData, filename, contentType, prompt, maxTokens)
-
-    # Stage 1: classify
-    classifierResponse = _query(VisionAnalyzer.getClassifierPrompt(), maxTokens=16)
-    imageType = VisionAnalyzer.parseClassifier(classifierResponse)
-    print(f"\n[CLASSIFIER] response={classifierResponse!r} type={imageType!r}")
-
-    # Stage 2: type-specific extraction
-
-    if imageType == "elevator":
-        elevatorResponse = _query(VisionAnalyzer.getElevatorPrompt(), maxTokens=8)
-        doorState = VisionAnalyzer.parseElevator(elevatorResponse or "")
-        print(f"[ELEVATOR] doorState={doorState!r}")
+    except requests.RequestException as error:
+        print(f"[VLM][ERROR] colab request failed: {error}")
         return ImageAnalysisResponse(
-            success=knownBuilding is not None and knownFloor is not None,
-            image_type="elevator",
-            elevator_state=doorState,
-            building=knownBuilding, floor=knownFloor,
-            raw_response=elevatorResponse or "",
+            success=False, prompt_id=prompt_id,
+            raw_response="", error=f"colab request failed: {error}",
         )
 
-    if imageType == "stairs":
-        stairsResponse = _query(VisionAnalyzer.getStairsPrompt(), maxTokens=8)
-        stairsDirection = VisionAnalyzer.parseStairs(stairsResponse or "")
-        print(f"[STAIRS] direction={stairsDirection!r}")
+    elapsed = time.time() - started
+
+    if http_response.status_code != 200:
+        print(f"[VLM][ERROR] HTTP {http_response.status_code} in {elapsed:.2f}s")
         return ImageAnalysisResponse(
-            success=False, image_type="stairs",
-            stairs_direction=stairsDirection,
-            building=knownBuilding, floor=knownFloor,
-            raw_response=stairsResponse or "",
+            success=False, prompt_id=prompt_id, raw_response="",
+            error=f"colab HTTP {http_response.status_code} ({elapsed:.2f}s)",
         )
 
-    if imageType == "door":
-        doorResponse = _query(VisionAnalyzer.getDoorPrompt(), maxTokens=16)
-        roomCode = VisionAnalyzer.parseDoor(doorResponse or "")
-        floorFromCode = extractFloorFromRoomCode(roomCode) if roomCode else None
-        print(f"[DOOR] roomCode={roomCode!r} floor={floorFromCode!r}")
+    body = http_response.json()
+    raw = (body.get("response") or "").strip()
+    print(f"[VLM][RAW] {raw!r}  ({elapsed:.2f}s)")
+
+    if not body.get("success") or not raw:
+        print(f"[VLM][REJECTED] empty colab response")
         return ImageAnalysisResponse(
-            success=roomCode is not None,
-            image_type="door",
-            raw_response=doorResponse or "",
-            floor=floorFromCode,
-            building=knownBuilding,
+            success=False, prompt_id=prompt_id, raw_response=raw,
+            error="empty colab response",
         )
 
-    if imageType == "other":
-        return ImageAnalysisResponse(
-            success=False, image_type="other",
-            raw_response=classifierResponse or "",
-        )
-
-    # Sign: also the default when classifier returns an unrecognised response
-
-    signResponse = _query(VisionAnalyzer.getSignPrompt(), maxTokens=32)
-    print(f"[SIGN] response={signResponse!r}")
-
-    parsedSign = VisionAnalyzer.parseSign(signResponse or "", campusGraph)
-
-    # Prefer what the model found, fall back to what the app already knew
-    buildingId = parsedSign["building"] if parsedSign["building"] is not None else knownBuilding
-    floorNumber = parsedSign["floor"] if parsedSign["floor"] is not None else knownFloor
-
-    # If the sign prompt extracted nothing useful (no building, no floor), the
-    # image may be a door plate misclassified as 'sign'. Try the door prompt as
-    # a fallback — this covers the common case where a small room-number plaque
-    # triggers the sign branch.
-    if buildingId is None and floorNumber is None:
-        doorResponse = _query(VisionAnalyzer.getDoorPrompt(), maxTokens=16)
-        roomCode = VisionAnalyzer.parseDoor(doorResponse or "")
-        if roomCode:
-            floorFromCode = extractFloorFromRoomCode(roomCode)
-            print(f"[SIGN→DOOR fallback] roomCode={roomCode!r} floor={floorFromCode!r}")
-            return ImageAnalysisResponse(
-                success=True,
-                image_type="door",
-                raw_response=doorResponse or "",
-                floor=floorFromCode,
-                building=knownBuilding,
-            )
+    parsed = parse_response(prompt_id, raw)
+    if parsed.ok:
+        extracted = parsed.location_id or f"{parsed.state_type}/{parsed.state_detail}"
+        print(f"[VLM][PARSED] {extracted}")
+    else:
+        print(f"[VLM][PARSED] FAILED to extract from {raw!r}")
 
     return ImageAnalysisResponse(
-        success=buildingId is not None and floorNumber is not None,
-        image_type="sign",
-        building=buildingId, floor=floorNumber,
-        raw_response=signResponse or "",
+        success=parsed.ok,
+        prompt_id=prompt_id,
+        location_id=parsed.location_id,
+        state_type=parsed.state_type,
+        state_detail=parsed.state_detail,
+        raw_response=raw,
     )
+
+
+def _response_format(prompt_id: str) -> str:
+    from api.services.vlm_prompts import _load
+    return _load().get(prompt_id, {}).get("response_format", "")

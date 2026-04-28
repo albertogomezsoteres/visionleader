@@ -11,7 +11,6 @@ class ApiService {
     if (statusCode >= 200 && statusCode < 300) {
       return jsonDecode(body) as Map<String, dynamic>;
     }
-    // Backend returned an error — surface it cleanly instead of crashing
     String detail;
     try {
       final parsed = jsonDecode(body);
@@ -22,11 +21,18 @@ class ApiService {
     return {'success': false, 'error': 'Server error $statusCode: $detail'};
   }
 
-  static Future<Map<String, dynamic>> analyzeImage(File imageFile) async {
+  /// Run the validated VLM prompt named [promptId] on [imageFile].
+  /// The mobile FSM derives [promptId] from `expect_photo` in the previous
+  /// conversation response, so the backend never has to guess.
+  static Future<Map<String, dynamic>> analyzeImage(
+    File imageFile,
+    String promptId,
+  ) async {
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$_base/api/analyze-image'),
     );
+    request.fields['prompt_id'] = promptId;
     request.files.add(
       await http.MultipartFile.fromPath('file', imageFile.path),
     );
@@ -48,33 +54,6 @@ class ApiService {
         await request.send().timeout(AppConfig.transcribeTimeout);
     final body = await streamed.stream.bytesToString();
     return _decode(streamed.statusCode, body);
-  }
-
-  static Future<Map<String, dynamic>> generatePlan({
-    required int initialBuilding,
-    required int initialFloor,
-    int? goalBuilding,
-    int? goalFloor,
-    String? goalFunctional,
-    bool hurryMode = false,
-  }) async {
-    final body = <String, dynamic>{
-      'initial_state': {'building': initialBuilding, 'floor': initialFloor},
-      'hurry_mode': hurryMode,
-    };
-    if (goalFunctional != null) {
-      body['goal_functional'] = goalFunctional;
-    } else {
-      body['goal_state'] = {'building': goalBuilding!, 'floor': goalFloor!};
-    }
-    final response = await http
-        .post(
-          Uri.parse('$_base/api/plan'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(body),
-        )
-        .timeout(AppConfig.planTimeout);
-    return _decode(response.statusCode, response.body);
   }
 
   static Future<Map<String, dynamic>> sendConversationTurn({

@@ -24,6 +24,7 @@ from .agent.text_formatting import (
     floor_text,
     location_text,
     nice_location_name,
+    photo_label,
 )
 from .agent.parsing import (
     extract_building,
@@ -369,12 +370,10 @@ class ConversationAgent:
     ) -> Optional[Tuple[int, int, str]]:
         """Resolve a bare PDDL ``location_id`` to ``(building, floor, id)``.
 
-        The on-device VLM emits atoms like ``(at user classroom_g_1_4)``
-        where the building is implicit in the prefix (G or CD, validated
-        scope of the smoke-test prompts). This helper scans G first, then
-        CD, and returns the first match.
+        Validated prompts emit atoms scoped to buildings G and CD, so this
+        helper scans G first, then CD, and returns the first match.
         """
-        for bid in (1, 2):  # G, CD — the validated scope
+        for bid in (1, 2):
             fnum = self._hierarchical_converter.find_location_floor(
                 bid, location_id
             )
@@ -390,13 +389,7 @@ class ConversationAgent:
             return self._reply(ctx, tts, "photo", "waiting_photo")
 
         ctx.photo_attempts += 1
-        building = analysis.get("building")
-        floor = analysis.get("floor")
-        image_type = analysis.get("image_type")
 
-        # Preferred path: the VLM gave us a PDDL atom. Use the location_id
-        # directly and resolve (building, floor) from topology — this is
-        # the clean on-device Gemma 3n path.
         location_id = analysis.get("location_id") or extract_location_id_from_pddl(
             analysis.get("raw_response", "")
         )
@@ -406,40 +399,6 @@ class ConversationAgent:
                 bid, fnum, loc_id = resolved
                 ctx.origin = {"building": bid, "floor": fnum, "location_id": loc_id}
                 return self._confirm_origin(ctx)
-
-        # Legacy path: PaliGemma backend used to return a room code like
-        # "1.4" — kept for robustness while both paths coexist.
-        room_code = extract_room_code_from_analysis(analysis)
-        if room_code and room_code.lower() in self._room_lookup:
-            bid, fnum, loc_id = self._room_lookup[room_code.lower()]
-            ctx.origin = {"building": bid, "floor": fnum, "location_id": loc_id}
-            return self._confirm_origin(ctx)
-
-        if building is not None and floor is not None:
-            ctx.origin = {"building": building, "floor": floor, "location_id": None}
-            if image_type == "elevator":
-                ctx.origin["location_id"] = "elevator"
-            elif image_type == "stairs":
-                ctx.origin["location_id"] = "stairs"
-            return self._confirm_origin(ctx)
-
-        if building is not None and floor is None:
-            ctx.partial_building = building
-            tts = (
-                f"I can see you are in {BUILDING_FULL.get(building, 'a building')}. "
-                "What floor are you on?"
-            )
-            ctx.state = ConversationState.ASK_FLOOR
-            return self._reply(ctx, tts, "voice", "ask_floor")
-
-        if floor is not None and building is None:
-            ctx.partial_floor = floor
-            tts = (
-                f"I can see you are on {floor_text(floor)}. "
-                "What building are you in?"
-            )
-            ctx.state = ConversationState.ASK_BUILDING
-            return self._reply(ctx, tts, "voice", "ask_building")
 
         if ctx.photo_attempts >= 3:
             tts = "Let's try voice. Say your location, like 'classroom 0.3, building G'."
@@ -692,23 +651,20 @@ class ConversationAgent:
                 ctx.state = ConversationState.EXECUTING
                 return self._deliver_step(ctx)
 
+        expected_text = photo_label(expected)
+
         if not analysis:
-            tts = f"Photograph the {expected or 'area'}, or say done to skip."
+            tts = f"Photograph the {expected_text}, or say done to skip."
             return self._reply(ctx, tts, "photo", "waiting_step_photo")
 
-        image_type = analysis.get("image_type", "")
-        # PaliGemma sometimes classifies a door plate as 'sign'; treat both as
-        # matching when the step expected a door.
-        effective_type = image_type
-        if expected == "door" and image_type == "sign":
-            effective_type = "door"
-        if expected and effective_type == expected:
+        prompt_id = analysis.get("prompt_id", "")
+        if expected and prompt_id == expected and analysis.get("success"):
             if step.get("arrival_strict_photo"):
                 expected_code = step.get("expected_room_code")
                 seen_code = extract_room_code_from_analysis(analysis)
 
                 if not expected_code:
-                    tts = f"Confirmed! I can see the {expected}."
+                    tts = f"Confirmed! I can see the {expected_text}."
                     ctx.current_step_idx += 1
                     if ctx.current_step_idx >= len(ctx.route_steps):
                         return self._navigation_complete(ctx)
@@ -743,7 +699,7 @@ class ConversationAgent:
                 ctx.state = ConversationState.AWAITING_STEP_DONE
                 return self._reply(ctx, tts, "voice", "step_after_photo_confirm")
 
-            tts = f"Confirmed! I can see the {expected}."
+            tts = f"Confirmed! I can see the {expected_text}."
             ctx.current_step_idx += 1
             if ctx.current_step_idx >= len(ctx.route_steps):
                 return self._navigation_complete(ctx)
@@ -752,7 +708,7 @@ class ConversationAgent:
             return self._deliver_step(ctx, prefix=tts + " ")
 
         tts = (
-            f"That doesn't look like the {expected or 'checkpoint'}. "
+            f"That doesn't look like the {expected_text}. "
             "Retake the photo, or say done if you're there."
         )
         return self._reply(ctx, tts, "photo", "retry_step_photo")
@@ -815,13 +771,13 @@ class ConversationAgent:
             return self._reply(ctx, tts, "voice", "navigation_step_outdoor", **extra)
 
         if step.get("verification") == "photo":
-            expected = step.get("expected_photo_type", "area")
+            expected_text = photo_label(step.get("expected_photo_type"))
             if step.get("arrival_strict_photo"):
                 rc = step.get("expected_room_code")
                 classroom_txt = f"classroom {rc}" if rc else "your classroom"
                 tts = (
                     f"{prefix}Step {idx} of {total}. {instruction} "
-                    f"On arrival, photograph the {expected} to confirm {classroom_txt}."
+                    f"On arrival, photograph the {expected_text} to confirm {classroom_txt}."
                 )
                 ctx.state = ConversationState.WAITING_STEP_PHOTO
                 return self._reply(ctx, tts, "photo", "navigation_step")
@@ -829,17 +785,17 @@ class ConversationAgent:
                 pre_tts = step.get("pre_photo_instruction")
                 if pre_tts:
                     tts = f"{prefix}Step {idx} of {total}. {pre_tts}"
-                tts += f" Photograph the {expected} to confirm."
+                tts += f" Photograph the {expected_text} to confirm."
             elif step.get("two_phase_photo") and not step.get("_phase2_started"):
                 pre_tts = step.get("pre_photo_instruction")
                 if pre_tts:
                     tts = f"{prefix}Step {idx} of {total}. {pre_tts}"
-                tts += f" Photograph the {expected} to confirm."
+                tts += f" Photograph the {expected_text} to confirm."
             else:
                 if step.get("inline_photo_prompt"):
                     ctx.state = ConversationState.WAITING_STEP_PHOTO
                     return self._reply(ctx, tts, "photo", "navigation_step")
-                tts += f" On arrival, photograph the {expected}."
+                tts += f" On arrival, photograph the {expected_text}."
             ctx.state = ConversationState.WAITING_STEP_PHOTO
             next_input = "photo"
         else:
@@ -1094,15 +1050,16 @@ class ConversationAgent:
         return result
 
     def _compute_expect_photo(self, ctx: ConversationContext) -> Optional[str]:
-        """Maps the current FSM state to the VLM prompt the client should run.
+        """Map the current FSM state to the VLM prompt the client should run.
 
-        Returns one of ``'door'``, ``'sign'``, ``'elevator'``, ``'stairs'`` or
-        ``None`` if no photo is currently expected.
+        Returns a prompt id from ``extraction_validation/prompts.json``
+        (``room_plate``, ``directory_sign``, ``elevator_state``,
+        ``stair_direction``) or None if no photo is currently expected.
         """
         if ctx.state == ConversationState.WAITING_PHOTO_DOOR:
-            return "door"
+            return "room_plate"
         if ctx.state == ConversationState.WAITING_PHOTO_SIGN:
-            return "sign"
+            return "directory_sign"
         if ctx.state == ConversationState.WAITING_STEP_PHOTO:
             if 0 <= ctx.current_step_idx < len(ctx.route_steps):
                 step = ctx.route_steps[ctx.current_step_idx]

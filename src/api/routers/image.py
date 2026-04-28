@@ -1,59 +1,41 @@
-"""Image analysis endpoint: send a photo and get back the detected location."""
+"""Image analysis endpoint: run a validated VLM prompt on a photo."""
 
-from typing import Optional
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
-
+from api.dependencies import COLAB_API_URL
 from api.schemas import ImageAnalysisResponse
-from api.dependencies import load_places, COLAB_API_URL
-from api.services.image_analysis import analyzeImageViaColab
+from api.services.image_analysis import analyze_image
+from api.services.vlm_prompts import valid_prompt_ids
 
 router = APIRouter()
 
+_ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/jpg", "image/png", "application/octet-stream"}
+
 
 @router.post("/analyze-image", response_model=ImageAnalysisResponse)
-async def analyze_image(
+async def analyze_image_endpoint(
     file: UploadFile = File(...),
-    current_building: Optional[str] = Form(None),
-    current_floor: Optional[str] = Form(None),
+    prompt_id: str = Form(...),
 ):
+    """Run the prompt named by ``prompt_id`` on ``file`` and return the parsed result.
+
+    The mobile FSM picks the prompt based on its current state, so this
+    endpoint never has to guess what's in the photo.
     """
-    Send a photo and get back the detected building + floor.
+    if file.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unsupported image format: {file.content_type}")
 
-    Optionally pass current_building / current_floor if the app already
-    knows part of the location from a previous interaction.
-    """
-    try:
-        allowed = ["image/jpeg", "image/jpg", "image/png", "application/octet-stream"]
-        if file.content_type not in allowed:
-            raise HTTPException(status_code=400, detail=f"Unsupported image format: {file.content_type}")
+    if prompt_id not in valid_prompt_ids():
+        raise HTTPException(status_code=400, detail=f"Unknown prompt_id: {prompt_id}")
 
-        image_data = await file.read()
-        campus_graph = load_places()
+    if not COLAB_API_URL:
+        raise HTTPException(status_code=503, detail="Colab inference endpoint not configured")
 
-        # Parse optional known state sent by the app
-        known_building: Optional[int] = None
-        known_floor: Optional[int] = None
-        if current_floor is not None and str(current_floor).strip():
-            try: known_floor = int(str(current_floor).strip())
-            except ValueError: pass
-        if current_building is not None and str(current_building).strip():
-            try: known_building = int(str(current_building).strip())
-            except ValueError: pass
-
-        if not COLAB_API_URL:
-            raise HTTPException(status_code=503, detail="Colab inference endpoint not configured")
-
-        return analyzeImageViaColab(
-            image_data, file.filename or "image.jpg", file.content_type or "image/jpeg",
-            campus_graph, known_building, known_floor, COLAB_API_URL,
-        )
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        return ImageAnalysisResponse(
-            success=False, raw_response="", error=f"Error processing image: {e}",
-        )
-
-
+    image_data = await file.read()
+    return analyze_image(
+        image_data,
+        file.filename or "image.jpg",
+        file.content_type or "image/jpeg",
+        prompt_id,
+        COLAB_API_URL,
+    )

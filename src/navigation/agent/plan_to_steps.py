@@ -76,7 +76,7 @@ def apply_arrival_strict_photo(
     last = steps[-1]
     if last.get("verification") != "photo":
         last["verification"] = "photo"
-        last["expected_photo_type"] = "door"
+        last["expected_photo_type"] = "room_plate"
         last["arrival_strict_photo"] = True
         last["expected_room_code"] = dest_room_code
     else:
@@ -206,7 +206,7 @@ def fd_plan_to_steps_room_level(
                 ),
                 "type": "elevator",
                 "verification": "photo",
-                "expected_photo_type": "elevator",
+                "expected_photo_type": "elevator_state",
                 "post_photo_instruction": (
                     f"Press floor {to_floor} and exit when you arrive."
                 ),
@@ -235,7 +235,7 @@ def fd_plan_to_steps_room_level(
                 "instruction": normalize_instruction(safety_msg),
                 "type": "stairs",
                 "verification": "photo",
-                "expected_photo_type": "stairs",
+                "expected_photo_type": "stair_direction",
                 "two_phase_photo": True,
                 "pre_photo_instruction": (
                     f"Find the stairs on {floor_text(from_floor)} and photograph them."
