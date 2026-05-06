@@ -142,26 +142,38 @@ def extract_location_id_from_pddl(raw: str) -> Optional[str]:
 
 
 def extract_room_code_from_analysis(analysis: Optional[Dict]) -> Optional[str]:
-    """Recover a canonical room code (e.g. ``1.4``) from a VLM analysis dict.
+    """Recover a canonical room code from a VLM analysis dict.
 
     The ``room_plate`` prompt returns a PDDL atom that the service stores
-    in ``location_id`` (e.g. ``classroom_g_1_4``). This helper turns that
-    back into the human-facing room number used by topology lookups.
-    Falls back to scanning ``raw_response`` for the same pattern.
+    in ``location_id``. This helper turns it back into the human-facing
+    room code used for arrival verification:
+
+    - ``classroom_g_X_Y`` → ``X.Y`` (G classrooms use decimal codes).
+    - ``classroom_cd_N``  → ``N``  (CD classrooms use bare digits, the
+      number after "Aula").
+
+    Falls back to scanning ``raw_response`` for the same patterns.
     """
     if not analysis:
         return None
 
     location_id = analysis.get("location_id")
     if location_id:
-        match = re.match(r"classroom_g_(\d+)_(\d+)", str(location_id).lower())
-        if match:
-            return normalize_room_code(f"{match.group(1)}.{match.group(2)}")
+        lid = str(location_id).lower()
+        g_match = re.match(r"classroom_g_(\d+)_(\d+)", lid)
+        if g_match:
+            return normalize_room_code(f"{g_match.group(1)}.{g_match.group(2)}")
+        cd_match = re.match(r"classroom_cd_(\d+)", lid)
+        if cd_match:
+            return cd_match.group(1)
 
-    raw = analysis.get("raw_response") or ""
-    classroom = re.search(r"classroom_g_(\d+)_(\d+)", str(raw).lower())
-    if classroom:
-        return normalize_room_code(f"{classroom.group(1)}.{classroom.group(2)}")
+    raw = str(analysis.get("raw_response") or "").lower()
+    g_class = re.search(r"classroom_g_(\d+)_(\d+)", raw)
+    if g_class:
+        return normalize_room_code(f"{g_class.group(1)}.{g_class.group(2)}")
+    cd_class = re.search(r"classroom_cd_(\d+)", raw)
+    if cd_class:
+        return cd_class.group(1)
     return None
 
 
@@ -182,6 +194,21 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
             result["building"] = bid
             result["floor"] = fnum
             result["location_id"] = loc_id
+
+    # Building CD classrooms are referenced as "Aula N" (matches the
+    # plate text and the room_code stored in campus_places.json). The
+    # decimal regex above does not catch this, so resolve it explicitly
+    # by location_id lookup against the agent's room_lookup.
+    if result["location_id"] is None:
+        aula_match = re.search(r"\baula\s+(\d+)\b", low)
+        if aula_match:
+            target_id = f"classroom_cd_{aula_match.group(1)}"
+            for _, (bid, fnum, lid) in room_lookup.items():
+                if lid == target_id:
+                    result["building"] = bid
+                    result["floor"] = fnum
+                    result["location_id"] = lid
+                    break
 
     for keyword, bid in BUILDING_MAP.items():
         pattern = r"\b" + re.escape(keyword) + r"\b"

@@ -68,3 +68,5 @@ report/
 colab_upload/
 *.local.*
 *.bat
+/filesExplanation/
+/whisper_smoke_test/test/

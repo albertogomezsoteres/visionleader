@@ -377,6 +377,66 @@
           "name_es": "Escaleras",
           "type": "stairs"
         }
+      ],
+      "1": [
+        {
+          "id": "classroom_cd_1",
+          "name": "Classroom 1",
+          "name_es": "Aula 1",
+          "type": "classroom",
+          "room_code": "1"
+        },
+        {
+          "id": "classroom_cd_2",
+          "name": "Classroom 2",
+          "name_es": "Aula 2",
+          "type": "classroom",
+          "room_code": "2"
+        },
+        {
+          "id": "classroom_cd_3",
+          "name": "Classroom 3",
+          "name_es": "Aula 3",
+          "type": "classroom",
+          "room_code": "3"
+        },
+        {
+          "id": "classroom_cd_4",
+          "name": "Classroom 4",
+          "name_es": "Aula 4",
+          "type": "classroom",
+          "room_code": "4"
+        }
+      ],
+      "2": [
+        {
+          "id": "classroom_cd_5",
+          "name": "Classroom 5",
+          "name_es": "Aula 5",
+          "type": "classroom",
+          "room_code": "5"
+        },
+        {
+          "id": "classroom_cd_6",
+          "name": "Classroom 6",
+          "name_es": "Aula 6",
+          "type": "classroom",
+          "room_code": "6"
+        },
+        {
+          "id": "classroom_cd_7",
+          "name": "Classroom 7",
+          "name_es": "Aula 7",
+          "type": "classroom",
+          "room_code": "7"
+        },
+        {
+          "id": "classroom_cd_8",
+          "name": "Classroom 8",
+          "name_es": "Aula 8",
+          "type": "classroom",
+          "room_code": "8"
+        }
       ]
     },
     "H": {
