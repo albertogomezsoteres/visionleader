@@ -12,10 +12,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict
 
+from api.telemetry import log_event
+
 from ..context import ConversationContext, ConversationState
 from ..parsing import is_no, is_yes, parse_location
 from ..routing import compute_route, planner_failure_message
-from ..text_formatting import location_text
+from ..text_formatting import BUILDING_NAMES, location_text
 
 if TYPE_CHECKING:
     from ...conversation_agent import ConversationAgent
@@ -25,6 +27,24 @@ def confirm_origin(agent: "ConversationAgent", ctx: ConversationContext) -> Dict
     """Origin is fully resolved -> either present a pending plan or ask
     for a destination."""
     from . import plan_confirmation  # lazy: plan_confirmation imports execution
+
+    if ctx.origin:
+        loc_id = ctx.origin.get("location_id")
+        bld = ctx.origin.get("building")
+        flr = ctx.origin.get("floor")
+        log_event(
+            "AGENT",
+            f"origin grounded: (at user {loc_id})  "
+            f"— building={BUILDING_NAMES.get(bld, bld)}  floor={flr}",
+            origin=ctx.origin,
+        )
+        log_event(
+            "VALIDATION",
+            f"origin_grounding  PASS  ·  (at user {loc_id})",
+            check="origin_grounding",
+            result="pass",
+            location_id=loc_id,
+        )
 
     loc_text = location_text(ctx.origin)
 
@@ -63,7 +83,7 @@ def handle_confirming_origin(
         loc_text = location_text(ctx.origin)
         if ctx.destination:
             dest_text = location_text(ctx.destination)
-            route = compute_route(agent, ctx.origin, ctx.destination)
+            route = compute_route(agent, ctx.origin, ctx.destination, ctx=ctx)
             if route:
                 ctx.route_steps = route
                 ctx.current_step_idx = 0

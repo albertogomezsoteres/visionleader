@@ -283,6 +283,41 @@ class HierarchicalPDDLConverter:
                     return loc["id"], floor
         return None
 
+    def _outdoor_entrances_of(self, building_id: int) -> List[Tuple[str, int]]:
+        """All exterior-side entrance nodes of a building, used to wire
+        cross-building ``outdoor_connected`` edges. Includes the canonical
+        ``entrance`` plus any ``entrance_secondary`` exterior nodes so the
+        planner can pick the entrance closest to the user instead of being
+        forced through a single one.
+        """
+        out: List[Tuple[str, int]] = []
+        seen: set = set()
+        for floor, locs in self.building_locations(building_id).items():
+            for loc in locs:
+                t = loc.get("type") or ""
+                lid = loc.get("id") or ""
+                # Outside-side entrances are tagged "entrance" /
+                # "entrance_secondary" / "entrance_main_exterior". The
+                # heuristic accepts any entrance-typed node whose id
+                # contains "_exterior" so interior nodes are excluded.
+                if not t.startswith("entrance"):
+                    continue
+                if "_exterior" not in lid and t != "entrance":
+                    continue
+                key = (lid, floor)
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(key)
+        # Fall back to the canonical single entrance if the heuristic
+        # produced nothing — keeps the converter resilient for buildings
+        # whose schema doesn't follow the *_exterior suffix convention.
+        if not out:
+            single = self._entrance_of(building_id)
+            if single is not None:
+                out.append(single)
+        return out
+
     # Problem generation — supports one or two buildings in the same problem.
     def generate_building_problem(
         self,
@@ -476,8 +511,15 @@ class HierarchicalPDDLConverter:
                     )
 
         # Outdoor edges between entrances — only emitted when at least two
-        # buildings are in the problem. Each edge carries a metric distance
-        # declared in ``connections[].distance_m``; default falls back to 50 m.
+        # buildings are in the problem. Each ``connections[]`` entry carries
+        # a single distance, but a real building has multiple usable
+        # exterior entrances; we emit one outdoor edge per (source ext.
+        # entrance × destination ext. entrance) pair so the planner can
+        # pick the entrance closest to the user instead of being forced
+        # through a single canonical one. The distance is reused for all
+        # entrance pairs of the same building pair (sufficient resolution
+        # for indoor-dominant routes; per-pair distances would need a
+        # topology schema change).
         if len(buildings_in_problem) > 1:
             bset = set(buildings_in_problem)
             for conn in self.data.get("connections", []) or []:
@@ -487,26 +529,28 @@ class HierarchicalPDDLConverter:
                     continue
                 if f_bld not in bset or t_bld not in bset:
                     continue
-                f_entry = self._entrance_of(f_bld)
-                t_entry = self._entrance_of(t_bld)
-                if not f_entry or not t_entry:
+                f_entries = self._outdoor_entrances_of(f_bld)
+                t_entries = self._outdoor_entrances_of(t_bld)
+                if not f_entries or not t_entries:
                     continue
-                f_pddl = self.location_to_pddl(
-                    f_entry[0], f_entry[1], self.json_name(f_bld)
-                )
-                t_pddl = self.location_to_pddl(
-                    t_entry[0], t_entry[1], self.json_name(t_bld)
-                )
                 distance_outdoor = conn.get("distance_m")
                 if not isinstance(distance_outdoor, (int, float)) or distance_outdoor <= 0:
                     distance_outdoor = 50
                 distance_outdoor = int(round(distance_outdoor))
-                init_lines.append(
-                    f"    (outdoor_connected {f_pddl} {t_pddl})"
-                )
-                init_lines.append(
-                    f"    (= (distance_outdoor {f_pddl} {t_pddl}) {distance_outdoor})"
-                )
+                for f_entry in f_entries:
+                    f_pddl = self.location_to_pddl(
+                        f_entry[0], f_entry[1], self.json_name(f_bld)
+                    )
+                    for t_entry in t_entries:
+                        t_pddl = self.location_to_pddl(
+                            t_entry[0], t_entry[1], self.json_name(t_bld)
+                        )
+                        init_lines.append(
+                            f"    (outdoor_connected {f_pddl} {t_pddl})"
+                        )
+                        init_lines.append(
+                            f"    (= (distance_outdoor {f_pddl} {t_pddl}) {distance_outdoor})"
+                        )
 
         problem_name = problem_name or (
             f"{origin_bname.lower()}-to-{dest_bname.lower()}-problem"
