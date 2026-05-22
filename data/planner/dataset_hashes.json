@@ -1,0 +1,17 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "problem_g_same_floor.pddl": "9ea664d972cd7b89dd7d78126b47334d23629a51b92214f9d2ce0aa257939a9d",
+    "problem_g_one_floor.pddl": "56cccc759a6ab9012886990a9be9b5b306ed1ff619a4a8209e26eb22d3b5743d",
+    "problem_g_two_floors.pddl": "afb2b493f5d2c321d97179b568551fba08abbc61f49e7f2f42e118da8d6c1dfb",
+    "problem_cd_one_floor.pddl": "699b6c15e245632bc970d63537cede7cda7a6ab81b0db174095107d6cee4343f",
+    "problem_cd_two_floors.pddl": "750a908685e2557b5a78bd8f0222fc9be3aa04e0f20c9126e740ed761f61cf30",
+    "problem_cd_cross_cores.pddl": "f149097e0da17fa0a79f7d4fff643b29b7ca078469efcf49da17e8f62500c378",
+    "problem_hybrid_noncanonical.pddl": "a61074c90387d0f73e0d82c36d4e257073c3d8b4a93f43b896aaeba36ffdfeb7",
+    "problem_hybrid_aula_p1.pddl": "d9641a6f1f91748f2999e993a7da1ec1f1ad33d0629dff17191999e5098fe092",
+    "problem_hybrid_deep.pddl": "0eba8b348b266c8c944d0fcdf0c5304b407cdbf97aaa185e75617c49daa7fd98",
+    "problem_g_hurry.pddl": "e1d6d8bf42df786a48e65afb281d5e1317600d15a8e8a4f12456f5f218c5e22f",
+    "problem_cd_cross_cores_hurry.pddl": "12a3cffa3c2cf4c5964fe1dab69faa7774c79b6efe07d8562e3192fff4b74293",
+    "problem_hybrid_closure.pddl": "38a627fc1780dce45e7eee6ee16ff0b9aee95e390a1e19bc55ae71016bb406ac"
+  }
+}

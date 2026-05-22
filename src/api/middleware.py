@@ -51,7 +51,7 @@ class TelemetryMiddleware(BaseHTTPMiddleware):
             try:
                 log_event(
                     "AGENT",
-                    f"turn handled by backend",
+                    "turn handled by backend",
                     duration_ms=elapsed_ms,
                     endpoint=path,
                     backend_internal_ms=elapsed_ms,

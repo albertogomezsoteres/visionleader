@@ -1,6 +1,6 @@
-"""Planning endpoints — generate, validate and inspect PDDL plans.
+"""Planning endpoints - generate, validate and inspect PDDL plans.
 
-A single /api/plan path uses the shared `domain_indoor.pddl`. The converter
+A single /api/plan path uses the shared `domain.pddl`. The converter
 encodes one or two buildings in the same problem depending on whether the
 goal is in the same building as the origin, so both intra- and cross-building
 routes are resolved by the same Fast Downward call.

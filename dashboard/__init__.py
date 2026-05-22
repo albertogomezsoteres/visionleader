@@ -1,3 +1,0 @@
-"""
-PaliGemma Evaluation Dashboard Package
-"""

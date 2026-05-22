@@ -1,0 +1,13 @@
+problem_id,filename,category,origin,destination,description
+g_same_floor,problem_g_same_floor.pddl,intra-g,classroom_g_0_1,classroom_g_0_4,"Same floor walk in building G, floor 0"
+g_one_floor,problem_g_one_floor.pddl,intra-g,entrance_2,classroom_g_1_4,Single elevator hop within building G
+g_two_floors,problem_g_two_floors.pddl,intra-g,classroom_g_0_1,classroom_g_2_1,Two elevator hops within building G
+cd_one_floor,problem_cd_one_floor.pddl,intra-cd,entrance_cd_exterior,classroom_cd_2,Single floor route in building CD
+cd_two_floors,problem_cd_two_floors.pddl,intra-cd,entrance_cd_exterior,classroom_cd_7,Two floor route in building CD
+cd_cross_cores,problem_cd_cross_cores.pddl,intra-cd,classroom_cd_1,classroom_cd_8,Crosses the two independent vertical cores of building CD
+hybrid_noncanonical,problem_hybrid_noncanonical.pddl,hybrid,entrance_1,classroom_cd_3,Non-canonical entrance forces an indoor walk before the outdoor hop
+hybrid_aula_p1,problem_hybrid_aula_p1.pddl,hybrid,classroom_g_1_4,classroom_cd_3,Classroom to classroom across two buildings
+hybrid_deep,problem_hybrid_deep.pddl,hybrid,classroom_g_0_1,classroom_cd_8,Deepest route: three floors of vertical movement plus an outdoor hop
+g_hurry,problem_g_hurry.pddl,special,entrance_2,classroom_g_1_4,"Single elevator hop in hurry mode, should prefer the stairs"
+cd_cross_cores_hurry,problem_cd_cross_cores_hurry.pddl,special,classroom_cd_1,classroom_cd_8,"Cross core CD route in hurry mode, checks hurry does not break dual core routing"
+hybrid_closure,problem_hybrid_closure.pddl,special,entrance_2,classroom_cd_8,Closure driven replan: a closed elevator forces a straight to outdoor route

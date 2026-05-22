@@ -1,0 +1,58 @@
+{
+  "experiment": "exp1_update",
+  "date": "2026-04-26T11:58:38",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "torch_version": "2.10.0+cu128",
+  "transformers_version": "5.6.2",
+  "pillow_version": "12.2.0",
+  "bert_score_version": "0.3.13",
+  "seed": 42,
+  "cudnn_deterministic": true,
+  "max_new_tokens": 30,
+  "images_path": "/content/images",
+  "annotations_path": "/content/annotations",
+  "git_commit": "unavailable",
+  "models_evaluated": [
+    "google/paligemma2-3b-pt-448",
+    "google/paligemma2-3b-mix-448",
+    "google/paligemma2-10b-pt-448",
+    "google/paligemma2-10b-mix-448",
+    "google/paligemma2-10b-ft-docci-448",
+    "google/gemma-4-E2B-it",
+    "google/gemma-4-E4B-it"
+  ],
+  "decoding_protocol": {
+    "do_sample": false,
+    "num_beams": 1,
+    "temperature": null,
+    "max_new_tokens": 30,
+    "enable_thinking": false,
+    "torch_dtype": "auto on CUDA (bfloat16 for Gemma, bfloat16 for PaliGemma); float32 on CPU",
+    "gemma_recommended_overridden": "stochastic (T=1.0, top_p=0.95, top_k=64) replaced by greedy for reproducibility"
+  },
+  "latency_protocol": {
+    "n_warmup": 3,
+    "n_latency_runs": 3,
+    "cuda_synchronize_around_timer": true,
+    "warmup_image_source": "synthetic 224x224 deterministic RGB noise, seed=SEED",
+    "image_order": "shuffled deterministically per run (seed = SEED*1000 + run_idx)"
+  },
+  "dataset_artifact_hashes": {
+    "/content/images.zip": {
+      "sha256": "a935f6dc291eb8d2fcbcd3005ca4fcf4c77f1b46488518cc1a7a6679576ecaad",
+      "size_bytes": 16847085
+    },
+    "/content/annotations/ground_truth.json": {
+      "sha256": "722ee87f51489ae52cc03db2e446d2decd5c63c03d46185fea08807f506c8c6a",
+      "size_bytes": 11691
+    },
+    "/content/annotations/questions.json": {
+      "sha256": "ce877fb5499011cd73be088c62979bc36c588e0505c14e0450591b03bd1536b8",
+      "size_bytes": 5678
+    },
+    "/content/models.json": {
+      "sha256": "c256bd8da295b4fc21008b6660b366e687dff96a2be8a2912be194dde0f5c90f",
+      "size_bytes": 3584
+    }
+  }
+}

@@ -29,6 +29,7 @@ Thumbs.db
 
 # Logs and temporary files
 *.log
+!experiments/planner/results/_last_run_stdout.log
 *.tmp
 *.temp
 
@@ -46,27 +47,24 @@ Thumbs.db
 /*.md
 !/README.md
 
-# Experiment outputs and downloaded artefacts (regenerable, kept local)
-results/
-reports/
-**/*[Rr]esults*/
-**/*RESULTS*/
+# Experiment result CSVs and reproducibility cards ARE committed
+# (under experiments/**/results/). Build and cache outputs are ignored above.
 
 # Local archives, datasets and large binaries
 /*.zip
 /*.csv
 /*.txt
+!/requirements.txt
 *.bin
-*.task
 **/assets/models/
 **/assets/audios/
 
+# Local datasets: files kept out of the repo, documented by manifest + hashes
+data/stt/audios/
+data/vlm/images/
+
 # Personal scratch and local-only files
-/test/
-scriptsTest/
 report/
-colab_upload/
 *.local.*
 *.bat
-/filesExplanation/
-/whisper_smoke_test/test/
+**/whisper_smoke_test/test/

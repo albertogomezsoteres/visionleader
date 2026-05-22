@@ -5,7 +5,7 @@ import 'tts_waveform.dart';
 /// Compact assistant indicator: icon (walking / assistant / arrival),
 /// optional step badge, and a TTS waveform when the assistant is speaking.
 ///
-/// The full TTS text is intentionally not rendered on screen — the user
+/// The full TTS text is intentionally not rendered on screen - the user
 /// hears the message through the speaker. The Semantics label still
 /// carries the full text so accessibility tools can read it on demand.
 class MessageBubble extends StatelessWidget {
@@ -154,7 +154,7 @@ class MessageBubble extends StatelessWidget {
       liveRegion: true,
       label: message.isEmpty ? 'Starting navigation assistant' : message,
       // FittedBox scales the bubble down (never up) when the parent gives
-      // less vertical room than its natural size — needed when the
+      // less vertical room than its natural size - needed when the
       // Symbolic Plan card is expanded and eats into the available space.
       child: Center(
         child: FittedBox(

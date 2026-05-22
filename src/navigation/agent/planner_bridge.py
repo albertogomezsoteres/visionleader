@@ -1,7 +1,7 @@
 """Wrappers around the Fast Downward client.
 
-These helpers handle the boring bits — generating a tempfile, calling the
-planner, parsing the result, deleting the tempfile — so the agent's
+These helpers handle the boring bits - generating a tempfile, calling the
+planner, parsing the result, deleting the tempfile - so the agent's
 routing logic only has to worry about *what* to plan, not *how*. Live
 telemetry for the demo is emitted from :mod:`navigation.agent.routing`
 via the unified ``log_event`` helper, plus a ``[PLANNER] domain= …
@@ -12,9 +12,8 @@ enters Fast Downward on every turn.
 import logging
 import re
 import tempfile
-import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from api.telemetry import log_event
 

@@ -1,0 +1,4 @@
+question_id,n,accuracy,avg_output_length_words,macro_precision,macro_recall,macro_f1,classes_used,keyword_recall
+element_identification,25,1.0,1.0,1.0,1.0,1.0,"['stairs', 'elevator']",1.0
+stairs_direction,15,0.8667,1.0,0.9,0.8572,0.8611,"['up', 'down']",
+elevator_state,10,1.0,1.0,1.0,1.0,1.0,"['open', 'closed']",

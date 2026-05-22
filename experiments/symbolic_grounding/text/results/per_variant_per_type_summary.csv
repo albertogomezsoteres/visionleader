@@ -1,0 +1,5 @@
+prompt_variant,type,n,exact_pddl_match,location_id_accuracy
+basic,initial_location,25,0.2,0.2
+basic,destination,26,0.1923,0.1923
+optimized,initial_location,25,0.8,0.8
+optimized,destination,26,0.8846,0.8846

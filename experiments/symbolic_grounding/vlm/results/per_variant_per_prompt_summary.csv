@@ -1,0 +1,5 @@
+prompt_variant,prompt_id,n,exact_pddl_match,location_id_accuracy,format_validity
+basic,room_plate,26,0.0,0.0,1.0
+basic,directory_sign,20,0.8,0.8,1.0
+optimized,room_plate,26,0.9231,0.9231,1.0
+optimized,directory_sign,20,1.0,1.0,1.0

@@ -1,0 +1,25 @@
+{
+  "model_id": "google/paligemma2-10b-pt-448",
+  "family": "paligemma",
+  "experiment": "exp1_update",
+  "n_parameters": 9663523568,
+  "n_parameters_billions": 9.66,
+  "n_inferences": 50,
+  "overall_accuracy": 0.56,
+  "state_recognition_macro_precision": 0.2083,
+  "state_recognition_macro_recall": 0.1125,
+  "state_recognition_macro_f1": 0.1458,
+  "state_recognition_classes_used": [
+    "up",
+    "down",
+    "open",
+    "closed"
+  ],
+  "state_recognition_n": 25,
+  "vram_peak_gb": 18.474,
+  "model_load_time_s": 63.72,
+  "total_wall_time_s": 57.37,
+  "mean_inference_time_ms": 335.17,
+  "avg_inference_time_ms_std": 2.41,
+  "throughput_inf_per_s": 2.984
+}

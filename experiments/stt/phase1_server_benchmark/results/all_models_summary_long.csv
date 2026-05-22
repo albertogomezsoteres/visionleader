@@ -1,0 +1,17 @@
+model,group,size,condition,wer_pct,cer_pct,sentence_accuracy_pct,dka_pct,avg_latency_s,avg_latency_s_std,n_phrases,failed
+facebook/s2t-small-librispeech-asr,hf,s2t-small,no_prompt,20.99,14.63,33.33,56.17,0.122,0.0029,30,0
+facebook/s2t-small-librispeech-asr,hf,s2t-small,with_prompt,20.99,14.63,33.33,56.17,0.122,0.0029,30,0
+facebook/wav2vec2-base-960h,hf,wav2vec2-base,no_prompt,21.02,12.18,33.33,53.7,0.012,0.0055,30,0
+facebook/wav2vec2-base-960h,hf,wav2vec2-base,with_prompt,21.02,12.18,33.33,53.7,0.012,0.0055,30,0
+whisper-base,local,base,no_prompt,2.0,0.64,86.67,90.74,0.255,0.0014,30,0
+whisper-base,local,base,with_prompt,0.28,0.07,96.67,100.0,0.259,0.0073,30,0
+whisper-large-v3,local,large-v3,no_prompt,0.42,0.3,96.67,98.15,0.788,0.0013,30,0
+whisper-large-v3,local,large-v3,with_prompt,0.0,0.0,100.0,100.0,0.796,0.0017,30,0
+whisper-large-v3-turbo,local,large-v3-turbo,no_prompt,0.42,0.3,96.67,98.15,0.248,0.005,30,0
+whisper-large-v3-turbo,local,large-v3-turbo,with_prompt,0.0,0.0,100.0,100.0,0.25,0.0055,30,0
+whisper-medium,local,medium,no_prompt,0.0,0.0,100.0,100.0,0.616,0.0018,30,0
+whisper-medium,local,medium,with_prompt,0.0,0.0,100.0,100.0,0.618,0.003,30,0
+whisper-small,local,small,no_prompt,0.33,0.06,96.67,96.3,0.381,0.0027,30,0
+whisper-small,local,small,with_prompt,0.0,0.0,100.0,100.0,0.383,0.0017,30,0
+whisper-tiny,local,tiny,no_prompt,2.23,0.73,80.0,88.89,0.238,0.0052,30,0
+whisper-tiny,local,tiny,with_prompt,0.65,0.43,93.33,100.0,0.218,0.0063,30,0

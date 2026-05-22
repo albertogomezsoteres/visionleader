@@ -36,10 +36,10 @@ def compute_route(
     planner picks up live flags (``hurry_mode``, pending closure
     announcements) without ambiguity. Falling back to a search across
     ``agent.contexts`` is unsafe once the app has opened more than one
-    session — flag state on a stale context would silently override the
-    current one — so callers should always pass ``ctx``.
+    session - flag state on a stale context would silently override the
+    current one - so callers should always pass ``ctx``.
 
-    A single Fast Downward call on ``domain_indoor.pddl`` resolves both
+    A single Fast Downward call on ``domain.pddl`` resolves both
     intra- and inter-building routes. For cross-building pairs the
     converter emits rooms of both buildings plus ``outdoor_connected``
     edges between their entrances, so the resulting plan interleaves
@@ -120,7 +120,7 @@ def compute_route(
         )
         log_event(
             "VALIDATION",
-            f"planner_route  FAIL  ·  no plan found",
+            "planner_route  FAIL  ·  no plan found",
             check="planner_route", result="fail",
         )
         return None
@@ -136,7 +136,7 @@ def compute_route(
 
     log_event(
         "PLANNER",
-        f"solved — {len(fd_actions)} actions, cost {plan_cost}",
+        f"solved - {len(fd_actions)} actions, cost {plan_cost}",
         duration_ms=planner_total_ms,
         action_count=len(fd_actions),
         cost=plan_cost,

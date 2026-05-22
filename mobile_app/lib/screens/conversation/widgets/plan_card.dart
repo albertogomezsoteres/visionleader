@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 ///
 /// The TTS layer reads the friendly merged steps; this card sits beside
 /// the conversation bubble so the user (or anyone watching the demo)
-/// can see what the symbolic planner actually produced — action-level,
+/// can see what the symbolic planner actually produced - action-level,
 /// with the per-action and total costs that drove the choice. Hidden
 /// when no plan is active.
 class PlanCard extends StatefulWidget {

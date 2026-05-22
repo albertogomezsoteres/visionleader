@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// Seven thin vertical bars pulse independently with phase-offset sine
 /// waves so the row reads as a "live" speech indicator rather than a
 /// metronome. When [active] is false the bars collapse to a flat dotted
-/// rest state — no animation work is performed and no frames are
+/// rest state - no animation work is performed and no frames are
 /// scheduled, so this widget is cheap to keep in the tree at all times.
 class TtsWaveform extends StatefulWidget {
   final bool active;

@@ -1,46 +1,53 @@
 # Fast Downward Docker
 
-Imagen Docker que empaqueta Fast Downward para que el backend pueda invocar al planificador clásico desde Python sin tener que compilarlo en el host.
+Docker image that packages Fast Downward so the backend can call the classical
+planner from Python without compiling it on the host.
 
-## Construir la imagen
+## Build the image
 
-Desde la raíz del proyecto:
+From the repository root:
 
 ```bash
 cd docker/fast-downward
 docker build -t fast-downward:latest .
 ```
 
-La compilación tarda 5–10 minutos la primera vez. Requiere conexión a Internet (descarga el código fuente de Fast Downward).
+The build takes 5 to 10 minutes the first time and needs an internet connection (it
+downloads the Fast Downward source).
 
-## Verificar la imagen
+## Check the image
 
 ```bash
 docker images | grep fast-downward
 ```
 
-Salida esperada:
+Expected output:
 
 ```
-fast-downward   latest   <id>   <fecha>   ~1.2GB
+fast-downward   latest   <id>   <date>   ~1.2GB
 ```
 
-## Ejecución directa (debug)
+## Run it directly (debug)
 
-Para invocar Fast Downward sobre un par `dominio + problema`:
+To run Fast Downward on a domain and problem pair:
 
 ```bash
-docker run --rm -v "$(pwd)/pddl:/pddl" fast-downward:latest domain_indoor.pddl problems/problem_G_demo.pddl
+docker run --rm -v "$(pwd)/pddl:/pddl" fast-downward:latest \
+  /pddl/domain.pddl /pddl/problems/examples/problem_g_intra_example.pddl
 ```
 
-El contenedor monta la carpeta `pddl/` del repo en `/pddl` dentro del contenedor. La salida muestra la búsqueda y, si tiene éxito, el plan línea a línea.
+The container mounts the repository's `pddl/` folder at `/pddl`. The output shows the
+search and, if it succeeds, the plan line by line.
 
-## Uso desde el backend
+## Use from the backend
 
-El backend nunca lanza Docker manualmente. `src/navigation/fast_downward_client.py` envuelve la llamada y limpia los tempfiles. La API de planificación (`/api/plan`) requiere que la imagen `fast-downward:latest` esté disponible localmente; si no lo está, la respuesta indica que no se puede generar ruta.
+The backend never launches Docker by hand. `src/navigation/fast_downward_client.py`
+wraps the call and cleans up the temporary files. The planning endpoint (`/api/plan`)
+needs the `fast-downward:latest` image available locally; if it is missing, the
+response reports that no route could be computed.
 
-## Solución de problemas
+## Troubleshooting
 
-- **`Cannot connect to the Docker daemon`** — Docker Desktop no está arrancado.
-- **`No such file or directory`** dentro del contenedor — verifica que el `-v` apunta a una ruta absoluta correcta y que el archivo PDDL existe en esa carpeta.
-- **Build falla** — comprueba espacio en disco (~2 GB) y que el host tiene salida a Internet.
+- `Cannot connect to the Docker daemon`: Docker Desktop is not running.
+- `No such file or directory` inside the container: check that the `-v` mount points to a correct absolute path and that the PDDL file exists in that folder.
+- Build fails: check disk space (about 2 GB) and that the host has internet access.

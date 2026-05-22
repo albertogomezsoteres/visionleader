@@ -1,12 +1,12 @@
-"""Phase 2 — discover the user's origin via voice or photo.
+"""Phase 2 - discover the user's origin via voice or photo.
 
 Covers the five states the FSM can sit in while it still does not have a
 fully resolved ``(building, floor, location_id)`` tuple:
 
-- ASK_LOCATION_VOICE  — free-form voice answer ("classroom 0.3, building G")
-- ASK_SITUATION       — what the user can see, leading to a photo request
-- WAITING_PHOTO_DOOR / WAITING_PHOTO_SIGN — process VLM photo result
-- ASK_BUILDING / ASK_FLOOR — fill in whichever piece is still missing
+- ASK_LOCATION_VOICE  - free-form voice answer ("classroom 0.3, building G")
+- ASK_SITUATION       - what the user can see, leading to a photo request
+- WAITING_PHOTO_DOOR / WAITING_PHOTO_SIGN - process VLM photo result
+- ASK_BUILDING / ASK_FLOOR - fill in whichever piece is still missing
 """
 
 from __future__ import annotations

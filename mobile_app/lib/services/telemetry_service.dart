@@ -8,7 +8,7 @@ import '../core/app_config.dart';
 /// Client-side telemetry for the end-to-end validation runs.
 ///
 /// Holds the active scenario id (S1 / S2 / S3) and the current turn index
-/// — both injected as ``X-Scenario-Id`` / ``X-Turn-Idx`` headers by
+/// - both injected as ``X-Scenario-Id`` / ``X-Turn-Idx`` headers by
 /// [ApiService] on every backend request, so the backend telemetry can
 /// tag its events. While a turn is active, the service collects
 /// per-event timestamps using a single [Stopwatch] anchored at
@@ -16,7 +16,7 @@ import '../core/app_config.dart';
 /// flushes them as one ``CLIENT`` event posted to ``/api/_client_metric``
 /// when the TTS for that turn completes.
 ///
-/// Validation is OFF by default — when [scenarioId] is ``null`` every
+/// Validation is OFF by default - when [scenarioId] is ``null`` every
 /// method is a cheap no-op and the app behaves exactly like before.
 class TelemetryService {
   TelemetryService._();
@@ -92,7 +92,7 @@ class TelemetryService {
   /// Post a single ``[STT]`` event with the transcribed text, the on-device
   /// latency, and the duration of the captured audio. Always fires (even
   /// when validation is off) so the demo log in the backend terminal
-  /// always shows what Whisper transcribed — otherwise STT looks
+  /// always shows what Whisper transcribed - otherwise STT looks
   /// invisible because it runs on the phone.
   Future<void> logStt(String text, int latencyMs, {int? audioMs}) async {
     final audio = audioMs != null
@@ -150,7 +150,7 @@ class TelemetryService {
     }..removeWhere((_, v) => v == null);
 
     String fmt(int? ms) => ms == null
-        ? '—'
+        ? '-'
         : (ms >= 1000 ? '${(ms / 1000).toStringAsFixed(1)}s' : '${ms}ms');
 
     final breakdown = StringBuffer()

@@ -1,4 +1,4 @@
-"""Phase 5 — present the route summary and act on the user's answer.
+"""Phase 5 - present the route summary and act on the user's answer.
 
 ``present_plan`` builds the one-shot description of the upcoming route
 ("Route to the cafeteria. Uses the elevator. Say start.") and parks the

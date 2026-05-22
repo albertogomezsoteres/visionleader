@@ -1,0 +1,3 @@
+prompt_variant,n,format_validity,format_validity_strict,exact_pddl_match,location_id_accuracy,valid_location_rate,mean_ms,p95_ms
+basic,51,0.7647,0.6471,0.1961,0.1961,0.1961,1211.5,1554.4
+optimized,51,1.0,1.0,0.8431,0.8431,0.8431,1151.8,1457.7

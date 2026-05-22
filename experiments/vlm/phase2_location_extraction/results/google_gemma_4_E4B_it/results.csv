@@ -1,0 +1,47 @@
+image,category,question_id,expected,prediction,correct,inference_time_ms,latency_ms_std,latency_ms_run0,latency_ms_run1,latency_ms_run2
+directory_signs/g_sign_agora_01.jpg,directory_signs,floor_extraction,G Agora,G Agora,True,693.76,4.55,690.37,691.97,698.93
+directory_signs/g_sign_agora_02.jpg,directory_signs,floor_extraction,G Agora,G Agora,True,694.55,5.81,699.44,696.06,688.13
+directory_signs/g_sign_agora_03.jpg,directory_signs,floor_extraction,G Agora,G Agora,True,702.05,10.06,713.65,695.82,696.68
+directory_signs/g_sign_agora_04.jpg,directory_signs,floor_extraction,G Agora,G Agora,True,791.36,1.7,792.74,789.45,791.88
+directory_signs/g_sign_agora_05.jpg,directory_signs,floor_extraction,G Agora,G Agora,True,697.74,9.78,708.91,693.62,690.69
+directory_signs/g_sign_floor_0_01.jpg,directory_signs,floor_extraction,G 0,G 0,True,790.22,2.23,791.24,791.75,787.66
+directory_signs/g_sign_floor_0_02.jpg,directory_signs,floor_extraction,G 0,G 0,True,794.34,8.25,802.96,786.52,793.55
+directory_signs/g_sign_floor_0_03.jpg,directory_signs,floor_extraction,G 0,G 0,True,790.77,5.2,796.53,789.35,786.42
+directory_signs/g_sign_floor_0_04.jpg,directory_signs,floor_extraction,G 0,G 0,True,791.14,3.25,787.74,794.2,791.47
+directory_signs/g_sign_floor_0_05.jpg,directory_signs,floor_extraction,G 0,G 0,True,795.11,7.66,797.94,786.44,800.96
+directory_signs/g_sign_floor_1_01.jpg,directory_signs,floor_extraction,G 1,G 1,True,787.65,2.34,785.43,790.09,787.43
+directory_signs/g_sign_floor_1_02.jpg,directory_signs,floor_extraction,G 1,G 1,True,792.31,2.46,789.47,793.61,793.85
+directory_signs/g_sign_floor_1_03.jpg,directory_signs,floor_extraction,G 1,G 1,True,790.3,6.48,797.72,785.74,787.43
+directory_signs/g_sign_floor_1_04.jpg,directory_signs,floor_extraction,G 1,G 1,True,795.09,4.31,794.34,799.73,791.2
+directory_signs/g_sign_floor_1_05.jpg,directory_signs,floor_extraction,G 1,G 1,True,797.86,2.84,797.2,800.98,795.42
+directory_signs/g_sign_floor_2_01.jpg,directory_signs,floor_extraction,G 2,G 2,True,792.0,7.66,797.55,795.19,783.26
+directory_signs/g_sign_floor_2_02.jpg,directory_signs,floor_extraction,G 2,G 2,True,793.37,1.61,793.67,794.81,791.62
+directory_signs/g_sign_floor_2_03.jpg,directory_signs,floor_extraction,G 2,G 2,True,791.59,4.52,796.74,788.26,789.76
+directory_signs/g_sign_floor_2_04.jpg,directory_signs,floor_extraction,G 2,G 2,True,789.95,6.23,789.0,796.6,784.26
+directory_signs/g_sign_floor_2_05.jpg,directory_signs,floor_extraction,G 2,G 2,True,788.91,5.5,792.44,791.72,782.58
+room_plates/cd_room_1_01.jpg,room_plates,room_code_extraction,1,AULA 1,True,786.71,1.8,788.77,785.91,785.44
+room_plates/cd_room_2_01.jpg,room_plates,room_code_extraction,2,AULA 2,True,791.55,5.44,790.81,797.32,786.51
+room_plates/cd_room_2_02.jpg,room_plates,room_code_extraction,2,AULA 2,True,790.64,4.76,795.29,790.85,785.77
+room_plates/cd_room_3_01.jpg,room_plates,room_code_extraction,3,AULA 3shot,True,2841.57,23.75,2865.47,2817.98,2841.26
+room_plates/cd_room_3_02.jpg,room_plates,room_code_extraction,3,AULA 3,True,799.75,10.67,806.93,804.83,787.48
+room_plates/cd_room_4_01.jpg,room_plates,room_code_extraction,4,AULA 4,True,794.96,3.81,791.28,798.88,794.7
+room_plates/cd_room_5_01.jpg,room_plates,room_code_extraction,5,AULA 5,True,796.78,6.64,800.46,800.77,789.12
+room_plates/cd_room_6_01.jpg,room_plates,room_code_extraction,6,AULA 6,True,699.14,7.52,699.79,691.31,706.32
+room_plates/cd_room_7_01.jpg,room_plates,room_code_extraction,7,Aula 7,True,791.09,1.11,792.07,789.89,791.32
+room_plates/cd_room_8_01.jpg,room_plates,room_code_extraction,8,Aula 8,True,797.26,8.32,806.49,790.32,794.98
+room_plates/g_room_0_1_01.jpg,room_plates,room_code_extraction,0.1,0.1,True,698.39,4.63,703.29,694.09,697.8
+room_plates/g_room_0_1_02.jpg,room_plates,room_code_extraction,0.1,0.1,True,698.28,4.05,698.48,702.23,694.13
+room_plates/g_room_0_2_01.jpg,room_plates,room_code_extraction,0.2,0.2,True,700.51,4.53,704.62,701.26,695.65
+room_plates/g_room_0_3_01.jpg,room_plates,room_code_extraction,0.3,0.3,True,702.98,10.47,714.86,695.12,698.97
+room_plates/g_room_0_4_01.jpg,room_plates,room_code_extraction,0.4,0.4,True,702.26,5.02,707.39,697.36,702.03
+room_plates/g_room_0_4_02.jpg,room_plates,room_code_extraction,0.4,0.4,True,701.54,2.87,700.0,699.76,704.85
+room_plates/g_room_1_1_01.jpg,room_plates,room_code_extraction,1.1,1.1,True,697.29,2.43,697.43,694.78,699.64
+room_plates/g_room_1_2_01.jpg,room_plates,room_code_extraction,1.2,1.2,True,705.7,1.49,705.58,704.27,707.24
+room_plates/g_room_1_2_02.jpg,room_plates,room_code_extraction,1.2,1.2,True,699.43,3.93,699.25,695.59,703.45
+room_plates/g_room_1_3_01.jpg,room_plates,room_code_extraction,1.3,1.3,True,700.43,3.11,701.61,696.9,702.79
+room_plates/g_room_1_4_01.jpg,room_plates,room_code_extraction,1.4,1.4,True,701.57,6.16,697.05,699.06,708.59
+room_plates/g_room_1_4_02.jpg,room_plates,room_code_extraction,1.4,1.4,True,697.47,5.79,704.05,695.19,693.17
+room_plates/g_room_1_5_01.jpg,room_plates,room_code_extraction,1.5,1.5,True,693.37,1.22,693.76,694.35,692.0
+room_plates/g_room_1_6_01.jpg,room_plates,room_code_extraction,1.6,1.6,True,696.21,2.46,698.67,696.2,693.74
+room_plates/g_room_2_1_01.jpg,room_plates,room_code_extraction,2.1,2.1,True,695.84,4.4,690.84,699.13,697.55
+room_plates/g_room_ai_lab_01.jpg,room_plates,room_code_extraction,ai_lab,I.A,True,883.71,6.57,890.53,883.19,877.42

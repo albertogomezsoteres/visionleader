@@ -70,9 +70,6 @@ class ConversationContext:
         self.partial_floor: Optional[int] = None
         self.partial_location_id: Optional[str] = None
 
-    def current_location(self) -> Optional[Dict]:
-        return self.origin
-
     def add(self, role: str, text: str) -> None:
         self.history.append({"role": role, "text": text})
 

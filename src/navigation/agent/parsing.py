@@ -34,6 +34,8 @@ BUILDING_MAP: Dict[str, int] = {
     "e": 12,
     "cm": 13,
     "lcb": 14,
+    "rodilla": 15,
+    "chapel": 16,
 }
 
 FLOOR_WORDS: Dict[str, int] = {
@@ -43,12 +45,6 @@ FLOOR_WORDS: Dict[str, int] = {
     "planta baja": 0, "planta 0": 0, "planta 1": 1, "planta 2": 2,
     "planta -1": -1, "floor 0": 0, "floor 1": 1, "floor 2": 2,
     "floor -1": -1, "0": 0, "1": 1, "2": 2,
-}
-
-ENTRANCE_IDS: Dict[int, str] = {
-    1: "entrance_2",
-    2: "entrance_cd",
-    3: "entrance_2",
 }
 
 
@@ -73,14 +69,11 @@ def is_no(msg: str) -> bool:
     return has_neg and not has_aff
 
 
-def building_id_from_name(name: str) -> int:
+def building_id_from_name(name: Optional[str]) -> int:
     """Resolve a short building name (e.g. 'g', 'cd') to its numeric id."""
+    if not name:
+        return 0
     return BUILDING_MAP.get(name.lower(), 0)
-
-
-def entrance_id(building_id: int) -> str:
-    """Canonical entrance location_id for a given building."""
-    return ENTRANCE_IDS.get(building_id, "entrance_main")
 
 
 def extract_building(msg: str) -> Optional[int]:
@@ -246,7 +239,7 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
     if result["location_id"] is None:
         # Numbered G entrances first ("entrance 2", "entrada 3"), so the
         # generic "entrance" fallback below doesn't swallow the number.
-        # Accept digits AND English/Spanish word forms — Whisper often
+        # Accept digits AND English/Spanish word forms - Whisper often
         # transcribes "two" as "to" / "too" (homophones) when the user
         # speaks naturally, so map those back to digit 2.
         numbered_entrance = re.search(
@@ -276,7 +269,7 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
                 result["building"] = 1
             if result["floor"] is None:
                 result["floor"] = 0
-        elif any(w in low for w in ("elevator", "elevator", "lift")):
+        elif any(w in low for w in ("elevator", "lift")):
             result["location_id"] = "elevator"
         elif any(w in low for w in ("stair", "escalera")):
             result["location_id"] = "stairs"
@@ -370,7 +363,7 @@ def parse_destination(
             "label": "the cafeteria",
             "functional": "cafeteria",
         }
-    if any(w in low for w in ("gym", "gym", "gymnasium", "sport")):
+    if any(w in low for w in ("gym", "gymnasium", "sport")):
         fl = fl_data.get("gym", {})
         return {
             "building": fl.get("building", 2),

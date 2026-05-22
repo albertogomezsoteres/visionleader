@@ -10,9 +10,9 @@ class PlanningRequest(BaseModel):
     initial_state and goal_state accept:
       {'building': int, 'floor': int, 'room': 'classroom_g_1_4'}
 
-    The shared `domain_indoor.pddl` handles both intra- and cross-building
+    The shared `domain.pddl` handles both intra- and cross-building
     routes. When origin and goal are in different buildings the converter
-    emits rooms of both plus `conectado_exterior` edges between entrances.
+    emits rooms of both plus `outdoor_connected` edges between entrances.
     """
     initial_state: Dict[str, Any] = Field(
         ...,
@@ -69,7 +69,7 @@ class ImageAnalysisResponse(BaseModel):
 
     For PDDL-atom prompts (`room_plate`, `directory_sign`) the model
     returns a campus location identifier in ``location_id``. For JSON
-    state prompts (`elevator_state`, `stair_direction`, `restroom_gender`)
+    state prompts (`elevator_state`, `stair_direction`)
     the model returns ``state_type`` and ``state_detail``.
     """
     success: bool
@@ -113,9 +113,9 @@ class ConversationResponse(BaseModel):
     tts_message: Optional[str] = None
     next_input: Optional[str] = None
     # Tells the client which VLM prompt to run on the next photo. One of
-    # the prompt ids defined in extraction_validation/prompts.json
-    # (room_plate, directory_sign, elevator_state, stair_direction,
-    # restroom_gender). Null when no photo is expected.
+    # the prompt ids defined in config/prompts.json
+    # (room_plate, directory_sign, elevator_state, stair_direction).
+    # Null when no photo is expected.
     expect_photo: Optional[str] = None
     plan_request: Optional[Dict[str, Any]] = None
     location_partial: Optional[Dict[str, Any]] = None

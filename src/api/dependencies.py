@@ -17,7 +17,7 @@ from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 from navigation.conversation_agent import ConversationAgent
 
 BASE_DIR       = Path(__file__).resolve().parent.parent.parent
-DOMAIN_PATH    = BASE_DIR / "pddl" / "domain_indoor.pddl"
+DOMAIN_PATH    = BASE_DIR / "pddl" / "domain.pddl"
 TOPOLOGY_JSON  = BASE_DIR / "config" / "campus_topology.json"
 PLACES_JSON    = BASE_DIR / "config" / "campus_places.json"
 PDDL_DIR       = BASE_DIR / "pddl"

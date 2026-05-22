@@ -1,7 +1,7 @@
-"""End-to-end validation telemetry — one helper, two sinks.
+"""End-to-end validation telemetry - one helper, two sinks.
 
-* **stdout** — pretty, color-coded line per event for the live demo log.
-* **JSONL** — structured one-event-per-line file for post-processing of
+* **stdout** - pretty, color-coded line per event for the live demo log.
+* **JSONL** - structured one-event-per-line file for post-processing of
   validation runs. Active only when ``TELEMETRY_JSONL_PATH`` is set.
 
 The same call (:func:`log_event`) drives both. ``X-Scenario-Id`` and
@@ -18,8 +18,6 @@ from __future__ import annotations
 import contextvars
 import json
 import os
-import time
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -172,14 +170,3 @@ def log_separator(title: Optional[str] = None) -> None:
             print(f"{color}{rule}{_RESET}", flush=True)
     except Exception:
         pass
-
-
-@contextmanager
-def time_block(category: str, message: str, **fields: Any):
-    """Measure a code block and emit the event with its duration on exit."""
-    started = time.perf_counter()
-    try:
-        yield
-    finally:
-        elapsed_ms = (time.perf_counter() - started) * 1000.0
-        log_event(category, message, duration_ms=elapsed_ms, **fields)

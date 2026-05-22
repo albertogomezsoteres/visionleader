@@ -4,13 +4,13 @@ The agent is implemented as a finite state machine over fifteen states.
 Each state has its own handler in :mod:`navigation.agent.state_handlers`,
 named after the conversational phase it belongs to:
 
-- ``welcome``             — greeting and yes/no entry into the flow
-- ``location_discovery``  — voice or photo-based origin discovery
-- ``origin``              — confirm origin and bridge to destination
-- ``destination``         — parse the user's free-form destination
-- ``plan_confirmation``   — present the route summary and act on the answer
-- ``execution``           — step-by-step delivery and photo verification
-- ``completion``          — arrival and follow-up
+- ``welcome``             - greeting and yes/no entry into the flow
+- ``location_discovery``  - voice or photo-based origin discovery
+- ``origin``              - confirm origin and bridge to destination
+- ``destination``         - parse the user's free-form destination
+- ``plan_confirmation``   - present the route summary and act on the answer
+- ``execution``           - step-by-step delivery and photo verification
+- ``completion``          - arrival and follow-up
 
 This file keeps only the dispatcher (:meth:`process_turn`), the shared
 response builder (:meth:`_reply`) and the singletons every handler needs:
@@ -57,7 +57,7 @@ class ConversationAgent:
     """FSM dispatcher and shared singleton holder.
 
     Only contains state and helpers that the handler modules need to
-    share — the conversational logic itself lives in
+    share - the conversational logic itself lives in
     :mod:`navigation.agent.state_handlers`.
     """
 
@@ -69,7 +69,7 @@ class ConversationAgent:
         self.contexts: Dict[str, ConversationContext] = {}
 
         # Distance lookup: "<building>_<floor>_<from>_<to>" -> meters.
-        # PDDL data, keyed by edge — used by plan_to_steps for TTS distances.
+        # PDDL data, keyed by edge - used by plan_to_steps for TTS distances.
         self._local_distance: Dict[str, int] = {}
         for lc in topology.get("local_connections", []):
             dist = lc.get("distance_m")
@@ -280,12 +280,12 @@ class ConversationAgent:
     def _compute_expect_photo(self, ctx: ConversationContext) -> Optional[str]:
         """Map the current FSM state to the VLM prompt the client should run.
 
-        Returns a prompt id from ``extraction_validation/prompts.json``
+        Returns a prompt id from ``config/prompts.json``
         (``room_plate``, ``directory_sign``, ``elevator_state``,
         ``stair_direction``) or ``None`` if no photo is currently expected.
         """
         if ctx.state == ConversationState.ASK_KNOWS_LOCATION:
-            # Photo taken directly from the welcome screen — let the
+            # Photo taken directly from the welcome screen - let the
             # unified origin prompt identify whichever sign the user shot.
             return "origin_photo_g"
         if ctx.state == ConversationState.WAITING_PHOTO_ORIGIN:

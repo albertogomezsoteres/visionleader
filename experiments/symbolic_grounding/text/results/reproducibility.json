@@ -1,0 +1,127 @@
+{
+  "run_timestamp_utc": "2026-05-09T21:04:39.391717+00:00",
+  "experiment": "text_to_pddl_validation",
+  "model": {
+    "id": "google/gemma-4-E4B-it",
+    "n_params_billions": 7.94,
+    "dtype": "torch.bfloat16",
+    "load_time_s": 63.65
+  },
+  "hardware": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA A100-SXM4-40GB",
+    "gpu_capability": "8.0",
+    "gpu_total_vram_gb": 39.49,
+    "vram_peak_gb_during_run": 14.91,
+    "cuda_version": "12.8",
+    "cudnn_version": 91002
+  },
+  "software": {
+    "python": "3.12.13",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "torch": "2.10.0+cu128",
+    "transformers": "5.8.0",
+    "pillow": "10.4.0",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2"
+  },
+  "seed": 0,
+  "decoding": {
+    "do_sample": false,
+    "num_beams": 1,
+    "enable_thinking": false,
+    "max_new_tokens": 32
+  },
+  "system_prompt": "You are a strict format extractor for indoor navigation. Read the question, follow its rules exactly, and output only what the question asks. Never invent identifiers. Never add explanations or extra words. Stop generating immediately after the requested output is complete.",
+  "prompt_variants_evaluated": [
+    "basic",
+    "optimized"
+  ],
+  "datasets": {
+    "canonical": {
+      "n": 20,
+      "per_type": {
+        "destination": 10,
+        "initial_location": 10
+      }
+    },
+    "robustness": {
+      "n": 31,
+      "per_type": {
+        "destination": 16,
+        "initial_location": 15
+      }
+    }
+  },
+  "total_inference_time_s": 121.38,
+  "primary_metrics_per_variant": [
+    {
+      "prompt_variant": "basic",
+      "n": 51,
+      "format_validity": 0.7647,
+      "format_validity_strict": 0.6471,
+      "exact_pddl_match": 0.1961,
+      "location_id_accuracy": 0.1961,
+      "valid_location_rate": 0.1961,
+      "mean_ms": 1211.5,
+      "p95_ms": 1554.4
+    },
+    {
+      "prompt_variant": "optimized",
+      "n": 51,
+      "format_validity": 1.0,
+      "format_validity_strict": 1.0,
+      "exact_pddl_match": 0.8431,
+      "location_id_accuracy": 0.8431,
+      "valid_location_rate": 0.8431,
+      "mean_ms": 1151.8,
+      "p95_ms": 1457.7
+    }
+  ],
+  "primary_metrics_per_variant_per_type": [
+    {
+      "prompt_variant": "basic",
+      "type": "initial_location",
+      "n": 25,
+      "exact_pddl_match": 0.2,
+      "location_id_accuracy": 0.2
+    },
+    {
+      "prompt_variant": "basic",
+      "type": "destination",
+      "n": 26,
+      "exact_pddl_match": 0.1923,
+      "location_id_accuracy": 0.1923
+    },
+    {
+      "prompt_variant": "optimized",
+      "type": "initial_location",
+      "n": 25,
+      "exact_pddl_match": 0.8,
+      "location_id_accuracy": 0.8
+    },
+    {
+      "prompt_variant": "optimized",
+      "type": "destination",
+      "n": 26,
+      "exact_pddl_match": 0.8846,
+      "location_id_accuracy": 0.8846
+    }
+  ],
+  "supportive_metrics_per_variant": [
+    {
+      "prompt_variant": "basic",
+      "bleu3": 0.4455,
+      "gleu": 0.5824,
+      "meteor": 0.6933,
+      "bertscore_f1": 0.6496
+    },
+    {
+      "prompt_variant": "optimized",
+      "bleu3": 0.8936,
+      "gleu": 0.9216,
+      "meteor": 0.9256,
+      "bertscore_f1": 0.9621
+    }
+  ]
+}

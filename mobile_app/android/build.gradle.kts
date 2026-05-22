@@ -5,8 +5,7 @@ allprojects {
     }
 }
 
-// ESTA ES LA PIEZA QUE FALTA:
-// Le dice a todos los módulos que usen la carpeta /build de la raíz del proyecto
+// Send every module's build output to the shared /build folder at the project root.
 rootProject.layout.buildDirectory.set(file("${project.projectDir}/../build"))
 
 subprojects {

@@ -1,0 +1,36 @@
+audio,flutter_text,cli_text,exact_match,normalized_match
+utterance_01,"I am in classroom 0.3, building G.","I am in classroom 0.3, building G.",True,True
+utterance_02,I am in classroom 2.1 on the second floor.,I am in classroom 2.1 on the second floor.,True,True
+utterance_03,I am at the main entrance of building G.,I am at the main entrance of building G.,True,True
+utterance_04,"I am in the AI laboratory on the ground floor of building G
+.",I am in the AI laboratory on the ground floor of building G.,False,True
+utterance_05,I am next to the elevator of floor 1 of building G.,I am next to the elevator of floor 1 of building G.,True,True
+utterance_06,"I want to go to, classroom 1.4.","I want to go to, classroom 1.4.",True,True
+utterance_07,"Take me to the gym, in building CD.","Take me to the gym, in building CD.",True,True
+utterance_08,I want to go to the cafeteria.,I want to go to the cafeteria.,True,True
+utterance_09,Take me to the nearest restroom on this floor.,Take me to the nearest restroom on this floor.,True,True
+utterance_10,Could you guide me to the EPS faculty offices please?,Could you guide me to the EPS faculty offices please?,True,True
+utterance_11,"I am in a hurry, please use the stairs.","I am in a hurry, please use the stairs.",True,True
+utterance_12,Repeat the instructions please.,Repeat the instructions please.,True,True
+utterance_13,"I am lost, I need help.","I am lost, I need help.",True,True
+utterance_14,cancel navigation and start again.,cancel navigation and start again.,True,True
+utterance_15,Stop and tell me where I am.,Stop and tell me where I am.,True,True
+utterance_16,"Yes, I am ready to continue.","Yes, I am ready to continue.",True,True
+utterance_17,"No, that is not my location.","No, that is not my location.",True,True
+utterance_18,I have arrived at the elevator on floor 2.,I have arrived at the elevator on floor 2.,True,True
+utterance_19,"done, I have reached my destination.","Done, I have reached my destination.",False,True
+utterance_20,"Yes, I can see the elevator and the doors are open.","Yes, I can see the elevator and the doors are open.",True,True
+utterance_21,"I am in classroom 1.1 and I want to go to the EPS faculty
+ offices.",I am in classroom 1.1 and I want to go to the EPS faculty offices.,False,True
+utterance_22,"Take me from classroom 0.1 to the AI laboratory on the
+ ground floor.",Take me from classroom 0.1 to the AI laboratory on the ground floor.,False,True
+utterance_23,"I just came out of the elevator on the first floor of
+ building G.",I just came out of the elevator on the first floor of building G.,False,True
+utterance_24,"I do not know where I am, I need help finding my location.","I do not know where I am, I need help finding my location.",True,True
+utterance_25,"I am at the directory sign, in building G next to the
+ mentoring room.","I am at the directory sign, in building G, next to the mentoring room.",False,True
+utterance_26,How do I get from building CD to building G?,How do I get from building CD to building G?,True,True
+utterance_27,Where is the secretary office in building G?,Where is the secretary office in building G?,True,True
+utterance_28,I need to find classroom 0.3 quickly.,I need to find classroom 0.3 quickly.,True,True
+utterance_29,Could you tell me how to reach the AI laboratory from here?,Could you tell me how to reach the AI laboratory from here?,True,True
+utterance_30,"My destination is classroom 1.4, in building G, please.","My destination is classroom 1.4, in building G, please.",True,True

@@ -1,0 +1,31 @@
+utterance_id,filename,category,reference_transcript,duration_s,domain_keywords
+utterance_01,utterance_01.wav,initial_location,I am in classroom 0.3 building G,4.67,0.3;building g
+utterance_02,utterance_02.wav,initial_location,I am in classroom 2.1 on the second floor,5.28,2.1;second floor
+utterance_03,utterance_03.wav,initial_location,I am at the main entrance of building G,5.09,building g;main entrance
+utterance_04,utterance_04.wav,initial_location,I am in the AI laboratory on the ground floor of building G,6.53,building g;ai laboratory;ground floor
+utterance_05,utterance_05.wav,initial_location,I am next to the elevator on floor 1 of building G,5.44,building g;elevator;floor 1
+utterance_06,utterance_06.wav,destination,I want to go to classroom 1.4,4.8,1.4
+utterance_07,utterance_07.wav,destination,Take me to the gym in building CD,4.0,building cd;gym
+utterance_08,utterance_08.wav,destination,I want to go to the cafeteria,3.58,cafeteria
+utterance_09,utterance_09.wav,destination,Take me to the nearest restroom on this floor,4.74,restroom
+utterance_10,utterance_10.wav,destination,Could you guide me to the EPS faculty offices please,5.12,faculty offices
+utterance_11,utterance_11.wav,navigation_command,I am in a hurry please use the stairs,4.13,stairs;hurry
+utterance_12,utterance_12.wav,navigation_command,Repeat the instructions please,3.52,repeat
+utterance_13,utterance_13.wav,navigation_command,I am lost I need help,3.3,lost
+utterance_14,utterance_14.wav,navigation_command,Cancel navigation and start again,3.55,cancel
+utterance_15,utterance_15.wav,navigation_command,Stop and tell me where I am,3.2,stop
+utterance_16,utterance_16.wav,confirmation,Yes I am ready to continue,3.52,
+utterance_17,utterance_17.wav,confirmation,No that is not my location,3.78,
+utterance_18,utterance_18.wav,confirmation,I have arrived at the elevator on floor 2,4.1,elevator;floor 2
+utterance_19,utterance_19.wav,confirmation,Done I have reached my destination,4.0,done;destination
+utterance_20,utterance_20.wav,confirmation,Yes I can see the elevator and the doors are open,5.12,elevator;doors are open
+utterance_21,utterance_21.wav,hard_domain,I am in classroom 1.1 and I want to go to the EPS faculty offices,6.5,1.1;faculty offices
+utterance_22,utterance_22.wav,hard_domain,Take me from classroom 0.1 to the AI laboratory on the ground floor,6.46,0.1;ai laboratory;ground floor
+utterance_23,utterance_23.wav,hard_domain,I just came out of the elevator on the first floor of building G,5.79,building g;elevator;first floor
+utterance_24,utterance_24.wav,hard_domain,I do not know where I am I need help finding my location,5.57,
+utterance_25,utterance_25.wav,hard_domain,I am at the directory sign in building G next to the mentoring room,5.73,building g;mentoring room;directory sign
+utterance_26,utterance_26.wav,edge_case,How do I get from building CD to building G,4.8,building g;building cd
+utterance_27,utterance_27.wav,edge_case,Where is the secretary office in building G,4.45,building g;secretary
+utterance_28,utterance_28.wav,edge_case,I need to find classroom 0.3 quickly,4.86,0.3
+utterance_29,utterance_29.wav,edge_case,Could you tell me how to reach the AI laboratory from here,5.79,ai laboratory
+utterance_30,utterance_30.wav,edge_case,My destination is classroom 1.4 in building G please,5.89,1.4;building g;destination

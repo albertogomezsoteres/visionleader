@@ -1,0 +1,208 @@
+{
+  "experiment": "whisper_stt_evaluation",
+  "date": "2026-04-18T16:54:14.201199",
+  "python_version": "3.12.13",
+  "torch_version": "2.10.0+cu128",
+  "cuda_available": true,
+  "gpu_name": "NVIDIA A100-SXM4-40GB",
+  "git_commit": "N/A",
+  "seed": 42,
+  "local_models": [
+    "tiny",
+    "base",
+    "small",
+    "medium",
+    "large-v3-turbo",
+    "large-v3"
+  ],
+  "hf_models": [
+    "facebook/wav2vec2-base-960h",
+    "facebook/s2t-small-librispeech-asr"
+  ],
+  "conditions": [
+    "no_prompt",
+    "with_prompt"
+  ],
+  "n_phrases": 30,
+  "n_keywords": 31,
+  "domain_prompt_length_chars": 514,
+  "domain_prompt": "UFV campus navigation assistant. classroom 0.1, classroom 0.3, classroom 1.1, classroom 1.4, classroom 2.1, building G, building CD, main entrance, ground floor, first floor, second floor, floor 1, floor 2, elevator, stairs, cafeteria, gym, restroom, AI laboratory, mentoring room, EPS faculty offices, secretary office, directory sign, I want to go to, take me to, I am in, I am at, I am next to, I am lost, yes, no, repeat, cancel, stop, done, I am in a hurry, I have arrived, my destination, the doors are open.",
+  "decoding_protocol_whisper": {
+    "temperature": 0.0,
+    "beam_size": null,
+    "best_of": null,
+    "task": "transcribe",
+    "language": "en",
+    "condition_on_previous_text": false,
+    "fp16": true
+  },
+  "decoding_protocol_hf": {
+    "speech2text": {
+      "num_beams": 1,
+      "do_sample": false
+    },
+    "wav2vec2": "CTC argmax (deterministic by construction)"
+  },
+  "latency_protocol": {
+    "n_warmup": 3,
+    "n_latency_runs": 3,
+    "cuda_synchronize_around_timer": true,
+    "warmup_audio_file": "/content/warmup_synthetic.wav",
+    "warmup_audio_sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+    "warmup_audio_source": "synthetic 5-second silence, 16 kHz mono 16-bit PCM, disjoint from the 30 measured utterances",
+    "phrase_order": "deterministically shuffled per latency run (seed = SEED * 1000 + run_idx), identical across re-executions",
+    "reports": "mean over all N_LATENCY_RUNS * 30 samples; std across N_LATENCY_RUNS run-means"
+  },
+  "dataset_audio_hashes": {
+    "utterance_01.wav": {
+      "utterance_id": "utterance_01",
+      "sha256": "c7841c74df96e6b3a649888fd9d9a7bf845e8a0067a536b10a301182080e4078",
+      "size_bytes": 149582
+    },
+    "utterance_02.wav": {
+      "utterance_id": "utterance_02",
+      "sha256": "2c15a1e60d7fb90b37f84cd8efd704979747b2401b2829cf8654cecd4458a8f0",
+      "size_bytes": 169038
+    },
+    "utterance_03.wav": {
+      "utterance_id": "utterance_03",
+      "sha256": "a1d50054eb228592a105e2c92db26af03da9e8ff3801211cbab03c498caceb5b",
+      "size_bytes": 162894
+    },
+    "utterance_04.wav": {
+      "utterance_id": "utterance_04",
+      "sha256": "1cb59e6950edd988bfff91d7982c8ffba2ffc2eb67acee69f9950076b95f4cad",
+      "size_bytes": 208974
+    },
+    "utterance_05.wav": {
+      "utterance_id": "utterance_05",
+      "sha256": "59f57c4c481bf5a1ea314c98215296f4a9af26b397e1c58ca153f40eff920aec",
+      "size_bytes": 174158
+    },
+    "utterance_06.wav": {
+      "utterance_id": "utterance_06",
+      "sha256": "6fd529f90b4b7afdcc38ddf9962030edf1c067b1e687d7d3732efd3e7d14a0ed",
+      "size_bytes": 153678
+    },
+    "utterance_07.wav": {
+      "utterance_id": "utterance_07",
+      "sha256": "a2144542361cbfcef171afcb7432163281016330f50929b37d4e6b4d6ed16810",
+      "size_bytes": 128078
+    },
+    "utterance_08.wav": {
+      "utterance_id": "utterance_08",
+      "sha256": "630ec037ef76ac9036f85b59849c7280b2fe44774e1b8e25bf02f25c785160f7",
+      "size_bytes": 114766
+    },
+    "utterance_09.wav": {
+      "utterance_id": "utterance_09",
+      "sha256": "31c214406a60126f820c9c04ad572e675b854bd722f6686d207e14cad2525afe",
+      "size_bytes": 151630
+    },
+    "utterance_10.wav": {
+      "utterance_id": "utterance_10",
+      "sha256": "64ec6aaf3d322f78f8c1a18a2a3401f46fdc6b22efe767fe10069bd519d8ad40",
+      "size_bytes": 163918
+    },
+    "utterance_11.wav": {
+      "utterance_id": "utterance_11",
+      "sha256": "272787d98d75cad05d6e8e9391565bf4be43985b3125e558112b833e123fbf87",
+      "size_bytes": 132174
+    },
+    "utterance_12.wav": {
+      "utterance_id": "utterance_12",
+      "sha256": "eb551fc7ce12ab01be10911846ae8e564452d3a09d9b9c9b75a1edd5ebb397ca",
+      "size_bytes": 112718
+    },
+    "utterance_13.wav": {
+      "utterance_id": "utterance_13",
+      "sha256": "1a16c9d6c93a87663a8e844973c2ec90ccd0425376b72fb890acb00aa0bb3bc5",
+      "size_bytes": 105550
+    },
+    "utterance_14.wav": {
+      "utterance_id": "utterance_14",
+      "sha256": "ed76f4b9bf81e3e1cf5b4daa5cf55c87f00750b840fd5e23b368597ed8d2faf1",
+      "size_bytes": 113742
+    },
+    "utterance_15.wav": {
+      "utterance_id": "utterance_15",
+      "sha256": "254d658a925d337168bffe62292e7028cd25caf18a0c0d1a69e127658a877e8a",
+      "size_bytes": 102478
+    },
+    "utterance_16.wav": {
+      "utterance_id": "utterance_16",
+      "sha256": "f76e8e9b3f8f5827973fe52ee6acbe2ed3d169a8508519ad4995d1c47631367a",
+      "size_bytes": 112718
+    },
+    "utterance_17.wav": {
+      "utterance_id": "utterance_17",
+      "sha256": "27cb8b8c51d45f64c09286065816c242dc1127b2c21417eac36378f08cf110da",
+      "size_bytes": 120910
+    },
+    "utterance_18.wav": {
+      "utterance_id": "utterance_18",
+      "sha256": "37e83ff447d776cdfe909837431b7d08c86a233e435af93d31dc432157d2c63a",
+      "size_bytes": 131150
+    },
+    "utterance_19.wav": {
+      "utterance_id": "utterance_19",
+      "sha256": "60e00f17acd6594ac179925f1bef809e1007f9e80f223bfa962ac8239d55fad7",
+      "size_bytes": 128078
+    },
+    "utterance_20.wav": {
+      "utterance_id": "utterance_20",
+      "sha256": "6c7dd5ab920cef9eeb5a4740076bbb77e731efec9624c277cf538c17f61b4e14",
+      "size_bytes": 163918
+    },
+    "utterance_21.wav": {
+      "utterance_id": "utterance_21",
+      "sha256": "708cf677a8d2cf514a9278c6de88a4c462903ad11f36b0bac7b05b52939c6996",
+      "size_bytes": 207950
+    },
+    "utterance_22.wav": {
+      "utterance_id": "utterance_22",
+      "sha256": "77a64888084c39ff85ef0ddb452d5b736d281cd16becbff4b7616116da26eff2",
+      "size_bytes": 206926
+    },
+    "utterance_23.wav": {
+      "utterance_id": "utterance_23",
+      "sha256": "ec011eae35e9a353720cb68ea21c6a91c432c37f01da29bee34e5d150f5aad48",
+      "size_bytes": 185422
+    },
+    "utterance_24.wav": {
+      "utterance_id": "utterance_24",
+      "sha256": "2ecd941ef60a47232259ed2b671df0bfb6866909598d8d3e4923a1291ac60ebf",
+      "size_bytes": 178254
+    },
+    "utterance_25.wav": {
+      "utterance_id": "utterance_25",
+      "sha256": "0559f5298a785584176cec92f738633ae4ec28fa0c40168c2118dc068eb61b43",
+      "size_bytes": 183374
+    },
+    "utterance_26.wav": {
+      "utterance_id": "utterance_26",
+      "sha256": "22fb3c9da3d6d7b039ac9f9693a2843cbdb4bb9dba667d5674ce24bee6162185",
+      "size_bytes": 153678
+    },
+    "utterance_27.wav": {
+      "utterance_id": "utterance_27",
+      "sha256": "afcce7eb41a119a07f705f7ff02a5c7036daf4038b88618fa061dc3df98f5d3a",
+      "size_bytes": 142414
+    },
+    "utterance_28.wav": {
+      "utterance_id": "utterance_28",
+      "sha256": "b07cef871dfa0d88748eac33071bc6ccd0ff74d5ecf11c9cf99f41a5f7af43e7",
+      "size_bytes": 155726
+    },
+    "utterance_29.wav": {
+      "utterance_id": "utterance_29",
+      "sha256": "a60720acb39ba14f7395a2e753c26b6b005af587b49d07f8bc40043b0db2819c",
+      "size_bytes": 185422
+    },
+    "utterance_30.wav": {
+      "utterance_id": "utterance_30",
+      "sha256": "f2d40ee7f1c75baaf6a51c0f5280768225a77fe164f8a35da7b0fd94c9ec870d",
+      "size_bytes": 188494
+    }
+  }
+}

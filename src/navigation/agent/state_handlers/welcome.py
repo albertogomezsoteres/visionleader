@@ -1,4 +1,4 @@
-"""Phase 1 — welcome and yes/no entry into the location flow."""
+"""Phase 1 - welcome and yes/no entry into the location flow."""
 
 from __future__ import annotations
 

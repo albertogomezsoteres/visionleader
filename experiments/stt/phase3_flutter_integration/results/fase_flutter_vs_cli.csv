@@ -1,0 +1,3 @@
+context,n_rows,wer_pct,sentence_accuracy_pct,dka_pct,latency_ms_mean,latency_ms_std
+Fase 2: whisper-cli per-call (Pixel 10 Pro),90,0.28,96.67,100.0,3132.2,644.6
+Flutter: whisper-server bundled (Pixel 10 Pro),90,0.28,96.67,100.0,2398.0,575.8
