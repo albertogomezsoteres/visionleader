@@ -46,21 +46,28 @@ FLOOR_WORDS: Dict[str, int] = {
 }
 
 ENTRANCE_IDS: Dict[int, str] = {
-    1: "entrance_main",
+    1: "entrance_2",
     2: "entrance_cd",
-    3: "entrance_main",
+    3: "entrance_2",
 }
+
+
+def _word_set(msg: str) -> set:
+    """Tokenise into a lowercase word set, stripping punctuation so that
+    transcriptions like "No!" or "Yes," still match the AFFIRM/NEGATE
+    vocabularies."""
+    cleaned = re.sub(r"[^\w\s]", " ", msg.lower())
+    return set(cleaned.split())
 
 
 def is_yes(msg: str) -> bool:
     """True if the message reads as an affirmative answer."""
-    words = set(msg.lower().split())
-    return bool(words & AFFIRM)
+    return bool(_word_set(msg) & AFFIRM)
 
 
 def is_no(msg: str) -> bool:
     """True if the message reads as a negative answer (and not also affirmative)."""
-    words = set(msg.lower().split())
+    words = _word_set(msg)
     has_neg = bool(words & NEGATE)
     has_aff = bool(words & AFFIRM)
     return has_neg and not has_aff
@@ -237,8 +244,34 @@ def parse_location(msg: str, room_lookup: Dict[str, Tuple[int, int, str]]) -> Op
                 result["floor"] = int(pm.group(1))
 
     if result["location_id"] is None:
-        if any(w in low for w in ("entrance", "entrada", "main entrance", "entrada principal")):
-            result["location_id"] = "entrance_main"
+        # Numbered G entrances first ("entrance 2", "entrada 3"), so the
+        # generic "entrance" fallback below doesn't swallow the number.
+        # Accept digits AND English/Spanish word forms — Whisper often
+        # transcribes "two" as "to" / "too" (homophones) when the user
+        # speaks naturally, so map those back to digit 2.
+        numbered_entrance = re.search(
+            r"\b(?:entrance|entrada)\s+(one|two|three|to|too|won|uno|dos|tres|[123])\b",
+            low,
+        )
+        if numbered_entrance:
+            word_to_digit = {
+                "one": "1", "won": "1", "uno": "1",
+                "two": "2", "to": "2", "too": "2", "dos": "2",
+                "three": "3", "tres": "3",
+            }
+            raw = numbered_entrance.group(1)
+            digit = word_to_digit.get(raw, raw)
+            result["location_id"] = f"entrance_{digit}"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 0
+        elif any(w in low for w in ("entrance", "entrada", "main entrance", "entrada principal")):
+            # Generic fallback: per campus convention, "the main entrance"
+            # of building G is the middle one (entrance 2, near the elevator).
+            # Mapping to entrance_main here would crash the planner since
+            # that node does not exist in the topology graph.
+            result["location_id"] = "entrance_2"
             if result["building"] is None:
                 result["building"] = 1
             if result["floor"] is None:

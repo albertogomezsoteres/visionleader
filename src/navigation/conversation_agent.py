@@ -39,7 +39,11 @@ logger = logging.getLogger(__name__)
 
 
 _REPEAT_WORDS = ("repeat", "again", "repite", "otra vez")
-_LOST_WORDS   = ("lost", "help", "perdido", "ayuda")
+_LOST_WORDS   = (
+    "lost", "lose", "help", "perdido", "ayuda",
+    "i am lost", "i'm lost", "im lost", "i lost",
+    "find me", "where am i", "no idea",
+)
 _CANCEL_WORDS = ("cancel", "stop", "cancelar", "parar")
 
 _NAVIGATING_STATES = (
@@ -143,6 +147,7 @@ class ConversationAgent:
         Returns ``{tts_message, next_input, state, action, context, ...}``.
         """
         ctx = self.get_or_create_context(session_id)
+        state_before = ctx.state
         msg = (user_message or "").strip()
 
         if msg:
@@ -152,16 +157,40 @@ class ConversationAgent:
         if ctx.state in _NAVIGATING_STATES:
             low = msg.lower()
             if any(w in low for w in _REPEAT_WORDS):
-                return self._reply(ctx, ctx.last_tts, self._current_next_input(ctx), "repeat")
+                result = self._reply(ctx, ctx.last_tts, self._current_next_input(ctx), "repeat")
+                self._emit_fsm_transition(state_before, ctx.state)
+                return result
             if any(w in low for w in _LOST_WORDS):
-                return execution.handle_lost(self, ctx)
+                result = execution.handle_lost(self, ctx)
+                self._emit_fsm_transition(state_before, ctx.state)
+                return result
             if any(w in low for w in _CANCEL_WORDS):
-                return execution.cancel_navigation(self, ctx)
+                result = execution.cancel_navigation(self, ctx)
+                self._emit_fsm_transition(state_before, ctx.state)
+                return result
 
         handler = self._dispatch(ctx, msg, image_analysis)
         if handler:
-            return handler()
-        return self._reply(ctx, "Something went wrong. Let's start over.", "voice", "error")
+            result = handler()
+        else:
+            result = self._reply(ctx, "Something went wrong. Let's start over.", "voice", "error")
+        self._emit_fsm_transition(state_before, ctx.state)
+        return result
+
+    @staticmethod
+    def _emit_fsm_transition(before: ConversationState, after: ConversationState) -> None:
+        if before == after:
+            return
+        try:
+            from api.telemetry import log_event
+            log_event(
+                "FSM",
+                f"{before.value}  →  {after.value}",
+                from_state=before.value,
+                to_state=after.value,
+            )
+        except Exception:
+            pass
 
     def _dispatch(
         self,
@@ -174,7 +203,7 @@ class ConversationAgent:
             ConversationState.WELCOME:
                 lambda: welcome.handle_welcome(self, ctx),
             ConversationState.ASK_KNOWS_LOCATION:
-                lambda: welcome.handle_ask_knows_location(self, ctx, msg),
+                lambda: welcome.handle_ask_knows_location(self, ctx, msg, image_analysis),
             ConversationState.ASK_LOCATION_VOICE:
                 lambda: location_discovery.handle_ask_location_voice(self, ctx, msg),
             ConversationState.ASK_SITUATION:
@@ -182,6 +211,8 @@ class ConversationAgent:
             ConversationState.WAITING_PHOTO_DOOR:
                 lambda: location_discovery.handle_waiting_photo(self, ctx, image_analysis),
             ConversationState.WAITING_PHOTO_SIGN:
+                lambda: location_discovery.handle_waiting_photo(self, ctx, image_analysis),
+            ConversationState.WAITING_PHOTO_ORIGIN:
                 lambda: location_discovery.handle_waiting_photo(self, ctx, image_analysis),
             ConversationState.ASK_BUILDING:
                 lambda: location_discovery.handle_ask_building(self, ctx, msg),
@@ -226,6 +257,24 @@ class ConversationAgent:
         if expect_photo:
             result["expect_photo"] = expect_photo
         result.update(extra)
+
+        try:
+            from api.telemetry import log_event
+            log_event(
+                "TTS", f"{tts!r}",
+                state=ctx.state.value,
+                action=action,
+                next_input=next_input,
+                expect_photo=expect_photo,
+                origin=ctx.origin,
+                destination=ctx.destination,
+                hurry_mode=ctx.hurry_mode,
+                route_step_count=len(ctx.route_steps),
+                current_step_idx=ctx.current_step_idx,
+            )
+        except Exception:
+            pass
+
         return result
 
     def _compute_expect_photo(self, ctx: ConversationContext) -> Optional[str]:
@@ -235,6 +284,12 @@ class ConversationAgent:
         (``room_plate``, ``directory_sign``, ``elevator_state``,
         ``stair_direction``) or ``None`` if no photo is currently expected.
         """
+        if ctx.state == ConversationState.ASK_KNOWS_LOCATION:
+            # Photo taken directly from the welcome screen — let the
+            # unified origin prompt identify whichever sign the user shot.
+            return "origin_photo_g"
+        if ctx.state == ConversationState.WAITING_PHOTO_ORIGIN:
+            return "origin_photo_g"
         if ctx.state == ConversationState.WAITING_PHOTO_DOOR:
             return "room_plate"
         if ctx.state == ConversationState.WAITING_PHOTO_SIGN:

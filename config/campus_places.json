@@ -158,6 +158,24 @@
           "type": "entrance"
         },
         {
+          "id": "entrance_1_exterior",
+          "name": "Entrance 1 (outside)",
+          "name_es": "Entrada 1 (exterior)",
+          "type": "entrance_exterior"
+        },
+        {
+          "id": "entrance_2_exterior",
+          "name": "Entrance 2 (outside)",
+          "name_es": "Entrada 2 (exterior)",
+          "type": "entrance_exterior"
+        },
+        {
+          "id": "entrance_3_exterior",
+          "name": "Entrance 3 (outside)",
+          "name_es": "Entrada 3 (exterior)",
+          "type": "entrance_exterior"
+        },
+        {
           "id": "classroom_g_0_1",
           "name": "Classroom 0.1",
           "name_es": "Aula 0.1",
@@ -190,7 +208,8 @@
           "name": "AI Laboratory",
           "name_es": "Laboratorio de IA",
           "type": "laboratory",
-          "room_code": "0.5"
+          "verification_prompt": "room_plate",
+          "expected_location_id": "ai_lab"
         },
         {
           "id": "directory_sign_g_0",
@@ -352,10 +371,24 @@
           "type": "entrance"
         },
         {
+          "id": "entrance_cd_exterior",
+          "name": "CD Entrance (outside)",
+          "name_es": "Entrada CD (exterior)",
+          "type": "entrance_exterior"
+        },
+        {
+          "id": "back_entrance_cd_exterior",
+          "name": "CD Back Entrance (outside)",
+          "name_es": "Entrada Trasera CD (exterior)",
+          "type": "entrance_exterior"
+        },
+        {
           "id": "cafeteria",
           "name": "Cafeteria",
           "name_es": "Cafetería",
-          "type": "cafeteria"
+          "type": "cafeteria",
+          "verification_prompt": "service_plate",
+          "expected_location_id": "cafeteria"
         },
         {
           "id": "stairs",
@@ -969,6 +1002,9 @@
     "G_-1_subtractive_manufacturing_lab_agora_classroom_1": "exit the lab, first classroom on the left",
     "G_-1_agora_classroom_2_subtractive_manufacturing_lab": "exit the classroom, the lab is at the end",
     "G_-1_subtractive_manufacturing_lab_agora_classroom_2": "exit the lab, second classroom on the left",
+    "G_0_entrance_2_entrance_2_exterior": "Exit through the interior door, walk {N} meters",
+    "G_0_entrance_1_entrance_1_exterior": "Walk {N} meters to entrance 1 and exit outside",
+    "G_0_entrance_3_entrance_3_exterior": "Walk {N} meters to entrance 3 and exit outside",
     "G_0_entrance_main_classroom_g_0_1": "turn left, second door on the right",
     "G_0_classroom_g_0_1_entrance_main": "exit the classroom and go back to the entrance",
     "G_0_entrance_main_classroom_g_0_3": "first door on the right",
@@ -1034,6 +1070,7 @@
     "G_0_stairs_classroom_g_0_3": "at the end to classroom 0.3",
     "G_0_classroom_g_0_3_bathroom": "left to the restroom",
     "G_0_bathroom_classroom_g_0_3": "left to classroom 0.3",
+    "G_0_bathroom_men_elevator": "turn left, the elevator is in front of you",
     "G_0_classroom_g_0_3_directory_sign_g_0": "at the end to the sign",
     "G_0_elevator_ai_lab": "straight to the AI lab",
     "G_0_ai_lab_stairs": "at the end to the stairs",
@@ -1054,7 +1091,7 @@
     "G_0_stairs_directory_sign_g_0": "straight to the sign",
     "G_0_directory_sign_g_0_classroom_g_0_1": "right to classroom 0.1",
     "G_0_directory_sign_g_0_classroom_g_0_3": "at the end to classroom 0.3",
-    "G_0_directory_sign_g_0_ai_lab": "at the end to the AI lab",
+    "G_0_directory_sign_g_0_ai_lab": "the AI lab is in front of you",
     "G_0_directory_sign_g_0_bathroom": "at the end to the restroom",
     "G_1_stairs_offices": "straight to the offices",
     "G_1_offices_stairs": "straight to the stairs",
@@ -1078,6 +1115,8 @@
     "G_1_directory_sign_g_1_classroom_g_1_4": "at the end to classroom 1.4",
     "G_1_directory_sign_g_1_offices": "at the end to the offices",
     "G_1_directory_sign_g_1_bathroom": "right to the restroom",
+    "G_1_bathroom_women_classroom_g_1_4": "Exit the elevator, turn left, then walk {N} meters; classroom 1.4 is on your left",
+    "G_1_entrance_1_p1_classroom_g_1_5": "Walk 3 meters to the directory sign, turn left, walk 16 more meters, then turn left; classroom 1.5 is in front of you",
     "G_1_classroom_g_1_1_directory_sign_g_1": "left to the sign",
     "G_1_classroom_g_1_4_directory_sign_g_1": "at the end to the sign",
     "G_1_offices_directory_sign_g_1": "at the end to the sign",
@@ -1185,6 +1224,7 @@
     "G_1_classroom_g_1_6_directory_sign_g_1": "exit the classroom and go back to the sign",
     "CD_0_entrance_cd_cafeteria": "turn right, the cafeteria is straight ahead",
     "CD_0_cafeteria_entrance_cd": "exit the cafeteria and go back to the entrance",
+    "CD_0_central_point_cd_cafeteria": "Open the entrance door, walk 22 meters straight, turn left to the cafeteria",
     "CD_0_entrance_cd_stairs": "turn left to the stairs",
     "CD_0_stairs_entrance_cd": "at the end to the entrance",
     "CD_0_cafeteria_stairs": "exit the cafeteria and turn left to the stairs",

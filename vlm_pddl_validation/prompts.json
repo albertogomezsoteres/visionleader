@@ -1,0 +1,60 @@
+{
+  "_comment": "VLM image to PDDL conversion experiment. 46 images (26 room_plates + 20 directory_signs) evaluated under two prompt variants with Gemma 4 E4B-it under deterministic decoding (do_sample=False, num_beams=1, seed=0). Final results live in results/. Final setup, after iterative refinement on the validation set itself: basic prompts carry one illustrative example per task to surface the snake_case ID format; optimized prompts inherit the production templates from extraction_validation/prompts.json, with two deliberate omissions in room_plate (the enumeration of valid decimal codes and the explicit IA -> ai_lab mapping) so the model must extrapolate the laboratory abbreviation rather than look it up. Final exact_pddl_match: basic 0.3478 (16/46), optimized 0.9565 (44/46). Optimized failures: 1 perceptual (plate '0.3' read as '1.3') and 1 attributable to the removed IA mapping (AI lab plate). Symmetric design with text_to_pddl_validation: same metric battery, same supporting BLEU-3 / GLEU / METEOR / BERTScore (rescaled), same systematic failure mode on laboratory abbreviations across both modalities.",
+  "prompts": {
+    "room_plate": {
+      "applies_to_category": "room_plates",
+      "response_format": "pddl_atom",
+      "expected_atom_pattern": "(at user <location_id>)",
+      "valid_location_ids": [
+        "classroom_g_0_1", "classroom_g_0_2", "classroom_g_0_3", "classroom_g_0_4",
+        "classroom_g_1_1", "classroom_g_1_2", "classroom_g_1_3", "classroom_g_1_4",
+        "classroom_g_1_5", "classroom_g_1_6",
+        "classroom_g_2_1",
+        "classroom_cd_1", "classroom_cd_2", "classroom_cd_3", "classroom_cd_4",
+        "classroom_cd_5", "classroom_cd_6", "classroom_cd_7", "classroom_cd_8",
+        "ai_lab"
+      ],
+      "basic": {
+        "name": "room_plate basic prompt (one example, no rules)",
+        "description": "Two-line instruction stating the output format with a single illustrative example (1.4 in G corresponds to classroom_g_1_4). No naming rules, no vocabulary list, no Aula example, no IA mapping. The single example lets the model extrapolate the format for G decimal classrooms but leaves CD aulas and the AI lab unguessable, producing a partial baseline rather than a total failure.",
+        "template": "Look at this classroom plate. Output one PDDL atom of the form (at user LOCATION_ID).\nFor example, a plate showing 1.4 in building G corresponds to (at user classroom_g_1_4).\nOutput only the atom, nothing else."
+      },
+      "optimized": {
+        "name": "room_plate optimized prompt (rules + few-shot, no AI lab mapping, no enumerated decimal codes)",
+        "description": "Optimized prompt with naming rules (decimal codes -> G, 'Aula N' -> CD), four worked examples for decimal mapping, one example for Aula, and an explicit priority rule. Two pieces of information are deliberately omitted: the enumeration of valid decimal codes (model must extrapolate from rule + examples) and the explicit IA -> ai_lab mapping (model must infer the laboratory abbreviation, replicating the systematic failure mode observed in the text_to_pddl experiment). The IA plate is therefore expected to fail, producing one localised, interpretable error.",
+        "template": "You are reading a classroom plate.\n\nOutput exactly one PDDL atom:\n\n(at user LOCATION_ID)\n\nRules:\n\n1. If a decimal room code is visible, it ALWAYS belongs to building G.\n\nExamples:\n1.1 -> (at user classroom_g_1_1)\n1.3 -> (at user classroom_g_1_3)\n1.5 -> (at user classroom_g_1_5)\n2.1 -> (at user classroom_g_2_1)\n\n2. If the plate shows \"Aula\" followed by a number from 1 to 8, and no decimal code is visible, it belongs to building CD.\n\nExample:\nAula 4 -> (at user classroom_cd_4)\n\nPriority rule:\n\nIf any decimal room code is visible, NEVER output classroom_cd_*.\nDecimal room codes always take priority over the word \"Aula\".\n\nOutput only one valid PDDL atom. No explanation."
+      }
+    },
+    "directory_sign": {
+      "applies_to_category": "directory_signs",
+      "response_format": "pddl_atom",
+      "expected_atom_pattern": "(at user <location_id>)",
+      "valid_location_ids": [
+        "directory_sign_g_0",
+        "directory_sign_g_1",
+        "directory_sign_g_2",
+        "directory_sign_g_agora"
+      ],
+      "basic": {
+        "name": "directory_sign basic prompt (one example, no mapping table)",
+        "description": "Two-line instruction stating the output format with a single illustrative example (G floor 1 corresponds to directory_sign_g_1). No mapping table, no list of valid floor indicators. The single example reveals the canonical ID format (directory_sign_g_<floor>) so the model can extrapolate to the other numeric floors and possibly to Agora.",
+        "template": "Look at this directory sign. Output one PDDL atom of the form (at user LOCATION_ID).\nFor example, a sign indicating G floor 1 corresponds to (at user directory_sign_g_1).\nOutput only the atom, nothing else."
+      },
+      "optimized": {
+        "name": "directory_sign optimized prompt (production)",
+        "description": "Production prompt copied verbatim from extraction_validation/prompts.json. Names the four valid floor indicators (0, 1, 2, Agora) and gives the explicit mapping to canonical IDs.",
+        "template": "You are reading a directory sign inside building G.\n\nThe sign contains the building letter G and one floor indicator.\n\nPossible floor indicators:\n\n0\n1\n2\nAgora\n\nReturn exactly one PDDL atom:\n\n0     -> (at user directory_sign_g_0)\n1     -> (at user directory_sign_g_1)\n2     -> (at user directory_sign_g_2)\nAgora -> (at user directory_sign_g_agora)\n\nOutput only the atom. No explanation."
+      }
+    }
+  },
+  "allowed_location_ids": [
+    "classroom_g_0_1", "classroom_g_0_2", "classroom_g_0_3", "classroom_g_0_4",
+    "classroom_g_1_1", "classroom_g_1_2", "classroom_g_1_3", "classroom_g_1_4",
+    "classroom_g_1_5", "classroom_g_1_6",
+    "classroom_g_2_1",
+    "classroom_cd_1", "classroom_cd_2", "classroom_cd_3", "classroom_cd_4",
+    "classroom_cd_5", "classroom_cd_6", "classroom_cd_7", "classroom_cd_8",
+    "ai_lab",
+    "directory_sign_g_0", "directory_sign_g_1", "directory_sign_g_2", "directory_sign_g_agora"
+  ]
+}

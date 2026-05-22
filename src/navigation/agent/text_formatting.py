@@ -17,8 +17,8 @@ BUILDING_NAMES: Dict[int, str] = {
 }
 
 BUILDING_FULL: Dict[int, str] = {
-    1:  "Building G (EPS)",
-    2:  "Building CD (Centro Deportivo)",
+    1:  "Building G",
+    2:  "Building CD",
     3:  "Building H",
     4:  "Building P",
     5:  "Building O",
@@ -42,6 +42,7 @@ PHOTO_LABELS: Dict[str, str] = {
     "elevator_state": "elevator",
     "stair_direction": "stairs",
     "restroom_gender": "restroom sign",
+    "service_plate": "service sign",
 }
 
 

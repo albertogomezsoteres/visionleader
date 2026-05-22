@@ -30,43 +30,40 @@ _STEP_TYPE_LABELS = {
 
 
 def present_plan(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
-    """Summarise ``ctx.route_steps`` for TTS and ask for confirmation."""
-    dest_text = location_text(ctx.destination)
-    n = len(ctx.route_steps)
+    """Build a one-line route summary and deliver the first step in the same
+    TTS, skipping the manual ``Say start`` round-trip. The summary itself
+    (elevator/stairs/outdoor mention, hurry-mode note, pending closure
+    announcement) is preserved as a prefix to the step instruction."""
+    from . import execution  # lazy: execution.deliver_step
 
-    overview_parts = []
-    seen = set()
+    dest_text = location_text(ctx.destination)
+
+    overview_parts: list[str] = []
+    seen: set[str] = set()
     for s in ctx.route_steps:
         label = _STEP_TYPE_LABELS.get(s["type"], s["type"])
         if label not in seen:
             overview_parts.append(label)
             seen.add(label)
-    overview = ", ".join(overview_parts) if overview_parts else "walk"
+
+    if "elevator" in overview_parts:
+        requirement = " Uses the elevator."
+    elif "stairs" in overview_parts:
+        requirement = " Uses the stairs."
+    elif "outdoor walk" in overview_parts:
+        requirement = " Includes an outdoor segment."
+    else:
+        requirement = ""
 
     hurry_note = " Hurry mode on." if ctx.hurry_mode else ""
 
-    if "elevator" in overview_parts:
-        requirement = "Uses the elevator."
-    elif "stairs" in overview_parts:
-        requirement = "Uses the stairs."
-    elif "outdoor walk" in overview_parts:
-        requirement = "Includes an outdoor segment."
-    else:
-        requirement = f"{n} step{'s' if n != 1 else ''}: {overview}."
-
-    prefix = ""
+    summary = f"Route to {dest_text}.{requirement}{hurry_note}"
     if ctx.pending_announcement:
-        prefix = ctx.pending_announcement.rstrip() + " "
+        summary = ctx.pending_announcement.rstrip() + " " + summary
         ctx.pending_announcement = None
 
-    tts = (
-        f"{prefix}"
-        f"Route to {dest_text}. "
-        f"{requirement} "
-        f"Say start.{hurry_note}"
-    )
-    ctx.state = ConversationState.CONFIRMING_PLAN
-    return agent._reply(ctx, tts, "confirm", "confirm_plan")
+    ctx.state = ConversationState.EXECUTING
+    return execution.deliver_step(agent, ctx, prefix=summary + " ")
 
 
 def handle_confirming_plan(
@@ -98,7 +95,7 @@ def handle_confirming_plan(
     dest = destination_handler.parse_destination_for(agent, msg)
     if dest:
         ctx.destination = dest
-        route = compute_route(agent, ctx.origin, dest)
+        route = compute_route(agent, ctx.origin, dest, ctx=ctx)
         if route:
             ctx.route_steps = route
             ctx.current_step_idx = 0

@@ -1,8 +1,32 @@
 import 'package:flutter/material.dart';
+import '../services/telemetry_service.dart';
 import 'conversation/conversation_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+// Toggle to surface the Off/S1/S2/S3 chips on the home screen for a
+// validation pass. Kept off during demo recordings so the home stays
+// clean.
+const bool _kShowScenarioChips = false;
+
+class _HomeScreenState extends State<HomeScreen> {
+  String? _scenario; // null = validation off
+
+  @override
+  void initState() {
+    super.initState();
+    _scenario = TelemetryService.instance.scenarioId;
+  }
+
+  void _selectScenario(String? id) {
+    setState(() => _scenario = id);
+    TelemetryService.instance.setScenario(id);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,49 +74,23 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 36),
 
-                // Title
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: const TextSpan(
+                // Title — single solid wordmark
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: const Text(
+                    'VisionLeaderUFV',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 40,
+                      color: Colors.white,
+                      fontSize: 38,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: -1.5,
+                      letterSpacing: -1.0,
                       height: 1.1,
                     ),
-                    children: [
-                      TextSpan(
-                        text: 'Vision',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      TextSpan(
-                        text: 'Leader',
-                        style: TextStyle(color: Color(0xFF3B82F6)),
-                      ),
-                      TextSpan(
-                        text: '\nUFV',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 34,
-                        ),
-                      ),
-                    ],
                   ),
                 ),
 
-                const SizedBox(height: 14),
-
-                const Text(
-                  'AI-powered campus navigation\nfor visually impaired users',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Color(0xFF64748B),
-                    height: 1.6,
-                    letterSpacing: 0.1,
-                  ),
-                ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
@@ -100,7 +98,7 @@ class HomeScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    'TFG · Universidad Francisco de Vitoria · 2025',
+                    'AI Campus Navigation Assistant',
                     style: TextStyle(
                       fontSize: 11,
                       color: Color(0xFF475569),
@@ -111,26 +109,72 @@ class HomeScreen extends StatelessWidget {
 
                 const Spacer(flex: 2),
 
-                // Feature chips
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
-                  alignment: WrapAlignment.center,
-                  children: const [
-                    _FeatureChip(
-                        icon: Icons.remove_red_eye_outlined,
-                        label: 'AI Vision'),
-                    _FeatureChip(
-                        icon: Icons.mic_outlined, label: 'Voice Control'),
-                    _FeatureChip(
-                        icon: Icons.route_outlined, label: 'Smart Planning'),
-                    _FeatureChip(
-                        icon: Icons.map_outlined,
-                        label: 'Google Maps'),
+                // Feature chips — 2x2 grid of the main technical pillars
+                const Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _FeatureChip(
+                              icon: Icons.account_tree_outlined,
+                              title: 'Automated Planning',
+                              subtitle: 'Fast Downward'),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: _FeatureChip(
+                              icon: Icons.visibility_outlined,
+                              title: 'Vision-Language',
+                              subtitle: 'Gemma 4 E4B-it'),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _FeatureChip(
+                              icon: Icons.graphic_eq_outlined,
+                              title: 'Speech-to-Text',
+                              subtitle: 'Whisper Tiny'),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: _FeatureChip(
+                              icon: Icons.public_outlined,
+                              title: 'Outdoor Routing',
+                              subtitle: 'Google Maps'),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
 
                 const Spacer(flex: 3),
+
+                // Validation scenario selector. Hidden during demo
+                // recordings: flip _kShowScenarioChips to true to bring
+                // them back for tagging telemetry events with
+                // X-Scenario-Id during a validation pass.
+                if (_kShowScenarioChips) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ScenarioChip(label: 'Off', selected: _scenario == null,
+                          onTap: () => _selectScenario(null)),
+                      const SizedBox(width: 6),
+                      _ScenarioChip(label: 'S1', selected: _scenario == 'S1',
+                          onTap: () => _selectScenario('S1')),
+                      const SizedBox(width: 6),
+                      _ScenarioChip(label: 'S2', selected: _scenario == 'S2',
+                          onTap: () => _selectScenario('S2')),
+                      const SizedBox(width: 6),
+                      _ScenarioChip(label: 'S3', selected: _scenario == 'S3',
+                          onTap: () => _selectScenario('S3')),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Start button
                 SizedBox(
@@ -181,33 +225,93 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+class _ScenarioChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _ScenarioChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected ? const Color(0xFF3B82F6) : const Color(0xFF334155);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color, width: selected ? 1.4 : 1.0),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : const Color(0xFF94A3B8),
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            letterSpacing: 0.4,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
 class _FeatureChip extends StatelessWidget {
   final IconData icon;
-  final String label;
+  final String title;
+  final String subtitle;
 
-  const _FeatureChip({required this.icon, required this.label});
+  const _FeatureChip({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFF1E293B)),
       ),
-      child: Row(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 15, color: const Color(0xFF3B82F6)),
-          const SizedBox(width: 6),
+          Icon(icon, size: 24, color: const Color(0xFF3B82F6)),
+          const SizedBox(height: 10),
           Text(
-            label,
+            title,
             style: const TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
+              color: Color(0xFFE2E8F0),
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.1,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 3),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: Color(0xFF64748B),
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.3,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

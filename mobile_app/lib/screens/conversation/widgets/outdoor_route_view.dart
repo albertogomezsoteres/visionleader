@@ -13,6 +13,8 @@ class OutdoorRouteView extends StatefulWidget {
   final String polylineEncoded;
   final String destinationLabel;
   final List<Map<String, dynamic>> steps;
+  final String? totalDistance;
+  final String? totalDuration;
   final VoidCallback onArrived;
 
   const OutdoorRouteView({
@@ -24,6 +26,8 @@ class OutdoorRouteView extends StatefulWidget {
     required this.polylineEncoded,
     required this.destinationLabel,
     required this.steps,
+    this.totalDistance,
+    this.totalDuration,
     required this.onArrived,
   });
 
@@ -100,7 +104,7 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
 
   Future<void> _initTts() async {
     await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.42);
+    await _tts.setSpeechRate(0.63);
     await _tts.setVolume(1.0);
     await _tts.setPitch(1.0);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -114,20 +118,30 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
 
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    // Fit both markers in view with padding
-    final bounds = LatLngBounds(
+    // Fit both markers in view. Enforce a minimum span (~110 m at this
+    // latitude) so very close origin/destination pairs don't end up at
+    // a too-tight zoom where the markers visually overlap.
+    Future.delayed(const Duration(milliseconds: 300), () {
+      controller.animateCamera(CameraUpdate.newLatLngBounds(_safeBounds(), 60));
+    });
+  }
+
+  LatLngBounds _safeBounds() {
+    const minHalfSpan = 0.0005; // ~55 m of half-span per axis
+    final dLat = (widget.destinationLat - widget.originLat).abs();
+    final dLng = (widget.destinationLng - widget.originLng).abs();
+    final padLat = (dLat / 2) < minHalfSpan ? minHalfSpan : 0.00025;
+    final padLng = (dLng / 2) < minHalfSpan ? minHalfSpan : 0.00025;
+    return LatLngBounds(
       southwest: LatLng(
-        min(widget.originLat, widget.destinationLat) - 0.0003,
-        min(widget.originLng, widget.destinationLng) - 0.0003,
+        min(widget.originLat, widget.destinationLat) - padLat,
+        min(widget.originLng, widget.destinationLng) - padLng,
       ),
       northeast: LatLng(
-        max(widget.originLat, widget.destinationLat) + 0.0003,
-        max(widget.originLng, widget.destinationLng) + 0.0003,
+        max(widget.originLat, widget.destinationLat) + padLat,
+        max(widget.originLng, widget.destinationLng) + padLng,
       ),
     );
-    Future.delayed(const Duration(milliseconds: 300), () {
-      controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
-    });
   }
 
   Future<void> _speakCurrentStep() async {
@@ -185,17 +199,9 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
             tooltip: 'Center on route',
             onPressed: () {
               if (_mapController == null) return;
-              final bounds = LatLngBounds(
-                southwest: LatLng(
-                  min(widget.originLat, widget.destinationLat) - 0.0003,
-                  min(widget.originLng, widget.destinationLng) - 0.0003,
-                ),
-                northeast: LatLng(
-                  max(widget.originLat, widget.destinationLat) + 0.0003,
-                  max(widget.originLng, widget.destinationLng) + 0.0003,
-                ),
+              _mapController!.animateCamera(
+                CameraUpdate.newLatLngBounds(_safeBounds(), 60),
               );
-              _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 60));
             },
           ),
         ],
@@ -230,9 +236,43 @@ class _OutdoorRouteViewState extends State<OutdoorRouteView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Walking guidance',
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Walking guidance',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700),
+                      ),
+                      if (widget.totalDistance != null ||
+                          widget.totalDuration != null) ...[
+                        const SizedBox(width: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF3B82F6).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                                color: const Color(0xFF3B82F6).withValues(alpha: 0.35)),
+                          ),
+                          child: Text(
+                            [
+                              widget.totalDistance,
+                              widget.totalDuration,
+                            ].whereType<String>().join('  ·  '),
+                            style: const TextStyle(
+                              color: Color(0xFF93C5FD),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Expanded(

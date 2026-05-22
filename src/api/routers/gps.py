@@ -13,8 +13,8 @@ router = APIRouter()
 # Hard-coded GPS coordinates for the UFV campus buildings.
 # Kept in sync with mobile_app/lib/core/building_locations.dart.
 _BUILDING_GPS = {
-    1:  {"lat": 40.441595,         "lng": -3.833650,          "name": "G"},
-    2:  {"lat": 40.441412,         "lng": -3.833501,          "name": "CD"},
+    1:  {"lat": 40.441620952298344, "lng": -3.833659413892564, "name": "G"},
+    2:  {"lat": 40.441395514019310, "lng": -3.833515841347269, "name": "CD"},
     3:  {"lat": 40.44188726971171, "lng": -3.834391097938894, "name": "H"},
     4:  {"lat": 40.44298858275285, "lng": -3.835530301598534, "name": "P"},
     5:  {"lat": 40.44316885736018, "lng": -3.835200228598359, "name": "O"},
@@ -65,6 +65,15 @@ async def get_gps_route(request: GPSRouteRequest):
 
         if data.get("status") == "OK" and data.get("routes"):
             leg = data["routes"][0]["legs"][0]
+            polyline = data["routes"][0]["overview_polyline"]["points"]
+
+            # Drop trivially-short orientation steps (< 3 m) that Google
+            # injects at the start/end of a route. They carry no useful
+            # instruction and would otherwise show up as "1 m" in the UI.
+            raw_steps = leg.get("steps", [])
+            meaningful = [s for s in raw_steps if s.get("distance", {}).get("value", 0) >= 3]
+            if not meaningful and raw_steps:
+                meaningful = [max(raw_steps, key=lambda s: s.get("distance", {}).get("value", 0))]
             return GPSRouteResponse(
                 success=True,
                 distance=leg["distance"]["text"],
@@ -77,9 +86,9 @@ async def get_gps_route(request: GPSRouteRequest):
                         "startLocation": s["start_location"],
                         "endLocation": s["end_location"],
                     }
-                    for s in leg["steps"]
+                    for s in meaningful
                 ],
-                polyline=data["routes"][0]["overview_polyline"]["points"],
+                polyline=polyline,
             )
 
         return GPSRouteResponse(

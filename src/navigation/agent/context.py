@@ -18,6 +18,7 @@ class ConversationState(Enum):
     ASK_SITUATION = "ask_situation"
     WAITING_PHOTO_DOOR = "waiting_photo_door"
     WAITING_PHOTO_SIGN = "waiting_photo_sign"
+    WAITING_PHOTO_ORIGIN = "waiting_photo_origin"
     ASK_BUILDING = "ask_building"
     ASK_FLOOR = "ask_floor"
     CONFIRMING_ORIGIN = "confirming_origin"
@@ -41,6 +42,14 @@ class ConversationContext:
 
         self.route_steps: List[Dict[str, Any]] = []
         self.current_step_idx: int = 0
+
+        # Raw PDDL plan from Fast Downward (action strings with "(N)" cost
+        # annotations) plus the total cost it found. Surfaced on the
+        # conversation response so the mobile can render the symbolic plan
+        # card. Cleared on navigation completion / cancellation.
+        self.pddl_plan: List[str] = []
+        self.plan_cost: int = 0
+        self.plan_search_time_s: Optional[float] = None
 
         self.last_tts: str = ""
         self.photo_attempts: int = 0
@@ -77,4 +86,7 @@ class ConversationContext:
             "conversation_history": self.history,
             "plan_steps": [s.get("instruction", "") for s in self.route_steps],
             "current_step_idx": self.current_step_idx,
+            "pddl_plan": list(self.pddl_plan),
+            "plan_cost": self.plan_cost,
+            "plan_search_time_s": self.plan_search_time_s,
         }
