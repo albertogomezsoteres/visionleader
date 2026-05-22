@@ -1,0 +1,83 @@
+{
+  "reference_plans": {
+    "S1": {
+      "scenario_id": "S1",
+      "origin": {
+        "building": 1,
+        "floor": 0,
+        "location_id": "entrance_2"
+      },
+      "destination": {
+        "building": 2,
+        "floor": 0,
+        "location_id": "cafeteria"
+      },
+      "hurry_mode": false,
+      "actions": [
+        "walk user entrance_2 entrance_2_exterior (3)",
+        "outdoor_walk user entrance_2_exterior entrance_cd_exterior (50)",
+        "walk user entrance_cd_exterior entrance_cd_interior (5)",
+        "walk user entrance_cd_interior central_point_cd (22)",
+        "walk user central_point_cd cafeteria (5)"
+      ],
+      "action_count": 5,
+      "cost": 85,
+      "success": true
+    },
+    "S2": {
+      "scenario_id": "S2",
+      "origin": {
+        "building": 1,
+        "floor": 0,
+        "location_id": "classroom_g_0_1"
+      },
+      "destination": {
+        "building": 1,
+        "floor": 1,
+        "location_id": "classroom_g_1_4"
+      },
+      "hurry_mode": false,
+      "actions": [
+        "walk user classroom_g_0_1 entrance_3 (4)",
+        "walk user entrance_3 classroom_g_0_3 (6)",
+        "walk user classroom_g_0_3 bathroom_men_g_f0 (2)",
+        "walk user bathroom_men_g_f0 elevator_g_f0 (2)",
+        "verify_elevator user elevator_g_f0 (5)",
+        "use_elevator user elevator_g_f0 elevator_g_f1 (15)",
+        "walk user elevator_g_f1 directory_sign_g_1 (3)",
+        "walk user directory_sign_g_1 bathroom_women_g_f1 (5)",
+        "walk user bathroom_women_g_f1 classroom_g_1_4 (2)"
+      ],
+      "action_count": 9,
+      "cost": 44,
+      "success": true
+    },
+    "S3": {
+      "scenario_id": "S3",
+      "origin": {
+        "building": 1,
+        "floor": 0,
+        "location_id": "directory_sign_g_0"
+      },
+      "destination": {
+        "building": 1,
+        "floor": 1,
+        "location_id": "classroom_g_1_5"
+      },
+      "hurry_mode": true,
+      "actions": [
+        "walk user directory_sign_g_0 stairs_g_f0 (3)",
+        "validate_stairs user stairs_g_f0 (5)",
+        "climb_stairs_fast user stairs_g_f0 stairs_g_f1 (12)",
+        "walk user stairs_g_f1 directory_sign_g_1 (3)",
+        "walk user directory_sign_g_1 bathroom_women_g_f1 (5)",
+        "walk user bathroom_women_g_f1 classroom_g_1_4 (2)",
+        "walk user classroom_g_1_4 entrance_1_p1 (6)",
+        "walk user entrance_1_p1 classroom_g_1_5 (3)"
+      ],
+      "action_count": 8,
+      "cost": 39,
+      "success": true
+    }
+  }
+}

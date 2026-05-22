@@ -8,7 +8,8 @@ Each router handles a specific domain (planning, image, speech, etc.).
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routers import plan, image, conversation, gps
+from api.middleware import TelemetryMiddleware
+from api.routers import _telemetry, conversation, gps, image, plan
 
 app = FastAPI(
     title="Campus Navigation Planning API",
@@ -23,11 +24,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TelemetryMiddleware)
 
 app.include_router(plan.router, prefix="/api", tags=["Planning"])
 app.include_router(image.router, prefix="/api", tags=["Image Analysis"])
 app.include_router(conversation.router, prefix="/api", tags=["Conversation"])
 app.include_router(gps.router, prefix="/api", tags=["GPS"])
+app.include_router(_telemetry.router, prefix="/api", tags=["Telemetry"])
 
 
 @app.get("/")

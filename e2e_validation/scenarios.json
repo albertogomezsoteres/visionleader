@@ -1,0 +1,138 @@
+{
+  "_comment": "End-to-end validation scenarios. The scenario_id strings (S1, S2, S3) are sent by the mobile client in the X-Scenario-Id HTTP header so the backend telemetry can tag every event. The `expected` block holds session-level ground truth (origin, destination, hurry_mode, arrival check). The `turns` array holds per-turn ground truth: what the user is supposed to say (or photograph), which Whisper keywords MUST be present in the transcription, and which FSM transition the agent must execute. build_validation_csv.py compares the live JSONL against this ground truth turn by turn. Step-advancement confirmations (saying 'next' / 'done') are not tracked as voice turns: the FSM accepts either voice or the on-screen confirm button, and the metric only checks the high-value voice turns (origin, destination, 'start') so the demo flow stays compact.",
+  "scenarios": [
+    {
+      "scenario_id": "S1",
+      "name": "Cross-building voice route to cafeteria",
+      "purpose": "Validate the integrated outdoor route between buildings G and CD with a voice-only origin and destination, ending at a non-classroom service location verified by the service_plate prompt.",
+      "user_script": [
+        "I am at the main entrance of building G floor 0",
+        "I want to go to the cafeteria in building CD",
+        "start",
+        "<advance through indoor walk and GPS leg via voice 'next'/'done' or the confirm button>",
+        "<photo of cafeteria sign>"
+      ],
+      "expected": {
+        "origin":      {"building": 1, "floor": 0, "location_id": "entrance_2"},
+        "destination": {"building": 2, "floor": 0, "location_id": "cafeteria"},
+        "hurry_mode": false,
+        "arrival_verification_prompt": "service_plate",
+        "arrival_expected_value": "cafeteria"
+      },
+      "modules_activated": ["STT", "ConversationAgent", "Planner", "TTS", "Maps", "VLM (arrival)"],
+      "vlm_prompts_expected": ["service_plate"],
+      "turns": [
+        {"idx": 1, "input": "voice", "say": "I am at the main entrance of building G floor 0",
+         "stt_keywords": ["entrance", "g"],
+         "fsm": ["ask_knows_location", "ask_destination"]},
+        {"idx": 2, "input": "voice", "say": "I want to go to the cafeteria in building CD",
+         "stt_keywords": ["cafeteria"],
+         "fsm": ["ask_destination", "confirming_plan"]},
+        {"idx": 3, "input": "voice", "say": "start",
+         "stt_keywords": ["start"],
+         "fsm": ["confirming_plan", "awaiting_step_done"]},
+        {"idx": 4, "input": "photo", "subject": "cafeteria service sign",
+         "vlm_prompt": "service_plate",
+         "vlm_expected_location_id": "cafeteria",
+         "fsm": ["waiting_step_photo", "navigation_complete"]}
+      ]
+    },
+    {
+      "scenario_id": "S2",
+      "name": "Visual origin via room plate, intra-G with elevator",
+      "purpose": "Validate origin grounding from a room plate photo and a single-elevator route inside building G, ending at a classroom verified by the room_plate prompt.",
+      "user_script": [
+        "No, I do not know where I am",
+        "I see a classroom",
+        "<photo of classroom 0.1 plate>",
+        "I want to go to classroom 1.4",
+        "start",
+        "<photo of elevator doors>",
+        "<advance via 'next' or confirm button>",
+        "<photo of classroom 1.4 plate>"
+      ],
+      "expected": {
+        "origin":      {"building": 1, "floor": 0, "location_id": "classroom_g_0_1"},
+        "destination": {"building": 1, "floor": 1, "location_id": "classroom_g_1_4"},
+        "hurry_mode": false,
+        "arrival_verification_prompt": "room_plate",
+        "arrival_expected_value": "1.4"
+      },
+      "modules_activated": ["STT", "ConversationAgent", "VLM (origin)", "Planner", "TTS", "VLM (elevator)", "VLM (arrival)"],
+      "vlm_prompts_expected": ["room_plate", "elevator_state", "room_plate"],
+      "turns": [
+        {"idx": 1, "input": "voice", "say": "No, I do not know where I am",
+         "stt_keywords": ["no"],
+         "fsm": ["ask_knows_location", "ask_situation"]},
+        {"idx": 2, "input": "voice", "say": "I see a classroom",
+         "stt_keywords": ["classroom"],
+         "fsm": ["ask_situation", "waiting_photo_door"]},
+        {"idx": 3, "input": "photo", "subject": "classroom 0.1 door plate",
+         "vlm_prompt": "room_plate",
+         "vlm_expected_location_id": "classroom_g_0_1",
+         "fsm": ["waiting_photo_door", "ask_destination"]},
+        {"idx": 4, "input": "voice", "say": "I want to go to classroom 1.4",
+         "stt_keywords": ["classroom", "1.4"],
+         "fsm": ["ask_destination", "confirming_plan"]},
+        {"idx": 5, "input": "voice", "say": "start",
+         "stt_keywords": ["start"],
+         "fsm": ["confirming_plan", "waiting_step_photo"]},
+        {"idx": 6, "input": "photo", "subject": "elevator doors",
+         "vlm_prompt": "elevator_state"},
+        {"idx": 7, "input": "photo", "subject": "classroom 1.4 door plate",
+         "vlm_prompt": "room_plate",
+         "vlm_expected_location_id": "classroom_g_1_4",
+         "fsm": ["waiting_step_photo", "navigation_complete"]}
+      ]
+    },
+    {
+      "scenario_id": "S3",
+      "name": "Visual origin via directory sign with hurry preference",
+      "purpose": "Validate origin grounding from a directory sign, propagation of the hurry-mode flag from speech to the planner cost model (forcing stairs), and arrival photo verification.",
+      "user_script": [
+        "No, I do not know where I am",
+        "I see a directory sign",
+        "<photo of directory sign G 0>",
+        "I want to go to classroom 1.5, I am in a hurry",
+        "start",
+        "<photo of stairs>",
+        "<advance via 'next' or confirm button>",
+        "<photo of classroom 1.5 plate>"
+      ],
+      "expected": {
+        "origin":      {"building": 1, "floor": 0, "location_id": "directory_sign_g_0"},
+        "destination": {"building": 1, "floor": 1, "location_id": "classroom_g_1_5"},
+        "hurry_mode": true,
+        "arrival_verification_prompt": "room_plate",
+        "arrival_expected_value": "1.5"
+      },
+      "modules_activated": ["STT", "ConversationAgent", "VLM (origin)", "Planner", "TTS", "VLM (stairs)", "VLM (arrival)"],
+      "vlm_prompts_expected": ["directory_sign", "stair_direction", "room_plate"],
+      "turns": [
+        {"idx": 1, "input": "voice", "say": "No, I do not know where I am",
+         "stt_keywords": ["no"],
+         "fsm": ["ask_knows_location", "ask_situation"]},
+        {"idx": 2, "input": "voice", "say": "I see a directory sign",
+         "stt_keywords": ["directory", "sign"],
+         "fsm": ["ask_situation", "waiting_photo_sign"]},
+        {"idx": 3, "input": "photo", "subject": "directory sign G floor 0",
+         "vlm_prompt": "directory_sign",
+         "vlm_expected_location_id": "directory_sign_g_0",
+         "fsm": ["waiting_photo_sign", "ask_destination"]},
+        {"idx": 4, "input": "voice", "say": "I want to go to classroom 1.5, I am in a hurry",
+         "stt_keywords": ["classroom", "1.5", "hurry"],
+         "fsm": ["ask_destination", "confirming_plan"]},
+        {"idx": 5, "input": "voice", "say": "start",
+         "stt_keywords": ["start"],
+         "fsm": ["confirming_plan", "waiting_step_photo"]},
+        {"idx": 6, "input": "photo", "subject": "stairs going up",
+         "vlm_prompt": "stair_direction",
+         "vlm_expected_state_detail": "up"},
+        {"idx": 7, "input": "photo", "subject": "classroom 1.5 door plate",
+         "vlm_prompt": "room_plate",
+         "vlm_expected_location_id": "classroom_g_1_5",
+         "fsm": ["waiting_step_photo", "navigation_complete"]}
+      ]
+    }
+  ]
+}
