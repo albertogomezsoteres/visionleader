@@ -1,44 +1,59 @@
-# VisionLeader UFV — App móvil
+# VisionLeader UFV mobile app
 
-Cliente Flutter (Android / iOS) del sistema VisionLeader UFV. Permite a un usuario con discapacidad visual formular consultas por voz, capturar imágenes del entorno y recibir instrucciones de navegación paso a paso por TTS.
+Flutter client for VisionLeader UFV (Android). It lets a visually impaired user ask
+where to go by voice, take photos of the surroundings when the assistant needs them,
+and hear step-by-step navigation spoken back through text-to-speech.
 
-## Requisitos
+Speech-to-text runs on the device: the app bundles Whisper (tiny, q5_0) through
+whisper.cpp, so transcription does not need the network.
+
+The Whisper binary and model are not committed to the repository (binary, and the
+model is large). To build a working app, place `libwhisper-server.so` under
+`android/app/src/main/jniLibs/arm64-v8a/` and `ggml-tiny-q5_0.bin` under
+`assets/models/`.
+
+## Requirements
 
 - Flutter SDK
-- Backend de planificación corriendo (ver `README.md` en la raíz del repo)
+- The backend running (see the README at the repository root)
+- An Android device or emulator (iOS is not supported: the on-device Whisper binary ships for Android arm64 only)
 
-## Ejecución
+## Run
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-## Configuración del backend
+## Backend URL
 
-La URL base de la API se define en `lib/core/app_config.dart`. Se puede sobreescribir en tiempo de build sin tocar el código:
+The API base URL is set in `lib/core/app_config.dart`. You can override it at build
+time without touching the code:
 
 ```bash
 flutter run --dart-define=API_BASE_URL=http://192.168.1.50:8000
 ```
 
-En el emulador Android usa `http://10.0.2.2:8000` para alcanzar el host.
+On the Android emulator, use `http://10.0.2.2:8000` to reach the host.
 
-### Atajo: auto-detectar la IP del host (Windows)
+### Shortcut: auto-detect the host IP (Windows)
 
-Para no tener que mirar la IP a mano cada vez que cambia la red, hay un script PowerShell que la detecta y lanza la app:
+So you do not have to look up the IP by hand every time the network changes, a
+PowerShell script detects it and launches the app:
 
 ```powershell
 cd mobile_app
 .\run_dev.ps1
 ```
 
-Por defecto usa el puerto 8000. Para otro puerto: `.\run_dev.ps1 -Port 8001`.
+It uses port 8000 by default. For another port: `.\run_dev.ps1 -Port 8001`.
 
-## Estructura
+## Layout
 
-- `lib/screens/home_screen.dart` — pantalla inicial.
-- `lib/screens/conversation/` — flujo conversacional (voz, foto, TTS, pasos).
-- `lib/services/api_service.dart` — cliente HTTP del backend.
-- `lib/core/app_config.dart` — configuración de URL y timeouts.
-- `lib/core/app_theme.dart` — tema oscuro.
+- `lib/main.dart`: app entry point.
+- `lib/screens/home_screen.dart`: start screen.
+- `lib/screens/conversation/`: the conversation flow (voice, photo, TTS, steps).
+- `lib/services/whisper_service.dart`: on-device speech-to-text (Whisper via whisper.cpp).
+- `lib/services/api_service.dart`: HTTP client for the backend.
+- `lib/core/app_config.dart`: base URL and timeouts.
+- `lib/core/app_theme.dart`: dark theme.

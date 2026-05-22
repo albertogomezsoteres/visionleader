@@ -1,0 +1,81 @@
+image_id,filename,category,ground_truth
+g_sign_agora_01,g_sign_agora_01.jpg,directory_signs,G Agora
+g_sign_agora_02,g_sign_agora_02.jpg,directory_signs,G Agora
+g_sign_agora_03,g_sign_agora_03.jpg,directory_signs,G Agora
+g_sign_agora_04,g_sign_agora_04.jpg,directory_signs,G Agora
+g_sign_agora_05,g_sign_agora_05.jpg,directory_signs,G Agora
+g_sign_floor_0_01,g_sign_floor_0_01.jpg,directory_signs,G 0
+g_sign_floor_0_02,g_sign_floor_0_02.jpg,directory_signs,G 0
+g_sign_floor_0_03,g_sign_floor_0_03.jpg,directory_signs,G 0
+g_sign_floor_0_04,g_sign_floor_0_04.jpg,directory_signs,G 0
+g_sign_floor_0_05,g_sign_floor_0_05.jpg,directory_signs,G 0
+g_sign_floor_1_01,g_sign_floor_1_01.jpg,directory_signs,G 1
+g_sign_floor_1_02,g_sign_floor_1_02.jpg,directory_signs,G 1
+g_sign_floor_1_03,g_sign_floor_1_03.jpg,directory_signs,G 1
+g_sign_floor_1_04,g_sign_floor_1_04.jpg,directory_signs,G 1
+g_sign_floor_1_05,g_sign_floor_1_05.jpg,directory_signs,G 1
+g_sign_floor_2_01,g_sign_floor_2_01.jpg,directory_signs,G 2
+g_sign_floor_2_02,g_sign_floor_2_02.jpg,directory_signs,G 2
+g_sign_floor_2_03,g_sign_floor_2_03.jpg,directory_signs,G 2
+g_sign_floor_2_04,g_sign_floor_2_04.jpg,directory_signs,G 2
+g_sign_floor_2_05,g_sign_floor_2_05.jpg,directory_signs,G 2
+ufv_elevator_closed_01,ufv_elevator_closed_01.jpg,elevators,closed
+ufv_elevator_closed_02,ufv_elevator_closed_02.jpg,elevators,closed
+ufv_elevator_closed_03,ufv_elevator_closed_03.jpg,elevators,closed
+ufv_elevator_closed_04,ufv_elevator_closed_04.jpg,elevators,closed
+ufv_elevator_closed_05,ufv_elevator_closed_05.jpg,elevators,closed
+ufv_elevator_open_01,ufv_elevator_open_01.jpg,elevators,open
+ufv_elevator_open_02,ufv_elevator_open_02.jpg,elevators,open
+ufv_elevator_open_03,ufv_elevator_open_03.jpg,elevators,open
+ufv_elevator_open_04,ufv_elevator_open_04.jpg,elevators,open
+ufv_elevator_open_05,ufv_elevator_open_05.jpg,elevators,open
+facility_bathroom_female_01,facility_bathroom_female_01.jpg,facility_signs,female
+facility_bathroom_female_02,facility_bathroom_female_02.jpg,facility_signs,female
+facility_bathroom_female_03,facility_bathroom_female_03.jpg,facility_signs,female
+facility_bathroom_female_04,facility_bathroom_female_04.jpg,facility_signs,female
+facility_bathroom_male_01,facility_bathroom_male_01.jpg,facility_signs,male
+facility_bathroom_male_02,facility_bathroom_male_02.jpg,facility_signs,male
+facility_bathroom_male_03,facility_bathroom_male_03.jpg,facility_signs,male
+facility_bathroom_male_04,facility_bathroom_male_04.jpg,facility_signs,male
+facility_bathroom_male_05,facility_bathroom_male_05.jpg,facility_signs,male
+cd_room_1_01,cd_room_1_01.jpg,room_plates,CD 1
+cd_room_2_01,cd_room_2_01.jpg,room_plates,CD 2
+cd_room_2_02,cd_room_2_02.jpg,room_plates,CD 2
+cd_room_3_01,cd_room_3_01.jpg,room_plates,CD 3
+cd_room_3_02,cd_room_3_02.jpg,room_plates,CD 3
+cd_room_4_01,cd_room_4_01.jpg,room_plates,CD 4
+cd_room_5_01,cd_room_5_01.jpg,room_plates,CD 5
+cd_room_6_01,cd_room_6_01.jpg,room_plates,CD 6
+cd_room_7_01,cd_room_7_01.jpg,room_plates,CD 7
+cd_room_8_01,cd_room_8_01.jpg,room_plates,CD 8
+g_room_0_1_01,g_room_0_1_01.jpg,room_plates,G 0.1
+g_room_0_1_02,g_room_0_1_02.jpg,room_plates,G 0.1
+g_room_0_2_01,g_room_0_2_01.jpg,room_plates,G 0.2
+g_room_0_3_01,g_room_0_3_01.jpg,room_plates,G 0.3
+g_room_0_4_01,g_room_0_4_01.jpg,room_plates,G 0.4
+g_room_0_4_02,g_room_0_4_02.jpg,room_plates,G 0.4
+g_room_1_1_01,g_room_1_1_01.jpg,room_plates,G 1.1
+g_room_1_2_01,g_room_1_2_01.jpg,room_plates,G 1.2
+g_room_1_2_02,g_room_1_2_02.jpg,room_plates,G 1.2
+g_room_1_3_01,g_room_1_3_01.jpg,room_plates,G 1.3
+g_room_1_4_01,g_room_1_4_01.jpg,room_plates,G 1.4
+g_room_1_4_02,g_room_1_4_02.jpg,room_plates,G 1.4
+g_room_1_5_01,g_room_1_5_01.jpg,room_plates,G 1.5
+g_room_1_6_01,g_room_1_6_01.jpg,room_plates,G 1.6
+g_room_2_1_01,g_room_2_1_01.jpg,room_plates,G 2.1
+g_room_ai_lab_01,g_room_ai_lab_01.jpg,room_plates,G ai_lab
+ufv_stairs_down_01,ufv_stairs_down_01.jpg,stairs,down
+ufv_stairs_down_02,ufv_stairs_down_02.jpg,stairs,down
+ufv_stairs_down_03,ufv_stairs_down_03.jpg,stairs,down
+ufv_stairs_down_04,ufv_stairs_down_04.jpg,stairs,down
+ufv_stairs_down_05,ufv_stairs_down_05.jpg,stairs,down
+ufv_stairs_down_06,ufv_stairs_down_06.jpg,stairs,down
+ufv_stairs_down_07,ufv_stairs_down_07.jpg,stairs,down
+ufv_stairs_up_01,ufv_stairs_up_01.jpg,stairs,up
+ufv_stairs_up_02,ufv_stairs_up_02.jpg,stairs,up
+ufv_stairs_up_03,ufv_stairs_up_03.jpg,stairs,up
+ufv_stairs_up_04,ufv_stairs_up_04.jpg,stairs,up
+ufv_stairs_up_05,ufv_stairs_up_05.jpg,stairs,up
+ufv_stairs_up_06,ufv_stairs_up_06.jpg,stairs,up
+ufv_stairs_up_07,ufv_stairs_up_07.jpg,stairs,up
+ufv_stairs_up_08,ufv_stairs_up_08.jpg,stairs,up

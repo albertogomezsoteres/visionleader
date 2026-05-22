@@ -1,0 +1,901 @@
+model,run,audio,latency_ms,transcription
+tiny-q2_k,1,utterance_09,,
+tiny-q2_k,1,utterance_27,,
+tiny-q2_k,1,utterance_16,,
+tiny-q2_k,1,utterance_11,,
+tiny-q2_k,1,utterance_19,,
+tiny-q2_k,1,utterance_28,,
+tiny-q2_k,1,utterance_08,,
+tiny-q2_k,1,utterance_06,,
+tiny-q2_k,1,utterance_07,,
+tiny-q2_k,1,utterance_24,,
+tiny-q2_k,1,utterance_02,,
+tiny-q2_k,1,utterance_25,,
+tiny-q2_k,1,utterance_26,,
+tiny-q2_k,1,utterance_03,,
+tiny-q2_k,1,utterance_30,,
+tiny-q2_k,1,utterance_18,,
+tiny-q2_k,1,utterance_13,,
+tiny-q2_k,1,utterance_01,,
+tiny-q2_k,1,utterance_14,,
+tiny-q2_k,1,utterance_23,,
+tiny-q2_k,1,utterance_17,,
+tiny-q2_k,1,utterance_15,,
+tiny-q2_k,1,utterance_10,,
+tiny-q2_k,1,utterance_12,,
+tiny-q2_k,1,utterance_22,,
+tiny-q2_k,1,utterance_20,,
+tiny-q2_k,1,utterance_29,,
+tiny-q2_k,1,utterance_04,,
+tiny-q2_k,1,utterance_05,,
+tiny-q2_k,1,utterance_21,,
+tiny-q2_k,2,utterance_17,,
+tiny-q2_k,2,utterance_05,,
+tiny-q2_k,2,utterance_30,,
+tiny-q2_k,2,utterance_16,,
+tiny-q2_k,2,utterance_18,,
+tiny-q2_k,2,utterance_27,,
+tiny-q2_k,2,utterance_28,,
+tiny-q2_k,2,utterance_24,,
+tiny-q2_k,2,utterance_13,,
+tiny-q2_k,2,utterance_04,,
+tiny-q2_k,2,utterance_11,,
+tiny-q2_k,2,utterance_06,,
+tiny-q2_k,2,utterance_20,,
+tiny-q2_k,2,utterance_29,,
+tiny-q2_k,2,utterance_02,,
+tiny-q2_k,2,utterance_14,,
+tiny-q2_k,2,utterance_03,,
+tiny-q2_k,2,utterance_01,,
+tiny-q2_k,2,utterance_23,,
+tiny-q2_k,2,utterance_15,,
+tiny-q2_k,2,utterance_10,,
+tiny-q2_k,2,utterance_19,,
+tiny-q2_k,2,utterance_12,,
+tiny-q2_k,2,utterance_21,,
+tiny-q2_k,2,utterance_09,,
+tiny-q2_k,2,utterance_25,,
+tiny-q2_k,2,utterance_08,,
+tiny-q2_k,2,utterance_07,,
+tiny-q2_k,2,utterance_22,,
+tiny-q2_k,2,utterance_26,,
+tiny-q2_k,3,utterance_17,,
+tiny-q2_k,3,utterance_06,,
+tiny-q2_k,3,utterance_24,,
+tiny-q2_k,3,utterance_20,,
+tiny-q2_k,3,utterance_14,,
+tiny-q2_k,3,utterance_13,,
+tiny-q2_k,3,utterance_29,,
+tiny-q2_k,3,utterance_04,,
+tiny-q2_k,3,utterance_12,,
+tiny-q2_k,3,utterance_19,,
+tiny-q2_k,3,utterance_05,,
+tiny-q2_k,3,utterance_30,,
+tiny-q2_k,3,utterance_18,,
+tiny-q2_k,3,utterance_08,,
+tiny-q2_k,3,utterance_11,,
+tiny-q2_k,3,utterance_23,,
+tiny-q2_k,3,utterance_03,,
+tiny-q2_k,3,utterance_01,,
+tiny-q2_k,3,utterance_25,,
+tiny-q2_k,3,utterance_16,,
+tiny-q2_k,3,utterance_15,,
+tiny-q2_k,3,utterance_28,,
+tiny-q2_k,3,utterance_10,,
+tiny-q2_k,3,utterance_09,,
+tiny-q2_k,3,utterance_26,,
+tiny-q2_k,3,utterance_27,,
+tiny-q2_k,3,utterance_21,,
+tiny-q2_k,3,utterance_07,,
+tiny-q2_k,3,utterance_02,,
+tiny-q2_k,3,utterance_22,,
+tiny-q3_k,1,utterance_09,,
+tiny-q3_k,1,utterance_27,,
+tiny-q3_k,1,utterance_16,,
+tiny-q3_k,1,utterance_11,,
+tiny-q3_k,1,utterance_19,,
+tiny-q3_k,1,utterance_28,,
+tiny-q3_k,1,utterance_08,,
+tiny-q3_k,1,utterance_06,,
+tiny-q3_k,1,utterance_07,,
+tiny-q3_k,1,utterance_24,,
+tiny-q3_k,1,utterance_02,,
+tiny-q3_k,1,utterance_25,,
+tiny-q3_k,1,utterance_26,,
+tiny-q3_k,1,utterance_03,,
+tiny-q3_k,1,utterance_30,,
+tiny-q3_k,1,utterance_18,,
+tiny-q3_k,1,utterance_13,,
+tiny-q3_k,1,utterance_01,,
+tiny-q3_k,1,utterance_14,,
+tiny-q3_k,1,utterance_23,,
+tiny-q3_k,1,utterance_17,,
+tiny-q3_k,1,utterance_15,,
+tiny-q3_k,1,utterance_10,,
+tiny-q3_k,1,utterance_12,,
+tiny-q3_k,1,utterance_22,,
+tiny-q3_k,1,utterance_20,,
+tiny-q3_k,1,utterance_29,,
+tiny-q3_k,1,utterance_04,,
+tiny-q3_k,1,utterance_05,,
+tiny-q3_k,1,utterance_21,,
+tiny-q3_k,2,utterance_17,,
+tiny-q3_k,2,utterance_05,,
+tiny-q3_k,2,utterance_30,,
+tiny-q3_k,2,utterance_16,,
+tiny-q3_k,2,utterance_18,,
+tiny-q3_k,2,utterance_27,,
+tiny-q3_k,2,utterance_28,,
+tiny-q3_k,2,utterance_24,,
+tiny-q3_k,2,utterance_13,,
+tiny-q3_k,2,utterance_04,,
+tiny-q3_k,2,utterance_11,,
+tiny-q3_k,2,utterance_06,,
+tiny-q3_k,2,utterance_20,,
+tiny-q3_k,2,utterance_29,,
+tiny-q3_k,2,utterance_02,,
+tiny-q3_k,2,utterance_14,,
+tiny-q3_k,2,utterance_03,,
+tiny-q3_k,2,utterance_01,,
+tiny-q3_k,2,utterance_23,,
+tiny-q3_k,2,utterance_15,,
+tiny-q3_k,2,utterance_10,,
+tiny-q3_k,2,utterance_19,,
+tiny-q3_k,2,utterance_12,,
+tiny-q3_k,2,utterance_21,,
+tiny-q3_k,2,utterance_09,,
+tiny-q3_k,2,utterance_25,,
+tiny-q3_k,2,utterance_08,,
+tiny-q3_k,2,utterance_07,,
+tiny-q3_k,2,utterance_22,,
+tiny-q3_k,2,utterance_26,,
+tiny-q3_k,3,utterance_17,,
+tiny-q3_k,3,utterance_06,,
+tiny-q3_k,3,utterance_24,,
+tiny-q3_k,3,utterance_20,,
+tiny-q3_k,3,utterance_14,,
+tiny-q3_k,3,utterance_13,,
+tiny-q3_k,3,utterance_29,,
+tiny-q3_k,3,utterance_04,,
+tiny-q3_k,3,utterance_12,,
+tiny-q3_k,3,utterance_19,,
+tiny-q3_k,3,utterance_05,,
+tiny-q3_k,3,utterance_30,,
+tiny-q3_k,3,utterance_18,,
+tiny-q3_k,3,utterance_08,,
+tiny-q3_k,3,utterance_11,,
+tiny-q3_k,3,utterance_23,,
+tiny-q3_k,3,utterance_03,,
+tiny-q3_k,3,utterance_01,,
+tiny-q3_k,3,utterance_25,,
+tiny-q3_k,3,utterance_16,,
+tiny-q3_k,3,utterance_15,,
+tiny-q3_k,3,utterance_28,,
+tiny-q3_k,3,utterance_10,,
+tiny-q3_k,3,utterance_09,,
+tiny-q3_k,3,utterance_26,,
+tiny-q3_k,3,utterance_27,,
+tiny-q3_k,3,utterance_21,,
+tiny-q3_k,3,utterance_07,,
+tiny-q3_k,3,utterance_02,,
+tiny-q3_k,3,utterance_22,,
+tiny-q4_0,1,utterance_09,1481.58,Take me to the nearest restroom on this floor.
+tiny-q4_0,1,utterance_27,1467.12,Where is the secretary office in building G?
+tiny-q4_0,1,utterance_16,1985.20,"Yes, I am ready to continue."
+tiny-q4_0,1,utterance_11,2200.61,"I am in a hurry, please use the stairs."
+tiny-q4_0,1,utterance_19,1645.04,"done, I have reached my destination."
+tiny-q4_0,1,utterance_28,2271.62,I need to find classroom 0.3 quickly.
+tiny-q4_0,1,utterance_08,1852.70,I want to go to the cafeteria.
+tiny-q4_0,1,utterance_06,2464.77,I want to go to classroom 1.4
+tiny-q4_0,1,utterance_07,1943.40,Take me to the gym and building CD.
+tiny-q4_0,1,utterance_24,2026.07,"I do not know where I am, I need help finding my location."
+tiny-q4_0,1,utterance_02,2011.82,I am in classroom 2.1 on the second floor.
+tiny-q4_0,1,utterance_25,2034.30,"I am at the directory sign, building G next to the mentoring room."
+tiny-q4_0,1,utterance_26,2249.53,How do I get from building CD to building G?
+tiny-q4_0,1,utterance_03,2242.26,I am at the main entrance of building G.
+tiny-q4_0,1,utterance_30,3043.95,"My destination is classroom 1.4, in building G please."
+tiny-q4_0,1,utterance_18,2359.43,I have arrived at the elevator on floor 2.
+tiny-q4_0,1,utterance_13,2331.34,"I am lost, I need help."
+tiny-q4_0,1,utterance_01,2996.05,I am in classroom 0.3 building G.
+tiny-q4_0,1,utterance_14,2331.75,cancel navigation and start again
+tiny-q4_0,1,utterance_23,2353.34,I just came out of the elevator on the first floor of building G.
+tiny-q4_0,1,utterance_17,2351.91,"no, that is not my location."
+tiny-q4_0,1,utterance_15,2346.30,Stop and tell me where I am.
+tiny-q4_0,1,utterance_10,2374.32,could you guide me to the EPS faculty offices please?
+tiny-q4_0,1,utterance_12,2370.97,repeat the instructions please
+tiny-q4_0,1,utterance_22,2509.49,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q4_0,1,utterance_20,3476.64,"Yes, I can see the elevator and the doors are open."
+tiny-q4_0,1,utterance_29,2368.30,Could you tell me how to reach the AA laboratory from here?
+tiny-q4_0,1,utterance_04,2525.25,"I am in the, I, I, laboratory on the ground floor of building G."
+tiny-q4_0,1,utterance_05,2523.05,"I am next to the elevator, floor 1 building G."
+tiny-q4_0,1,utterance_21,2452.48,"I am in, classroom 1.1 and I want to go to the, EPS faculty offices."
+tiny-q4_0,2,utterance_17,2403.39,"no, that is not my location."
+tiny-q4_0,2,utterance_05,2439.11,"I am next to the elevator, floor 1 building G."
+tiny-q4_0,2,utterance_30,2452.36,"My destination is classroom 1.4, in building G please."
+tiny-q4_0,2,utterance_16,3432.83,"Yes, I am ready to continue."
+tiny-q4_0,2,utterance_18,2410.61,I have arrived at the elevator on floor 2.
+tiny-q4_0,2,utterance_27,2337.10,Where is the secretary office in building G?
+tiny-q4_0,2,utterance_28,2426.63,I need to find classroom 0.3 quickly.
+tiny-q4_0,2,utterance_24,2456.73,"I do not know where I am, I need help finding my location."
+tiny-q4_0,2,utterance_13,2406.19,"I am lost, I need help."
+tiny-q4_0,2,utterance_04,2456.12,"I am in the, I, I, laboratory on the ground floor of building G."
+tiny-q4_0,2,utterance_11,3558.22,"I am in a hurry, please use the stairs."
+tiny-q4_0,2,utterance_06,2424.15,I want to go to classroom 1.4
+tiny-q4_0,2,utterance_20,2436.39,"Yes, I can see the elevator and the doors are open."
+tiny-q4_0,2,utterance_29,2429.05,Could you tell me how to reach the AA laboratory from here?
+tiny-q4_0,2,utterance_02,2438.75,I am in classroom 2.1 on the second floor.
+tiny-q4_0,2,utterance_14,3292.29,cancel navigation and start again
+tiny-q4_0,2,utterance_03,2416.41,I am at the main entrance of building G.
+tiny-q4_0,2,utterance_01,2423.16,I am in classroom 0.3 building G.
+tiny-q4_0,2,utterance_23,2439.57,I just came out of the elevator on the first floor of building G.
+tiny-q4_0,2,utterance_15,2420.73,Stop and tell me where I am.
+tiny-q4_0,2,utterance_10,2428.73,could you guide me to the EPS faculty offices please?
+tiny-q4_0,2,utterance_19,2385.62,"done, I have reached my destination."
+tiny-q4_0,2,utterance_12,3467.55,repeat the instructions please
+tiny-q4_0,2,utterance_21,2559.78,"I am in, classroom 1.1 and I want to go to the, EPS faculty offices."
+tiny-q4_0,2,utterance_09,2375.25,Take me to the nearest restroom on this floor.
+tiny-q4_0,2,utterance_25,2398.36,"I am at the directory sign, building G next to the mentoring room."
+tiny-q4_0,2,utterance_08,3492.29,I want to go to the cafeteria.
+tiny-q4_0,2,utterance_07,2383.81,Take me to the gym and building CD.
+tiny-q4_0,2,utterance_22,2402.46,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q4_0,2,utterance_26,3518.49,How do I get from building CD to building G?
+tiny-q4_0,3,utterance_17,2380.85,"no, that is not my location."
+tiny-q4_0,3,utterance_06,2419.87,I want to go to classroom 1.4
+tiny-q4_0,3,utterance_24,2439.17,"I do not know where I am, I need help finding my location."
+tiny-q4_0,3,utterance_20,2434.35,"Yes, I can see the elevator and the doors are open."
+tiny-q4_0,3,utterance_14,2404.75,cancel navigation and start again
+tiny-q4_0,3,utterance_13,3504.73,"I am lost, I need help."
+tiny-q4_0,3,utterance_29,2443.95,Could you tell me how to reach the AA laboratory from here?
+tiny-q4_0,3,utterance_04,2460.56,"I am in the, I, I, laboratory on the ground floor of building G."
+tiny-q4_0,3,utterance_12,3485.09,repeat the instructions please
+tiny-q4_0,3,utterance_19,2418.79,"done, I have reached my destination."
+tiny-q4_0,3,utterance_05,2425.25,"I am next to the elevator, floor 1 building G."
+tiny-q4_0,3,utterance_30,2435.35,"My destination is classroom 1.4, in building G please."
+tiny-q4_0,3,utterance_18,2844.56,I have arrived at the elevator on floor 2.
+tiny-q4_0,3,utterance_08,2437.05,I want to go to the cafeteria.
+tiny-q4_0,3,utterance_11,2433.55,"I am in a hurry, please use the stairs."
+tiny-q4_0,3,utterance_23,3584.86,I just came out of the elevator on the first floor of building G.
+tiny-q4_0,3,utterance_03,2418.30,I am at the main entrance of building G.
+tiny-q4_0,3,utterance_01,2418.30,I am in classroom 0.3 building G.
+tiny-q4_0,3,utterance_25,3585.20,"I am at the directory sign, building G next to the mentoring room."
+tiny-q4_0,3,utterance_16,2410.33,"Yes, I am ready to continue."
+tiny-q4_0,3,utterance_15,3502.20,Stop and tell me where I am.
+tiny-q4_0,3,utterance_28,2428.84,I need to find classroom 0.3 quickly.
+tiny-q4_0,3,utterance_10,2431.81,could you guide me to the EPS faculty offices please?
+tiny-q4_0,3,utterance_09,3586.83,Take me to the nearest restroom on this floor.
+tiny-q4_0,3,utterance_26,3581.51,How do I get from building CD to building G?
+tiny-q4_0,3,utterance_27,2423.50,Where is the secretary office in building G?
+tiny-q4_0,3,utterance_21,2476.75,"I am in, classroom 1.1 and I want to go to the, EPS faculty offices."
+tiny-q4_0,3,utterance_07,2416.08,Take me to the gym and building CD.
+tiny-q4_0,3,utterance_02,2436.89,I am in classroom 2.1 on the second floor.
+tiny-q4_0,3,utterance_22,2444.04,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q5_0,1,utterance_09,2165.09,Take me to the nearest restroom on this floor.
+tiny-q5_0,1,utterance_27,2157.09,Where is the secretary office in building G?
+tiny-q5_0,1,utterance_16,2132.96,"Yes, I am ready to continue."
+tiny-q5_0,1,utterance_11,3044.48,"I am in a hurry, please use the stairs."
+tiny-q5_0,1,utterance_19,2168.55,"Done, I have reached my destination."
+tiny-q5_0,1,utterance_28,2172.65,I need to find classroom 0.3 quickly.
+tiny-q5_0,1,utterance_08,2174.04,I want to go to the cafeteria.
+tiny-q5_0,1,utterance_06,2209.67,"I want to go to, classroom 1.4."
+tiny-q5_0,1,utterance_07,3266.71,"Take me to the gym, in building CD."
+tiny-q5_0,1,utterance_24,3537.99,"I do not know where I am, I need help finding my location."
+tiny-q5_0,1,utterance_02,2428.19,I am in classroom 2.1 on the second floor.
+tiny-q5_0,1,utterance_25,3640.80,"I am at the directory sign, in building G, next to the mentoring room."
+tiny-q5_0,1,utterance_26,2660.02,How do I get from building CD to building G?
+tiny-q5_0,1,utterance_03,3885.10,I am at the main entrance of building G.
+tiny-q5_0,1,utterance_30,4120.63,"My destination is classroom 1.4, in building G, please."
+tiny-q5_0,1,utterance_18,2789.46,I have arrived at the elevator on floor 2.
+tiny-q5_0,1,utterance_13,3912.33,"I am lost, I need help."
+tiny-q5_0,1,utterance_01,2790.62,"I am in classroom 0.3, building G."
+tiny-q5_0,1,utterance_14,2769.83,cancel navigation and start again.
+tiny-q5_0,1,utterance_23,2808.73,I just came out of the elevator on the first floor of building G.
+tiny-q5_0,1,utterance_17,2784.39,"No, that is not my location."
+tiny-q5_0,1,utterance_15,2782.75,Stop and tell me where I am.
+tiny-q5_0,1,utterance_10,2793.86,Could you guide me to the EPS faculty offices please?
+tiny-q5_0,1,utterance_12,2773.97,Repeat the instructions please.
+tiny-q5_0,1,utterance_22,2810.24,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q5_0,1,utterance_20,2854.41,"Yes, I can see the elevator and the doors are open."
+tiny-q5_0,1,utterance_29,2875.16,Could you tell me how to reach the AI laboratory from here?
+tiny-q5_0,1,utterance_04,2910.07,I am in the AI laboratory on the ground floor of building G.
+tiny-q5_0,1,utterance_05,2801.68,I am next to the elevator of floor 1 of building G.
+tiny-q5_0,1,utterance_21,2822.93,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q5_0,2,utterance_17,4106.97,"No, that is not my location."
+tiny-q5_0,2,utterance_05,2798.66,I am next to the elevator of floor 1 of building G.
+tiny-q5_0,2,utterance_30,2800.68,"My destination is classroom 1.4, in building G, please."
+tiny-q5_0,2,utterance_16,3672.89,"Yes, I am ready to continue."
+tiny-q5_0,2,utterance_18,2878.87,I have arrived at the elevator on floor 2.
+tiny-q5_0,2,utterance_27,4209.85,Where is the secretary office in building G?
+tiny-q5_0,2,utterance_28,2864.91,I need to find classroom 0.3 quickly.
+tiny-q5_0,2,utterance_24,2870.16,"I do not know where I am, I need help finding my location."
+tiny-q5_0,2,utterance_13,4133.60,"I am lost, I need help."
+tiny-q5_0,2,utterance_04,2864.27,I am in the AI laboratory on the ground floor of building G.
+tiny-q5_0,2,utterance_11,2859.17,"I am in a hurry, please use the stairs."
+tiny-q5_0,2,utterance_06,3233.97,"I want to go to, classroom 1.4."
+tiny-q5_0,2,utterance_20,2862.02,"Yes, I can see the elevator and the doors are open."
+tiny-q5_0,2,utterance_29,3236.04,Could you tell me how to reach the AI laboratory from here?
+tiny-q5_0,2,utterance_02,2864.89,I am in classroom 2.1 on the second floor.
+tiny-q5_0,2,utterance_14,3727.44,cancel navigation and start again.
+tiny-q5_0,2,utterance_03,6227.19,I am at the main entrance of building G.
+tiny-q5_0,2,utterance_01,2853.17,"I am in classroom 0.3, building G."
+tiny-q5_0,2,utterance_23,2859.73,I just came out of the elevator on the first floor of building G.
+tiny-q5_0,2,utterance_15,4116.64,Stop and tell me where I am.
+tiny-q5_0,2,utterance_10,2853.36,Could you guide me to the EPS faculty offices please?
+tiny-q5_0,2,utterance_19,4308.16,"Done, I have reached my destination."
+tiny-q5_0,2,utterance_12,4093.99,Repeat the instructions please.
+tiny-q5_0,2,utterance_21,4219.63,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q5_0,2,utterance_09,2854.82,Take me to the nearest restroom on this floor.
+tiny-q5_0,2,utterance_25,2892.89,"I am at the directory sign, in building G, next to the mentoring room."
+tiny-q5_0,2,utterance_08,3209.00,I want to go to the cafeteria.
+tiny-q5_0,2,utterance_07,2906.65,"Take me to the gym, in building CD."
+tiny-q5_0,2,utterance_22,3020.34,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q5_0,2,utterance_26,4039.78,How do I get from building CD to building G?
+tiny-q5_0,3,utterance_17,2691.54,"No, that is not my location."
+tiny-q5_0,3,utterance_06,3597.24,"I want to go to, classroom 1.4."
+tiny-q5_0,3,utterance_24,2847.28,"I do not know where I am, I need help finding my location."
+tiny-q5_0,3,utterance_20,2864.11,"Yes, I can see the elevator and the doors are open."
+tiny-q5_0,3,utterance_14,2833.49,cancel navigation and start again.
+tiny-q5_0,3,utterance_13,2837.35,"I am lost, I need help."
+tiny-q5_0,3,utterance_29,2868.10,Could you tell me how to reach the AI laboratory from here?
+tiny-q5_0,3,utterance_04,2863.34,I am in the AI laboratory on the ground floor of building G.
+tiny-q5_0,3,utterance_12,4113.46,Repeat the instructions please.
+tiny-q5_0,3,utterance_19,2822.27,"Done, I have reached my destination."
+tiny-q5_0,3,utterance_05,2858.69,I am next to the elevator of floor 1 of building G.
+tiny-q5_0,3,utterance_30,2872.63,"My destination is classroom 1.4, in building G, please."
+tiny-q5_0,3,utterance_18,2838.64,I have arrived at the elevator on floor 2.
+tiny-q5_0,3,utterance_08,3165.17,I want to go to the cafeteria.
+tiny-q5_0,3,utterance_11,2845.72,"I am in a hurry, please use the stairs."
+tiny-q5_0,3,utterance_23,4174.31,I just came out of the elevator on the first floor of building G.
+tiny-q5_0,3,utterance_03,2849.01,I am at the main entrance of building G.
+tiny-q5_0,3,utterance_01,3519.12,"I am in classroom 0.3, building G."
+tiny-q5_0,3,utterance_25,2871.09,"I am at the directory sign, in building G, next to the mentoring room."
+tiny-q5_0,3,utterance_16,3454.78,"Yes, I am ready to continue."
+tiny-q5_0,3,utterance_15,3214.50,Stop and tell me where I am.
+tiny-q5_0,3,utterance_28,2849.75,I need to find classroom 0.3 quickly.
+tiny-q5_0,3,utterance_10,2863.16,Could you guide me to the EPS faculty offices please?
+tiny-q5_0,3,utterance_09,2850.92,Take me to the nearest restroom on this floor.
+tiny-q5_0,3,utterance_26,2896.39,How do I get from building CD to building G?
+tiny-q5_0,3,utterance_27,4137.79,Where is the secretary office in building G?
+tiny-q5_0,3,utterance_21,3059.25,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q5_0,3,utterance_07,3771.22,"Take me to the gym, in building CD."
+tiny-q5_0,3,utterance_02,3186.27,I am in classroom 2.1 on the second floor.
+tiny-q5_0,3,utterance_22,3796.88,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q8_0,1,utterance_09,1865.93,Take me to the nearest restroom on this floor.
+tiny-q8_0,1,utterance_27,1846.69,Where is the secretary office in building G?
+tiny-q8_0,1,utterance_16,1859.70,"Yes, I am ready to continue."
+tiny-q8_0,1,utterance_11,1844.36,"I am in a hurry, please use the stairs."
+tiny-q8_0,1,utterance_19,2590.24,"done, I have reached my destination."
+tiny-q8_0,1,utterance_28,2760.00,"I need to find, classroom 0.3 quickly."
+tiny-q8_0,1,utterance_08,2682.33,I want to go to the cafeteria.
+tiny-q8_0,1,utterance_06,2816.42,"I want to go to, classroom 1.4."
+tiny-q8_0,1,utterance_07,2791.67,"Take me to the gym, in building CD."
+tiny-q8_0,1,utterance_24,2986.70,"I do not know where I am, I need help finding my location."
+tiny-q8_0,1,utterance_02,2962.21,I am in classroom 2.1 on the second floor.
+tiny-q8_0,1,utterance_25,2076.44,"I am at, the directory sign, in building G, next to the mentoring room."
+tiny-q8_0,1,utterance_26,2226.17,How do I get from building CD to building G?
+tiny-q8_0,1,utterance_03,3259.67,I am at the main entrance of building G.
+tiny-q8_0,1,utterance_30,3277.66,"My destination is classroom 1.4, in building G, please."
+tiny-q8_0,1,utterance_18,2399.89,I have arrived at the elevator on floor 2.
+tiny-q8_0,1,utterance_13,2396.77,"I am lost, I need help."
+tiny-q8_0,1,utterance_01,3623.73,"I am in classroom 0.3, building G."
+tiny-q8_0,1,utterance_14,2397.23,cancel navigation and start again.
+tiny-q8_0,1,utterance_23,2420.16,I just came out of the elevator on the first floor of building G.
+tiny-q8_0,1,utterance_17,2418.49,"No, that is not my location."
+tiny-q8_0,1,utterance_15,3523.30,Stop and tell me where I am.
+tiny-q8_0,1,utterance_10,3521.24,Could you guide me to the EPS faculty offices please?
+tiny-q8_0,1,utterance_12,2391.29,"Repeat the instructions, please."
+tiny-q8_0,1,utterance_22,2427.14,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q8_0,1,utterance_20,2424.14,"Yes, I can see the elevator and the doors are open."
+tiny-q8_0,1,utterance_29,3571.36,Could you tell me how to reach the AI laboratory from here?
+tiny-q8_0,1,utterance_04,3582.48,I am in the AI laboratory on the ground floor of building G.
+tiny-q8_0,1,utterance_05,3549.03,I am next to the elevator of floor 1 of building G.
+tiny-q8_0,1,utterance_21,2437.73,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q8_0,2,utterance_17,2412.59,"No, that is not my location."
+tiny-q8_0,2,utterance_05,2412.15,I am next to the elevator of floor 1 of building G.
+tiny-q8_0,2,utterance_30,2426.37,"My destination is classroom 1.4, in building G, please."
+tiny-q8_0,2,utterance_16,2416.32,"Yes, I am ready to continue."
+tiny-q8_0,2,utterance_18,2412.37,I have arrived at the elevator on floor 2.
+tiny-q8_0,2,utterance_27,2409.49,Where is the secretary office in building G?
+tiny-q8_0,2,utterance_28,2408.08,"I need to find, classroom 0.3 quickly."
+tiny-q8_0,2,utterance_24,2424.12,"I do not know where I am, I need help finding my location."
+tiny-q8_0,2,utterance_13,2400.38,"I am lost, I need help."
+tiny-q8_0,2,utterance_04,2337.51,I am in the AI laboratory on the ground floor of building G.
+tiny-q8_0,2,utterance_11,3245.98,"I am in a hurry, please use the stairs."
+tiny-q8_0,2,utterance_06,2403.05,"I want to go to, classroom 1.4."
+tiny-q8_0,2,utterance_20,2419.46,"Yes, I can see the elevator and the doors are open."
+tiny-q8_0,2,utterance_29,2437.89,Could you tell me how to reach the AI laboratory from here?
+tiny-q8_0,2,utterance_02,2406.10,I am in classroom 2.1 on the second floor.
+tiny-q8_0,2,utterance_14,2379.49,cancel navigation and start again.
+tiny-q8_0,2,utterance_03,2407.45,I am at the main entrance of building G.
+tiny-q8_0,2,utterance_01,2413.91,"I am in classroom 0.3, building G."
+tiny-q8_0,2,utterance_23,2424.68,I just came out of the elevator on the first floor of building G.
+tiny-q8_0,2,utterance_15,2399.62,Stop and tell me where I am.
+tiny-q8_0,2,utterance_10,2407.90,Could you guide me to the EPS faculty offices please?
+tiny-q8_0,2,utterance_19,2393.39,"done, I have reached my destination."
+tiny-q8_0,2,utterance_12,2425.40,"Repeat the instructions, please."
+tiny-q8_0,2,utterance_21,2406.13,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q8_0,2,utterance_09,2366.44,Take me to the nearest restroom on this floor.
+tiny-q8_0,2,utterance_25,3610.80,"I am at, the directory sign, in building G, next to the mentoring room."
+tiny-q8_0,2,utterance_08,2438.38,I want to go to the cafeteria.
+tiny-q8_0,2,utterance_07,2449.54,"Take me to the gym, in building CD."
+tiny-q8_0,2,utterance_22,2474.16,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+tiny-q8_0,2,utterance_26,3776.66,How do I get from building CD to building G?
+tiny-q8_0,3,utterance_17,2455.21,"No, that is not my location."
+tiny-q8_0,3,utterance_06,2452.59,"I want to go to, classroom 1.4."
+tiny-q8_0,3,utterance_24,2467.09,"I do not know where I am, I need help finding my location."
+tiny-q8_0,3,utterance_20,2499.30,"Yes, I can see the elevator and the doors are open."
+tiny-q8_0,3,utterance_14,2432.57,cancel navigation and start again.
+tiny-q8_0,3,utterance_13,2462.03,"I am lost, I need help."
+tiny-q8_0,3,utterance_29,2468.71,Could you tell me how to reach the AI laboratory from here?
+tiny-q8_0,3,utterance_04,3606.70,I am in the AI laboratory on the ground floor of building G.
+tiny-q8_0,3,utterance_12,2834.29,"Repeat the instructions, please."
+tiny-q8_0,3,utterance_19,2433.73,"done, I have reached my destination."
+tiny-q8_0,3,utterance_05,2467.03,I am next to the elevator of floor 1 of building G.
+tiny-q8_0,3,utterance_30,2469.90,"My destination is classroom 1.4, in building G, please."
+tiny-q8_0,3,utterance_18,2450.42,I have arrived at the elevator on floor 2.
+tiny-q8_0,3,utterance_08,2456.85,I want to go to the cafeteria.
+tiny-q8_0,3,utterance_11,3082.85,"I am in a hurry, please use the stairs."
+tiny-q8_0,3,utterance_23,2476.08,I just came out of the elevator on the first floor of building G.
+tiny-q8_0,3,utterance_03,2452.26,I am at the main entrance of building G.
+tiny-q8_0,3,utterance_01,2459.61,"I am in classroom 0.3, building G."
+tiny-q8_0,3,utterance_25,3628.59,"I am at, the directory sign, in building G, next to the mentoring room."
+tiny-q8_0,3,utterance_16,2440.91,"Yes, I am ready to continue."
+tiny-q8_0,3,utterance_15,3521.06,Stop and tell me where I am.
+tiny-q8_0,3,utterance_28,3979.75,"I need to find, classroom 0.3 quickly."
+tiny-q8_0,3,utterance_10,2457.62,Could you guide me to the EPS faculty offices please?
+tiny-q8_0,3,utterance_09,2465.97,Take me to the nearest restroom on this floor.
+tiny-q8_0,3,utterance_26,2470.13,How do I get from building CD to building G?
+tiny-q8_0,3,utterance_27,2448.25,Where is the secretary office in building G?
+tiny-q8_0,3,utterance_21,2480.15,I am in classroom 1.1 and I want to go to the EPS faculty offices.
+tiny-q8_0,3,utterance_07,3589.18,"Take me to the gym, in building CD."
+tiny-q8_0,3,utterance_02,2459.53,I am in classroom 2.1 on the second floor.
+tiny-q8_0,3,utterance_22,2474.44,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q2_k,1,utterance_09,4576.66,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,1,utterance_27,4645.57,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,1,utterance_16,4460.96,yes I am ready to continue.
+base-q2_k,1,utterance_11,4805.07,"I am in a hurry, I am in a hurry, I am in a hurry, I am"
+base-q2_k,1,utterance_19,5036.84,I have reaching my destination.
+base-q2_k,1,utterance_28,9107.66,I need to find classrooms 3 we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we
+base-q2_k,1,utterance_08,7974.54,I want to go to the coffee area. I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po
+base-q2_k,1,utterance_06,6363.91,I want to go to classroom. I want to go to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to
+base-q2_k,1,utterance_07,7837.26,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,1,utterance_24,5594.89,I don't know I am I I am
+base-q2_k,1,utterance_02,5985.03,"I am I the 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,1,utterance_25,5482.85,"I am at the directory sign, we are using the way."
+base-q2_k,1,utterance_26,8105.94,I I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to the. I am looking to the. I am looking to the
+base-q2_k,1,utterance_03,6105.09,I am the main entrance of building G.
+base-q2_k,1,utterance_30,6205.26,I am looking towards. I am looking towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards
+base-q2_k,1,utterance_18,6452.12,I have arrive at the elevator or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth fourth
+base-q2_k,1,utterance_13,5634.15,"I am lost, I am"
+base-q2_k,1,utterance_01,6168.79,"I am, I am 3.3.3, we are ready to start. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,1,utterance_14,5624.36,I am start again.
+base-q2_k,1,utterance_23,6015.44,I just came out of the elevator on the first floor of the elevator on the third floor of the elevator on the third floor of the elevator on the third floor of the elevator
+base-q2_k,1,utterance_17,6390.01,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to,"
+base-q2_k,1,utterance_15,6260.54,"I am, I am, I am"
+base-q2_k,1,utterance_10,6831.41,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,1,utterance_12,6708.91,we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are
+base-q2_k,1,utterance_22,7706.00,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,1,utterance_20,7647.88,I can see the elevator on the doors are open.
+base-q2_k,1,utterance_29,7659.50,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,1,utterance_04,7541.55,"I am, I I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am"
+base-q2_k,1,utterance_05,8488.21,"I am next to the elevator of floor 1, I am looking to to, I am looking to to, I am looking to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to"
+base-q2_k,1,utterance_21,7696.43,I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom.
+base-q2_k,2,utterance_17,6948.93,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to,"
+base-q2_k,2,utterance_05,8634.38,"I am next to the elevator of floor 1, I am looking to to, I am looking to to, I am looking to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to"
+base-q2_k,2,utterance_30,10434.11,I am looking towards. I am looking towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards
+base-q2_k,2,utterance_16,6095.11,yes I am ready to continue.
+base-q2_k,2,utterance_18,7628.25,I have arrive at the elevator or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth fourth
+base-q2_k,2,utterance_27,8957.25,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,2,utterance_28,8980.97,I need to find classrooms 3 we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we
+base-q2_k,2,utterance_24,8020.79,I don't know I am I I am
+base-q2_k,2,utterance_13,7658.56,"I am lost, I am"
+base-q2_k,2,utterance_04,9169.59,"I am, I I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am"
+base-q2_k,2,utterance_11,7765.74,"I am in a hurry, I am in a hurry, I am in a hurry, I am"
+base-q2_k,2,utterance_06,11939.83,I want to go to classroom. I want to go to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to
+base-q2_k,2,utterance_20,7842.10,I can see the elevator on the doors are open.
+base-q2_k,2,utterance_29,7895.44,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,2,utterance_02,8615.14,"I am I the 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,2,utterance_14,8325.46,I am start again.
+base-q2_k,2,utterance_03,8307.09,I am the main entrance of building G.
+base-q2_k,2,utterance_01,7956.54,"I am, I am 3.3.3, we are ready to start. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,2,utterance_23,7792.75,I just came out of the elevator on the first floor of the elevator on the third floor of the elevator on the third floor of the elevator on the third floor of the elevator
+base-q2_k,2,utterance_15,7701.29,"I am, I am, I am"
+base-q2_k,2,utterance_10,8132.82,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,2,utterance_19,8288.67,I have reaching my destination.
+base-q2_k,2,utterance_12,8243.08,we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are
+base-q2_k,2,utterance_21,8176.08,I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom.
+base-q2_k,2,utterance_09,9541.21,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,2,utterance_25,7216.37,"I am at the directory sign, we are using the way."
+base-q2_k,2,utterance_08,10846.29,I want to go to the coffee area. I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po
+base-q2_k,2,utterance_07,7431.16,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,2,utterance_22,9152.78,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,2,utterance_26,8410.11,I I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to the. I am looking to the. I am looking to the
+base-q2_k,3,utterance_17,9424.80,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to,"
+base-q2_k,3,utterance_06,8944.33,I want to go to classroom. I want to go to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to
+base-q2_k,3,utterance_24,8805.81,I don't know I am I I am
+base-q2_k,3,utterance_20,8749.30,I can see the elevator on the doors are open.
+base-q2_k,3,utterance_14,8095.30,I am start again.
+base-q2_k,3,utterance_13,7698.16,"I am lost, I am"
+base-q2_k,3,utterance_29,8198.53,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,3,utterance_04,8333.88,"I am, I I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am, I am"
+base-q2_k,3,utterance_12,7670.96,we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are. we are
+base-q2_k,3,utterance_19,6809.43,I have reaching my destination.
+base-q2_k,3,utterance_05,9171.08,"I am next to the elevator of floor 1, I am looking to to, I am looking to to, I am looking to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to to"
+base-q2_k,3,utterance_30,9267.78,I am looking towards. I am looking towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards towards
+base-q2_k,3,utterance_18,8686.37,I have arrive at the elevator or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth floor or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth or fourth fourth
+base-q2_k,3,utterance_08,8179.91,I want to go to the coffee area. I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po I am looking for the Po
+base-q2_k,3,utterance_11,8217.84,"I am in a hurry, I am in a hurry, I am in a hurry, I am"
+base-q2_k,3,utterance_23,7793.93,I just came out of the elevator on the first floor of the elevator on the third floor of the elevator on the third floor of the elevator on the third floor of the elevator
+base-q2_k,3,utterance_03,8309.83,I am the main entrance of building G.
+base-q2_k,3,utterance_01,8450.53,"I am, I am 3.3.3, we are ready to start. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,3,utterance_25,9002.09,"I am at the directory sign, we are using the way."
+base-q2_k,3,utterance_16,8323.68,yes I am ready to continue.
+base-q2_k,3,utterance_15,8089.46,"I am, I am, I am"
+base-q2_k,3,utterance_28,10006.39,I need to find classrooms 3 we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we we
+base-q2_k,3,utterance_10,8507.24,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,3,utterance_09,9469.27,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,3,utterance_26,9571.98,I I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to see the. I am looking to the. I am looking to the. I am looking to the
+base-q2_k,3,utterance_27,8582.85,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q2_k,3,utterance_21,9156.24,I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom. I am in classroom.
+base-q2_k,3,utterance_07,8919.95,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to, I looking to"
+base-q2_k,3,utterance_02,9550.70,"I am I the 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3. I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I am 3, I"
+base-q2_k,3,utterance_22,9580.53,"I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to, I am looking to"
+base-q3_k,1,utterance_09,5286.01,"Take me to the nearest, restroom on this floor."
+base-q3_k,1,utterance_27,5008.30,Where is the secretary office in building G?
+base-q3_k,1,utterance_16,5294.81,"yes, I am ready to continue."
+base-q3_k,1,utterance_11,5572.66,"I am in a hurry, please use the stairs."
+base-q3_k,1,utterance_19,5656.21,"done, I have reached my destination."
+base-q3_k,1,utterance_28,6115.25,I need to find classroom 0.3 quickly.
+base-q3_k,1,utterance_08,6167.40,I want to go to the cafeteria.
+base-q3_k,1,utterance_06,6720.40,I want to go to classroom 1.4.
+base-q3_k,1,utterance_07,6226.72,"Take me to the gym, in building CD."
+base-q3_k,1,utterance_24,7173.14,I do not know where I am. I need help finding my location.
+base-q3_k,1,utterance_02,6847.00,"I am in classroom 2.1, on the second floor."
+base-q3_k,1,utterance_25,7999.53,"I am at the directory sign, in building G, next to, the, mentoring room."
+base-q3_k,1,utterance_26,7228.86,how do I get from building CD to building G?
+base-q3_k,1,utterance_03,8550.36,I am at the main entrance of building G.
+base-q3_k,1,utterance_30,9625.62,"My destination is classroom 1.4, in building G, please."
+base-q3_k,1,utterance_18,9955.93,I have arrived at the elevator on floor 2.
+base-q3_k,1,utterance_13,9113.01,"I am lost, I need help."
+base-q3_k,1,utterance_01,8676.82,"I am in classroom 0.3, building G."
+base-q3_k,1,utterance_14,9477.10,Cancel navigation and start again.
+base-q3_k,1,utterance_23,9582.97,I just came out of the elevator on the first floor of building G.
+base-q3_k,1,utterance_17,9512.97,no that is not my location.
+base-q3_k,1,utterance_15,9533.24,Stop and tell me where I am.
+base-q3_k,1,utterance_10,9577.96,"Could you guide me to the EPS faculty office, please?"
+base-q3_k,1,utterance_12,9507.81,"repeat the instructions, please."
+base-q3_k,1,utterance_22,9574.09,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q3_k,1,utterance_20,9557.34,"yes, I can see the elevator and the doors are open."
+base-q3_k,1,utterance_29,8671.59,Could you tell me how to reach the AI laboratory from here?
+base-q3_k,1,utterance_04,10074.37,"I am in the, I laboratory on the ground floor of building G."
+base-q3_k,1,utterance_05,8776.81,I am next to the elevator of floor 1 of building G.
+base-q3_k,1,utterance_21,9641.25,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q3_k,2,utterance_17,9525.47,no that is not my location.
+base-q3_k,2,utterance_05,9563.96,I am next to the elevator of floor 1 of building G.
+base-q3_k,2,utterance_30,9339.34,"My destination is classroom 1.4, in building G, please."
+base-q3_k,2,utterance_16,9523.20,"yes, I am ready to continue."
+base-q3_k,2,utterance_18,9534.57,I have arrived at the elevator on floor 2.
+base-q3_k,2,utterance_27,9535.39,Where is the secretary office in building G?
+base-q3_k,2,utterance_28,9539.42,I need to find classroom 0.3 quickly.
+base-q3_k,2,utterance_24,9586.58,I do not know where I am. I need help finding my location.
+base-q3_k,2,utterance_13,9512.57,"I am lost, I need help."
+base-q3_k,2,utterance_04,9958.52,"I am in the, I laboratory on the ground floor of building G."
+base-q3_k,2,utterance_11,9558.01,"I am in a hurry, please use the stairs."
+base-q3_k,2,utterance_06,9174.58,I want to go to classroom 1.4.
+base-q3_k,2,utterance_20,9394.80,"yes, I can see the elevator and the doors are open."
+base-q3_k,2,utterance_29,8735.07,Could you tell me how to reach the AI laboratory from here?
+base-q3_k,2,utterance_02,13285.78,"I am in classroom 2.1, on the second floor."
+base-q3_k,2,utterance_14,7094.42,Cancel navigation and start again.
+base-q3_k,2,utterance_03,8430.26,I am at the main entrance of building G.
+base-q3_k,2,utterance_01,9767.66,"I am in classroom 0.3, building G."
+base-q3_k,2,utterance_23,9858.09,I just came out of the elevator on the first floor of building G.
+base-q3_k,2,utterance_15,9548.04,Stop and tell me where I am.
+base-q3_k,2,utterance_10,9560.81,"Could you guide me to the EPS faculty office, please?"
+base-q3_k,2,utterance_19,9557.82,"done, I have reached my destination."
+base-q3_k,2,utterance_12,10378.29,"repeat the instructions, please."
+base-q3_k,2,utterance_21,9633.67,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q3_k,2,utterance_09,10620.81,"Take me to the nearest, restroom on this floor."
+base-q3_k,2,utterance_25,10558.38,"I am at the directory sign, in building G, next to, the, mentoring room."
+base-q3_k,2,utterance_08,10555.80,I want to go to the cafeteria.
+base-q3_k,2,utterance_07,10531.17,"Take me to the gym, in building CD."
+base-q3_k,2,utterance_22,9580.24,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q3_k,2,utterance_26,9559.87,how do I get from building CD to building G?
+base-q3_k,3,utterance_17,9578.57,no that is not my location.
+base-q3_k,3,utterance_06,9547.43,I want to go to classroom 1.4.
+base-q3_k,3,utterance_24,9601.84,I do not know where I am. I need help finding my location.
+base-q3_k,3,utterance_20,9567.93,"yes, I can see the elevator and the doors are open."
+base-q3_k,3,utterance_14,9511.93,Cancel navigation and start again.
+base-q3_k,3,utterance_13,9520.63,"I am lost, I need help."
+base-q3_k,3,utterance_29,9558.36,Could you tell me how to reach the AI laboratory from here?
+base-q3_k,3,utterance_04,9588.31,"I am in the, I laboratory on the ground floor of building G."
+base-q3_k,3,utterance_12,9519.73,"repeat the instructions, please."
+base-q3_k,3,utterance_19,9083.95,"done, I have reached my destination."
+base-q3_k,3,utterance_05,8965.02,I am next to the elevator of floor 1 of building G.
+base-q3_k,3,utterance_30,8510.38,"My destination is classroom 1.4, in building G, please."
+base-q3_k,3,utterance_18,10077.17,I have arrived at the elevator on floor 2.
+base-q3_k,3,utterance_08,9564.44,I want to go to the cafeteria.
+base-q3_k,3,utterance_11,8619.26,"I am in a hurry, please use the stairs."
+base-q3_k,3,utterance_23,9585.91,I just came out of the elevator on the first floor of building G.
+base-q3_k,3,utterance_03,9530.32,I am at the main entrance of building G.
+base-q3_k,3,utterance_01,9554.29,"I am in classroom 0.3, building G."
+base-q3_k,3,utterance_25,8674.85,"I am at the directory sign, in building G, next to, the, mentoring room."
+base-q3_k,3,utterance_16,10609.30,"yes, I am ready to continue."
+base-q3_k,3,utterance_15,8357.33,Stop and tell me where I am.
+base-q3_k,3,utterance_28,9556.51,I need to find classroom 0.3 quickly.
+base-q3_k,3,utterance_10,9569.84,"Could you guide me to the EPS faculty office, please?"
+base-q3_k,3,utterance_09,9555.98,"Take me to the nearest, restroom on this floor."
+base-q3_k,3,utterance_26,9553.25,how do I get from building CD to building G?
+base-q3_k,3,utterance_27,9530.95,Where is the secretary office in building G?
+base-q3_k,3,utterance_21,9092.94,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q3_k,3,utterance_07,8265.71,"Take me to the gym, in building CD."
+base-q3_k,3,utterance_02,9567.90,"I am in classroom 2.1, on the second floor."
+base-q3_k,3,utterance_22,9595.56,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q4_0,1,utterance_09,4343.28,take me to the nearest restroom on this floor.
+base-q4_0,1,utterance_27,4345.16,Where is the secretary office in building G?
+base-q4_0,1,utterance_16,5685.69,"Yes, I am ready to continue."
+base-q4_0,1,utterance_11,4333.99,"I am in a hurry, please use the stairs."
+base-q4_0,1,utterance_19,4391.36,"done, I have reached, my destination."
+base-q4_0,1,utterance_28,5366.60,"I need to find classroom 0.3, quickly."
+base-q4_0,1,utterance_08,4520.85,I want to go to the cafeteria.
+base-q4_0,1,utterance_06,4833.91,I want to go to classroom 1.4.
+base-q4_0,1,utterance_07,4867.80,"take me to the gym, in building CD."
+base-q4_0,1,utterance_24,4900.81,"I do not know where I am, I need help finding my location."
+base-q4_0,1,utterance_02,4867.28,I am in classroom 2.1 on the second floor.
+base-q4_0,1,utterance_25,4898.96,"I am at the directory sign, in building G, next to the mentoring room."
+base-q4_0,1,utterance_26,4863.55,How do I get from building CD to building G?
+base-q4_0,1,utterance_03,4859.55,I am at the main entrance of building G.
+base-q4_0,1,utterance_30,5343.98,"My destination is classroom 1.4, building G, please."
+base-q4_0,1,utterance_18,5386.84,I have arrived at the elevator on floor 2.
+base-q4_0,1,utterance_13,5369.30,"I am lost, I need help."
+base-q4_0,1,utterance_01,5389.12,"I am in classroom 0.3, building G."
+base-q4_0,1,utterance_14,5359.90,cancel navigation and start again.
+base-q4_0,1,utterance_23,5448.91,I just came out of the elevator on the first floor of building G.
+base-q4_0,1,utterance_17,5399.13,"no, that is not my location."
+base-q4_0,1,utterance_15,5442.78,stop and tell me where I am.
+base-q4_0,1,utterance_10,5519.88,"Could you guide me to the EPS faculty offices, please?"
+base-q4_0,1,utterance_12,5907.56,"repeat the instructions, please."
+base-q4_0,1,utterance_22,6718.47,"take me from classroom 0.1, to the AI laboratory on the ground floor."
+base-q4_0,1,utterance_20,6166.71,"Yes, I can see the elevator and the doors are open."
+base-q4_0,1,utterance_29,7043.96,Could you tell me how to reach the AI laboratory from here?
+base-q4_0,1,utterance_04,7408.80,I am in the AI laboratory on the ground floor of building G.
+base-q4_0,1,utterance_05,7264.96,I am next to the elevator of floor 1 of building G.
+base-q4_0,1,utterance_21,6739.33,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q4_0,2,utterance_17,7423.52,"no, that is not my location."
+base-q4_0,2,utterance_05,6108.67,I am next to the elevator of floor 1 of building G.
+base-q4_0,2,utterance_30,8195.97,"My destination is classroom 1.4, building G, please."
+base-q4_0,2,utterance_16,6561.14,"Yes, I am ready to continue."
+base-q4_0,2,utterance_18,6475.02,I have arrived at the elevator on floor 2.
+base-q4_0,2,utterance_27,6535.22,Where is the secretary office in building G?
+base-q4_0,2,utterance_28,6806.65,"I need to find classroom 0.3, quickly."
+base-q4_0,2,utterance_24,6216.02,"I do not know where I am, I need help finding my location."
+base-q4_0,2,utterance_13,6968.00,"I am lost, I need help."
+base-q4_0,2,utterance_04,6885.15,I am in the AI laboratory on the ground floor of building G.
+base-q4_0,2,utterance_11,6833.77,"I am in a hurry, please use the stairs."
+base-q4_0,2,utterance_06,7203.55,I want to go to classroom 1.4.
+base-q4_0,2,utterance_20,6431.21,"Yes, I can see the elevator and the doors are open."
+base-q4_0,2,utterance_29,6572.40,Could you tell me how to reach the AI laboratory from here?
+base-q4_0,2,utterance_02,7201.95,I am in classroom 2.1 on the second floor.
+base-q4_0,2,utterance_14,6483.96,cancel navigation and start again.
+base-q4_0,2,utterance_03,6786.61,I am at the main entrance of building G.
+base-q4_0,2,utterance_01,7004.80,"I am in classroom 0.3, building G."
+base-q4_0,2,utterance_23,6787.94,I just came out of the elevator on the first floor of building G.
+base-q4_0,2,utterance_15,6687.84,stop and tell me where I am.
+base-q4_0,2,utterance_10,6804.12,"Could you guide me to the EPS faculty offices, please?"
+base-q4_0,2,utterance_19,7611.58,"done, I have reached, my destination."
+base-q4_0,2,utterance_12,7579.27,"repeat the instructions, please."
+base-q4_0,2,utterance_21,6570.36,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q4_0,2,utterance_09,7016.22,take me to the nearest restroom on this floor.
+base-q4_0,2,utterance_25,6576.30,"I am at the directory sign, in building G, next to the mentoring room."
+base-q4_0,2,utterance_08,6550.42,I want to go to the cafeteria.
+base-q4_0,2,utterance_07,7755.24,"take me to the gym, in building CD."
+base-q4_0,2,utterance_22,6423.30,"take me from classroom 0.1, to the AI laboratory on the ground floor."
+base-q4_0,2,utterance_26,6603.59,How do I get from building CD to building G?
+base-q4_0,3,utterance_17,6754.14,"no, that is not my location."
+base-q4_0,3,utterance_06,6477.30,I want to go to classroom 1.4.
+base-q4_0,3,utterance_24,6756.29,"I do not know where I am, I need help finding my location."
+base-q4_0,3,utterance_20,7456.45,"Yes, I can see the elevator and the doors are open."
+base-q4_0,3,utterance_14,7040.98,cancel navigation and start again.
+base-q4_0,3,utterance_13,7377.38,"I am lost, I need help."
+base-q4_0,3,utterance_29,6866.94,Could you tell me how to reach the AI laboratory from here?
+base-q4_0,3,utterance_04,9250.84,I am in the AI laboratory on the ground floor of building G.
+base-q4_0,3,utterance_12,6921.22,"repeat the instructions, please."
+base-q4_0,3,utterance_19,6605.17,"done, I have reached, my destination."
+base-q4_0,3,utterance_05,6585.78,I am next to the elevator of floor 1 of building G.
+base-q4_0,3,utterance_30,6536.35,"My destination is classroom 1.4, building G, please."
+base-q4_0,3,utterance_18,6546.30,I have arrived at the elevator on floor 2.
+base-q4_0,3,utterance_08,6506.79,I want to go to the cafeteria.
+base-q4_0,3,utterance_11,6572.99,"I am in a hurry, please use the stairs."
+base-q4_0,3,utterance_23,6454.85,I just came out of the elevator on the first floor of building G.
+base-q4_0,3,utterance_03,7159.87,I am at the main entrance of building G.
+base-q4_0,3,utterance_01,6473.97,"I am in classroom 0.3, building G."
+base-q4_0,3,utterance_25,6652.74,"I am at the directory sign, in building G, next to the mentoring room."
+base-q4_0,3,utterance_16,6462.49,"Yes, I am ready to continue."
+base-q4_0,3,utterance_15,7611.71,stop and tell me where I am.
+base-q4_0,3,utterance_28,8731.07,"I need to find classroom 0.3, quickly."
+base-q4_0,3,utterance_10,7757.85,"Could you guide me to the EPS faculty offices, please?"
+base-q4_0,3,utterance_09,8232.82,take me to the nearest restroom on this floor.
+base-q4_0,3,utterance_26,5462.47,How do I get from building CD to building G?
+base-q4_0,3,utterance_27,6246.57,Where is the secretary office in building G?
+base-q4_0,3,utterance_21,5790.67,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q4_0,3,utterance_07,6593.90,"take me to the gym, in building CD."
+base-q4_0,3,utterance_02,5803.14,I am in classroom 2.1 on the second floor.
+base-q4_0,3,utterance_22,5870.50,"take me from classroom 0.1, to the AI laboratory on the ground floor."
+base-q5_0,1,utterance_09,5375.42,take me to the nearest restroom on this floor
+base-q5_0,1,utterance_27,5256.30,Where is the secretary office in building G?
+base-q5_0,1,utterance_16,5200.46,"Yes, I am ready to continue."
+base-q5_0,1,utterance_11,5658.23,"I am in a hurry, please use the stairs."
+base-q5_0,1,utterance_19,6313.06,"done, I have reached my destination"
+base-q5_0,1,utterance_28,5887.45,"I need to find, classroom 0.3 quickly."
+base-q5_0,1,utterance_08,6145.75,I want to go to the cafeteria.
+base-q5_0,1,utterance_06,8658.58,"I want to go to classroom 1.4,"
+base-q5_0,1,utterance_07,6515.68,"take me to the gym, in building CD"
+base-q5_0,1,utterance_24,6572.82,"I do not know where I am, I need help finding my location."
+base-q5_0,1,utterance_02,7873.26,"I am in classroom 2.1, on the second floor."
+base-q5_0,1,utterance_25,7751.05,"I am at the directory sign, in building G, next to the mentoring room."
+base-q5_0,1,utterance_26,6671.45,How do I get from building CD to building G?
+base-q5_0,1,utterance_03,7165.63,I am at the main entrance of building G.
+base-q5_0,1,utterance_30,8199.17,"My destination is classroom 1.4, in building G, please."
+base-q5_0,1,utterance_18,7381.05,I have arrived at the elevator on floor 2.
+base-q5_0,1,utterance_13,9456.59,"I am lost, I need help."
+base-q5_0,1,utterance_01,9726.79,"I am in classroom 0.3, building G."
+base-q5_0,1,utterance_14,9195.05,cancel navigation and start again
+base-q5_0,1,utterance_23,9282.85,I just came out of the elevator on the first floor of building G.
+base-q5_0,1,utterance_17,9292.57,"No, that is not my location."
+base-q5_0,1,utterance_15,8477.21,stop and tell me where I am
+base-q5_0,1,utterance_10,9533.22,Could you guide me to the EPS faculty offices please?
+base-q5_0,1,utterance_12,9825.11,repeat the instructions please
+base-q5_0,1,utterance_22,9389.96,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q5_0,1,utterance_20,9285.46,"Yes, I can see the elevator and the doors are open."
+base-q5_0,1,utterance_29,9252.30,Could you tell me how to reach the AI laboratory from here?
+base-q5_0,1,utterance_04,8160.77,I am in the AI laboratory on the ground floor of building G.
+base-q5_0,1,utterance_05,9254.59,I am next to the elevator of floor 1 of building G.
+base-q5_0,1,utterance_21,9317.75,"I am in classroom 1.1, and I want to go to the EPS faculty offices."
+base-q5_0,2,utterance_17,9222.98,"No, that is not my location."
+base-q5_0,2,utterance_05,9252.37,I am next to the elevator of floor 1 of building G.
+base-q5_0,2,utterance_30,9277.36,"My destination is classroom 1.4, in building G, please."
+base-q5_0,2,utterance_16,9194.11,"Yes, I am ready to continue."
+base-q5_0,2,utterance_18,8265.49,I have arrived at the elevator on floor 2.
+base-q5_0,2,utterance_27,9300.62,Where is the secretary office in building G?
+base-q5_0,2,utterance_28,8783.06,"I need to find, classroom 0.3 quickly."
+base-q5_0,2,utterance_24,9262.70,"I do not know where I am, I need help finding my location."
+base-q5_0,2,utterance_13,9240.94,"I am lost, I need help."
+base-q5_0,2,utterance_04,9282.35,I am in the AI laboratory on the ground floor of building G.
+base-q5_0,2,utterance_11,9253.85,"I am in a hurry, please use the stairs."
+base-q5_0,2,utterance_06,9224.59,"I want to go to classroom 1.4,"
+base-q5_0,2,utterance_20,8497.57,"Yes, I can see the elevator and the doors are open."
+base-q5_0,2,utterance_29,8962.81,Could you tell me how to reach the AI laboratory from here?
+base-q5_0,2,utterance_02,9336.27,"I am in classroom 2.1, on the second floor."
+base-q5_0,2,utterance_14,9203.84,cancel navigation and start again
+base-q5_0,2,utterance_03,9230.24,I am at the main entrance of building G.
+base-q5_0,2,utterance_01,9234.27,"I am in classroom 0.3, building G."
+base-q5_0,2,utterance_23,9278.89,I just came out of the elevator on the first floor of building G.
+base-q5_0,2,utterance_15,10044.98,stop and tell me where I am
+base-q5_0,2,utterance_10,9246.85,Could you guide me to the EPS faculty offices please?
+base-q5_0,2,utterance_19,9197.85,"done, I have reached my destination"
+base-q5_0,2,utterance_12,9651.32,repeat the instructions please
+base-q5_0,2,utterance_21,8396.11,"I am in classroom 1.1, and I want to go to the EPS faculty offices."
+base-q5_0,2,utterance_09,9242.18,take me to the nearest restroom on this floor
+base-q5_0,2,utterance_25,9293.67,"I am at the directory sign, in building G, next to the mentoring room."
+base-q5_0,2,utterance_08,9208.83,I want to go to the cafeteria.
+base-q5_0,2,utterance_07,9223.16,"take me to the gym, in building CD"
+base-q5_0,2,utterance_22,9281.13,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q5_0,2,utterance_26,9237.48,How do I get from building CD to building G?
+base-q5_0,3,utterance_17,9231.47,"No, that is not my location."
+base-q5_0,3,utterance_06,9356.33,"I want to go to classroom 1.4,"
+base-q5_0,3,utterance_24,9278.10,"I do not know where I am, I need help finding my location."
+base-q5_0,3,utterance_20,9272.78,"Yes, I can see the elevator and the doors are open."
+base-q5_0,3,utterance_14,9176.23,cancel navigation and start again
+base-q5_0,3,utterance_13,9214.72,"I am lost, I need help."
+base-q5_0,3,utterance_29,9265.05,Could you tell me how to reach the AI laboratory from here?
+base-q5_0,3,utterance_04,8304.94,I am in the AI laboratory on the ground floor of building G.
+base-q5_0,3,utterance_12,9086.87,repeat the instructions please
+base-q5_0,3,utterance_19,9207.56,"done, I have reached my destination"
+base-q5_0,3,utterance_05,8573.22,I am next to the elevator of floor 1 of building G.
+base-q5_0,3,utterance_30,9060.83,"My destination is classroom 1.4, in building G, please."
+base-q5_0,3,utterance_18,9603.10,I have arrived at the elevator on floor 2.
+base-q5_0,3,utterance_08,9196.79,I want to go to the cafeteria.
+base-q5_0,3,utterance_11,8331.59,"I am in a hurry, please use the stairs."
+base-q5_0,3,utterance_23,9266.66,I just came out of the elevator on the first floor of building G.
+base-q5_0,3,utterance_03,9245.31,I am at the main entrance of building G.
+base-q5_0,3,utterance_01,9232.23,"I am in classroom 0.3, building G."
+base-q5_0,3,utterance_25,10193.15,"I am at the directory sign, in building G, next to the mentoring room."
+base-q5_0,3,utterance_16,9574.77,"Yes, I am ready to continue."
+base-q5_0,3,utterance_15,9204.07,stop and tell me where I am
+base-q5_0,3,utterance_28,9753.85,"I need to find, classroom 0.3 quickly."
+base-q5_0,3,utterance_10,9689.82,Could you guide me to the EPS faculty offices please?
+base-q5_0,3,utterance_09,10253.06,take me to the nearest restroom on this floor
+base-q5_0,3,utterance_26,9315.80,How do I get from building CD to building G?
+base-q5_0,3,utterance_27,9218.14,Where is the secretary office in building G?
+base-q5_0,3,utterance_21,9303.95,"I am in classroom 1.1, and I want to go to the EPS faculty offices."
+base-q5_0,3,utterance_07,9844.71,"take me to the gym, in building CD"
+base-q5_0,3,utterance_02,8270.96,"I am in classroom 2.1, on the second floor."
+base-q5_0,3,utterance_22,9735.65,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q8_0,1,utterance_09,5772.55,take me to the nearest restroom on this floor.
+base-q8_0,1,utterance_27,4376.52,Where is the secretary office in building G?
+base-q8_0,1,utterance_16,4380.65,"Yes, I am ready to continue."
+base-q8_0,1,utterance_11,5971.99,"I am in a hurry, please use the stairs."
+base-q8_0,1,utterance_19,4804.11,"done, I have reached my destination."
+base-q8_0,1,utterance_28,4893.44,I need to find classroom 0.3 quickly.
+base-q8_0,1,utterance_08,4900.54,I want to go to the cafeteria.
+base-q8_0,1,utterance_06,4920.11,I want to go to classroom 1.4.
+base-q8_0,1,utterance_07,4918.39,"take me to the gym, in building CD."
+base-q8_0,1,utterance_24,7335.03,"I do not know where I am, I need help finding my location."
+base-q8_0,1,utterance_02,7246.13,I am in classroom 2.1 on the second floor.
+base-q8_0,1,utterance_25,5910.38,"I am at the directory sign, in building G, next to the mentoring room."
+base-q8_0,1,utterance_26,4932.44,How do I get from building CD to building G?
+base-q8_0,1,utterance_03,6965.68,I am at the main entrance of building G.
+base-q8_0,1,utterance_30,4933.02,"My destination is classroom 1.4, in building G, please."
+base-q8_0,1,utterance_18,4907.94,I have arrived at the elevator on floor 2.
+base-q8_0,1,utterance_13,4917.17,"I am lost, I need help."
+base-q8_0,1,utterance_01,4952.02,"I am in classroom 0.3, building G."
+base-q8_0,1,utterance_14,7663.18,cancel navigation and start again.
+base-q8_0,1,utterance_23,6536.50,I just came out of the elevator on the first floor of building G.
+base-q8_0,1,utterance_17,5985.03,"no, that is not my location."
+base-q8_0,1,utterance_15,5472.57,Stop and tell me where I am.
+base-q8_0,1,utterance_10,5426.07,Could you guide me to the EPS faculty offices please?
+base-q8_0,1,utterance_12,5505.00,"Repeat the instructions, please."
+base-q8_0,1,utterance_22,6015.61,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q8_0,1,utterance_20,5668.32,"Yes, I can see the elevator and the doors are open."
+base-q8_0,1,utterance_29,6110.37,Could you tell me how to reach the AI laboratory from here?
+base-q8_0,1,utterance_04,5910.36,I am in the AI laboratory on the ground floor of building G.
+base-q8_0,1,utterance_05,5916.28,I am next to the elevator of floor 1 of building G.
+base-q8_0,1,utterance_21,5913.45,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q8_0,2,utterance_17,5759.11,"no, that is not my location."
+base-q8_0,2,utterance_05,7685.05,I am next to the elevator of floor 1 of building G.
+base-q8_0,2,utterance_30,7498.72,"My destination is classroom 1.4, in building G, please."
+base-q8_0,2,utterance_16,5946.78,"Yes, I am ready to continue."
+base-q8_0,2,utterance_18,6142.60,I have arrived at the elevator on floor 2.
+base-q8_0,2,utterance_27,6469.47,Where is the secretary office in building G?
+base-q8_0,2,utterance_28,6094.76,I need to find classroom 0.3 quickly.
+base-q8_0,2,utterance_24,6302.06,"I do not know where I am, I need help finding my location."
+base-q8_0,2,utterance_13,5978.29,"I am lost, I need help."
+base-q8_0,2,utterance_04,6431.27,I am in the AI laboratory on the ground floor of building G.
+base-q8_0,2,utterance_11,8627.03,"I am in a hurry, please use the stairs."
+base-q8_0,2,utterance_06,5906.60,I want to go to classroom 1.4.
+base-q8_0,2,utterance_20,7740.21,"Yes, I can see the elevator and the doors are open."
+base-q8_0,2,utterance_29,5606.48,Could you tell me how to reach the AI laboratory from here?
+base-q8_0,2,utterance_02,6641.63,I am in classroom 2.1 on the second floor.
+base-q8_0,2,utterance_14,5928.36,cancel navigation and start again.
+base-q8_0,2,utterance_03,5913.91,I am at the main entrance of building G.
+base-q8_0,2,utterance_01,6435.13,"I am in classroom 0.3, building G."
+base-q8_0,2,utterance_23,8548.92,I just came out of the elevator on the first floor of building G.
+base-q8_0,2,utterance_15,8315.89,Stop and tell me where I am.
+base-q8_0,2,utterance_10,5539.94,Could you guide me to the EPS faculty offices please?
+base-q8_0,2,utterance_19,5502.06,"done, I have reached my destination."
+base-q8_0,2,utterance_12,6469.54,"Repeat the instructions, please."
+base-q8_0,2,utterance_21,6194.33,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q8_0,2,utterance_09,5687.30,take me to the nearest restroom on this floor.
+base-q8_0,2,utterance_25,6348.63,"I am at the directory sign, in building G, next to the mentoring room."
+base-q8_0,2,utterance_08,5548.51,I want to go to the cafeteria.
+base-q8_0,2,utterance_07,7595.33,"take me to the gym, in building CD."
+base-q8_0,2,utterance_22,5546.18,Take me from classroom 0.1 to the AI laboratory on the ground floor.
+base-q8_0,2,utterance_26,5837.83,How do I get from building CD to building G?
+base-q8_0,3,utterance_17,5660.10,"no, that is not my location."
+base-q8_0,3,utterance_06,5823.48,I want to go to classroom 1.4.
+base-q8_0,3,utterance_24,6030.96,"I do not know where I am, I need help finding my location."
+base-q8_0,3,utterance_20,6046.78,"Yes, I can see the elevator and the doors are open."
+base-q8_0,3,utterance_14,5975.79,cancel navigation and start again.
+base-q8_0,3,utterance_13,6877.94,"I am lost, I need help."
+base-q8_0,3,utterance_29,6024.89,Could you tell me how to reach the AI laboratory from here?
+base-q8_0,3,utterance_04,6049.27,I am in the AI laboratory on the ground floor of building G.
+base-q8_0,3,utterance_12,5937.52,"Repeat the instructions, please."
+base-q8_0,3,utterance_19,7413.40,"done, I have reached my destination."
+base-q8_0,3,utterance_05,6801.13,I am next to the elevator of floor 1 of building G.
+base-q8_0,3,utterance_30,6416.82,"My destination is classroom 1.4, in building G, please."
+base-q8_0,3,utterance_18,5978.91,I have arrived at the elevator on floor 2.
+base-q8_0,3,utterance_08,6778.98,I want to go to the cafeteria.
+base-q8_0,3,utterance_11,6852.68,"I am in a hurry, please use the stairs."
+base-q8_0,3,utterance_23,6386.18,I just came out of the elevator on the first floor of building G.
+base-q8_0,3,utterance_03,6170.46,I am at the main entrance of building G.
+base-q8_0,3,utterance_01,6036.23,"I am in classroom 0.3, building G."
+base-q8_0,3,utterance_25,5878.52,"I am at the directory sign, in building G, next to the mentoring room."
+base-q8_0,3,utterance_16,5538.38,"Yes, I am ready to continue."
+base-q8_0,3,utterance_15,6790.48,Stop and tell me where I am.
+base-q8_0,3,utterance_28,5527.63,I need to find classroom 0.3 quickly.
+base-q8_0,3,utterance_10,6348.21,Could you guide me to the EPS faculty offices please?
+base-q8_0,3,utterance_09,6059.18,take me to the nearest restroom on this floor.
+base-q8_0,3,utterance_26,6313.02,How do I get from building CD to building G?
+base-q8_0,3,utterance_27,6178.39,Where is the secretary office in building G?
+base-q8_0,3,utterance_21,6074.62,"I am in classroom 1.1 and I want to go to the, EPS faculty offices."
+base-q8_0,3,utterance_07,6083.55,"take me to the gym, in building CD."
+base-q8_0,3,utterance_02,6359.29,I am in classroom 2.1 on the second floor.
+base-q8_0,3,utterance_22,6237.63,Take me from classroom 0.1 to the AI laboratory on the ground floor.

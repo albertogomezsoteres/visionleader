@@ -1,0 +1,82 @@
+{
+  "model_id": "google/paligemma2-3b-mix-448",
+  "family": "paligemma",
+  "experiment": "exp2_update",
+  "floor_extraction": {
+    "classes": [
+      "G 0",
+      "G 1",
+      "G 2",
+      "G Agora"
+    ],
+    "matrix": {
+      "G 0": {
+        "G 0": 5,
+        "G 1": 0,
+        "G 2": 0,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G 1": {
+        "G 0": 0,
+        "G 1": 4,
+        "G 2": 1,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G 2": {
+        "G 0": 0,
+        "G 1": 0,
+        "G 2": 5,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G Agora": {
+        "G 0": 0,
+        "G 1": 0,
+        "G 2": 0,
+        "G Agora": 0,
+        "unparseable": 5
+      }
+    },
+    "per_class_metrics": {
+      "G 0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      },
+      "G 1": {
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.8889,
+        "support": 5,
+        "tp": 4,
+        "fp": 0,
+        "fn": 1
+      },
+      "G 2": {
+        "precision": 0.8333,
+        "recall": 1.0,
+        "f1": 0.9091,
+        "support": 5,
+        "tp": 5,
+        "fp": 1,
+        "fn": 0
+      },
+      "G Agora": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 5,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5
+      }
+    },
+    "note": "Rows = ground truth, columns = predicted. \"unparseable\" column collects predictions whose parsing failed."
+  }
+}

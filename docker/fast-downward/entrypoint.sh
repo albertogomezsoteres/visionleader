@@ -1,52 +1,49 @@
 #!/bin/bash
-# Script de entrada para ejecutar Fast Downward
+# Entry point for running Fast Downward.
 
-# Si no se pasan argumentos, mostrar ayuda
+# With no arguments, show help.
 if [ $# -eq 0 ]; then
     echo "Fast Downward Planner"
     echo ""
-    echo "Uso:"
-    echo "  docker run --rm -v \$(pwd)/pddl:/pddl fast-downward:latest <domain.pddl> <problem.pddl> [opciones]"
+    echo "Usage:"
+    echo "  docker run --rm -v \$(pwd)/pddl:/pddl fast-downward:latest <domain.pddl> <problem.pddl> [options]"
     echo ""
-    echo "Ejemplo:"
+    echo "Example:"
     echo "  docker run --rm -v \$(pwd)/pddl:/pddl fast-downward:latest domain.pddl problem.pddl"
     echo ""
-    echo "O ejecutar directamente fast-downward:"
+    echo "Or call fast-downward directly:"
     /fast-downward/fast-downward.py --help
     exit 0
 fi
 
-# Si se pasan archivos PDDL, ejecutar Fast Downward
+# With PDDL files, run Fast Downward.
 if [ $# -ge 2 ]; then
     DOMAIN_FILE="/pddl/$1"
     PROBLEM_FILE="/pddl/$2"
-    
-    # Verificar que los archivos existen
+
+    # Check that the files exist.
     if [ ! -f "$DOMAIN_FILE" ]; then
-        echo "Error: No se encuentra el archivo de dominio: $DOMAIN_FILE"
+        echo "Error: domain file not found: $DOMAIN_FILE"
         exit 1
     fi
-    
+
     if [ ! -f "$PROBLEM_FILE" ]; then
-        echo "Error: No se encuentra el archivo de problema: $PROBLEM_FILE"
+        echo "Error: problem file not found: $PROBLEM_FILE"
         exit 1
     fi
-    
-    # Ejecutar Fast Downward
-    echo "Ejecutando Fast Downward..."
-    echo "Dominio: $DOMAIN_FILE"
-    echo "Problema: $PROBLEM_FILE"
+
+    echo "Running Fast Downward..."
+    echo "Domain: $DOMAIN_FILE"
+    echo "Problem: $PROBLEM_FILE"
     echo ""
-    
-    # Ejecutar Fast Downward
+
     /fast-downward/fast-downward.py "$DOMAIN_FILE" "$PROBLEM_FILE" --search "astar(lmcut())"
-    
-    # Mantener el contenedor corriendo un poco más para que sea visible en docker ps
-    # Esto permite ver el contenedor en estado "Up" (verde) en Docker Desktop
+
+    # Keep the container alive briefly so it stays visible as "Up" in docker ps.
     echo ""
-    echo "Fast Downward completado. Contenedor permanecerá activo por 5 segundos..."
+    echo "Fast Downward finished. Keeping the container alive for 5 seconds..."
     sleep 5
 else
-    # Ejecutar con los argumentos proporcionados
+    # Run with the provided arguments.
     /fast-downward/fast-downward.py "$@"
 fi

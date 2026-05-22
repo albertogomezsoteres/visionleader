@@ -1,0 +1,202 @@
+{
+  "experiment": "phase2_stt_ondevice",
+  "device": {
+    "model": "Google Pixel 10 Pro",
+    "cpu": "Tensor G5",
+    "android_release": "16",
+    "n_cpu_cores": 8
+  },
+  "whisper_cpp_commit": "166c20b4",
+  "seed": 42,
+  "decoding_protocol": {
+    "beam_size": 1,
+    "best_of": 1,
+    "temperature": 0.0,
+    "temperature_inc": 0.0,
+    "language": "en",
+    "task": "transcribe"
+  },
+  "latency_protocol": {
+    "n_warmup": 3,
+    "n_latency_runs": 3,
+    "warmup_audio_file": "/data/data/com.termux/files/home/audios_synth/warmup_silence.wav",
+    "warmup_audio_sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+    "warmup_audio_source": "synthetic 5-second silence, 16kHz mono 16-bit PCM, disjoint from measurement set",
+    "phrase_order": "shuffled deterministically per run (seed = SEED*1000 + run_idx)",
+    "thermal_rest_between_configs_s": 120
+  },
+  "models": {
+    "tiny-q2_k": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-tiny-q2_k.bin",
+      "size_bytes": 16783247,
+      "sha256": "5c274a0823f80148202102918d135eda15d4f870e84e7c60e45147f26ce598ec"
+    },
+    "tiny-q3_k": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-tiny-q3_k.bin",
+      "size_bytes": 20483294,
+      "sha256": "5327bd027e686496e32bf5c73ff3f8d987b0c2cde418ae981dece9f966f5d824"
+    },
+    "tiny-q4_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-tiny-q4_0.bin",
+      "size_bytes": 25321817,
+      "sha256": "b19643e85a695ac4bd0576d43ae26641ca6d2f9cf3768ae57f20cfb7ade6fe56"
+    },
+    "tiny-q5_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-tiny-q5_0.bin",
+      "size_bytes": 29875721,
+      "sha256": "bf65504605bf1b8c7775b641aae82990010ea27d589e3b84ac82592cbdd38ed0"
+    },
+    "tiny-q8_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-tiny-q8_0.bin",
+      "size_bytes": 43537433,
+      "sha256": "c2085835d3f50733e2ff6e4b41ae8a2b8d8110461e18821b09a15c40c42d1cca"
+    },
+    "base-q2_k": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-base-q2_k.bin",
+      "size_bytes": 29925329,
+      "sha256": "e2f669265e54a3f47e7f1b200158eee6262be93af01212a8620d1a89ea0a6262"
+    },
+    "base-q3_k": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-base-q3_k.bin",
+      "size_bytes": 37095141,
+      "sha256": "5252f16a50d654b660edff79c34d20cbdac31d88766d03fcca8b0b31527e28b4"
+    },
+    "base-q4_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-base-q4_0.bin",
+      "size_bytes": 46471049,
+      "sha256": "b290745a596d1c667ee10ea33ac87757370327d58286769341ebcf052807798c"
+    },
+    "base-q5_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-base-q5_0.bin",
+      "size_bytes": 55295433,
+      "sha256": "0238cb211a43e8ec0c64c0c4f98d4dbd22682579fa2ab20b49f083c529e7d1f3"
+    },
+    "base-q8_0": {
+      "path": "/data/data/com.termux/files/home/whisper.cpp/models/ggml-base-q8_0.bin",
+      "size_bytes": 81768585,
+      "sha256": "c577b9a86e7e048a0b7eada054f4dd79a56bbfa911fbdacf900ac5b567cbb7d9"
+    }
+  },
+  "dataset_audio_hashes": {
+    "utterance_01.wav": {
+      "sha256": "c7841c74df96e6b3a649888fd9d9a7bf845e8a0067a536b10a301182080e4078",
+      "size_bytes": 149582
+    },
+    "utterance_02.wav": {
+      "sha256": "2c15a1e60d7fb90b37f84cd8efd704979747b2401b2829cf8654cecd4458a8f0",
+      "size_bytes": 169038
+    },
+    "utterance_03.wav": {
+      "sha256": "a1d50054eb228592a105e2c92db26af03da9e8ff3801211cbab03c498caceb5b",
+      "size_bytes": 162894
+    },
+    "utterance_04.wav": {
+      "sha256": "1cb59e6950edd988bfff91d7982c8ffba2ffc2eb67acee69f9950076b95f4cad",
+      "size_bytes": 208974
+    },
+    "utterance_05.wav": {
+      "sha256": "59f57c4c481bf5a1ea314c98215296f4a9af26b397e1c58ca153f40eff920aec",
+      "size_bytes": 174158
+    },
+    "utterance_06.wav": {
+      "sha256": "6fd529f90b4b7afdcc38ddf9962030edf1c067b1e687d7d3732efd3e7d14a0ed",
+      "size_bytes": 153678
+    },
+    "utterance_07.wav": {
+      "sha256": "a2144542361cbfcef171afcb7432163281016330f50929b37d4e6b4d6ed16810",
+      "size_bytes": 128078
+    },
+    "utterance_08.wav": {
+      "sha256": "630ec037ef76ac9036f85b59849c7280b2fe44774e1b8e25bf02f25c785160f7",
+      "size_bytes": 114766
+    },
+    "utterance_09.wav": {
+      "sha256": "31c214406a60126f820c9c04ad572e675b854bd722f6686d207e14cad2525afe",
+      "size_bytes": 151630
+    },
+    "utterance_10.wav": {
+      "sha256": "64ec6aaf3d322f78f8c1a18a2a3401f46fdc6b22efe767fe10069bd519d8ad40",
+      "size_bytes": 163918
+    },
+    "utterance_11.wav": {
+      "sha256": "272787d98d75cad05d6e8e9391565bf4be43985b3125e558112b833e123fbf87",
+      "size_bytes": 132174
+    },
+    "utterance_12.wav": {
+      "sha256": "eb551fc7ce12ab01be10911846ae8e564452d3a09d9b9c9b75a1edd5ebb397ca",
+      "size_bytes": 112718
+    },
+    "utterance_13.wav": {
+      "sha256": "1a16c9d6c93a87663a8e844973c2ec90ccd0425376b72fb890acb00aa0bb3bc5",
+      "size_bytes": 105550
+    },
+    "utterance_14.wav": {
+      "sha256": "ed76f4b9bf81e3e1cf5b4daa5cf55c87f00750b840fd5e23b368597ed8d2faf1",
+      "size_bytes": 113742
+    },
+    "utterance_15.wav": {
+      "sha256": "254d658a925d337168bffe62292e7028cd25caf18a0c0d1a69e127658a877e8a",
+      "size_bytes": 102478
+    },
+    "utterance_16.wav": {
+      "sha256": "f76e8e9b3f8f5827973fe52ee6acbe2ed3d169a8508519ad4995d1c47631367a",
+      "size_bytes": 112718
+    },
+    "utterance_17.wav": {
+      "sha256": "27cb8b8c51d45f64c09286065816c242dc1127b2c21417eac36378f08cf110da",
+      "size_bytes": 120910
+    },
+    "utterance_18.wav": {
+      "sha256": "37e83ff447d776cdfe909837431b7d08c86a233e435af93d31dc432157d2c63a",
+      "size_bytes": 131150
+    },
+    "utterance_19.wav": {
+      "sha256": "60e00f17acd6594ac179925f1bef809e1007f9e80f223bfa962ac8239d55fad7",
+      "size_bytes": 128078
+    },
+    "utterance_20.wav": {
+      "sha256": "6c7dd5ab920cef9eeb5a4740076bbb77e731efec9624c277cf538c17f61b4e14",
+      "size_bytes": 163918
+    },
+    "utterance_21.wav": {
+      "sha256": "708cf677a8d2cf514a9278c6de88a4c462903ad11f36b0bac7b05b52939c6996",
+      "size_bytes": 207950
+    },
+    "utterance_22.wav": {
+      "sha256": "77a64888084c39ff85ef0ddb452d5b736d281cd16becbff4b7616116da26eff2",
+      "size_bytes": 206926
+    },
+    "utterance_23.wav": {
+      "sha256": "ec011eae35e9a353720cb68ea21c6a91c432c37f01da29bee34e5d150f5aad48",
+      "size_bytes": 185422
+    },
+    "utterance_24.wav": {
+      "sha256": "2ecd941ef60a47232259ed2b671df0bfb6866909598d8d3e4923a1291ac60ebf",
+      "size_bytes": 178254
+    },
+    "utterance_25.wav": {
+      "sha256": "0559f5298a785584176cec92f738633ae4ec28fa0c40168c2118dc068eb61b43",
+      "size_bytes": 183374
+    },
+    "utterance_26.wav": {
+      "sha256": "22fb3c9da3d6d7b039ac9f9693a2843cbdb4bb9dba667d5674ce24bee6162185",
+      "size_bytes": 153678
+    },
+    "utterance_27.wav": {
+      "sha256": "afcce7eb41a119a07f705f7ff02a5c7036daf4038b88618fa061dc3df98f5d3a",
+      "size_bytes": 142414
+    },
+    "utterance_28.wav": {
+      "sha256": "b07cef871dfa0d88748eac33071bc6ccd0ff74d5ecf11c9cf99f41a5f7af43e7",
+      "size_bytes": 155726
+    },
+    "utterance_29.wav": {
+      "sha256": "a60720acb39ba14f7395a2e753c26b6b005af587b49d07f8bc40043b0db2819c",
+      "size_bytes": 185422
+    },
+    "utterance_30.wav": {
+      "sha256": "f2d40ee7f1c75baaf6a51c0f5280768225a77fe164f8a35da7b0fd94c9ec870d",
+      "size_bytes": 188494
+    }
+  }
+}

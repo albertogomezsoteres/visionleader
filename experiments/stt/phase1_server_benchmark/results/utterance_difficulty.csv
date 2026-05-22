@@ -1,0 +1,31 @@
+phrase_id,category,ground_truth,mean_wer_pct,max_wer_pct,mean_sentence_accuracy_pct,mean_dka_pct,n_runs
+utterance_01,initial_location,I am in classroom 0.3 building G,17.86,85.71,75.0,87.5,16
+utterance_30,edge_case,My destination is classroom 1.4 in building G please,15.28,66.67,75.0,87.5,16
+utterance_06,destination,I want to go to classroom 1.4,14.29,57.14,75.0,87.5,16
+utterance_28,edge_case,I need to find classroom 0.3 quickly,12.5,57.14,75.0,75.0,16
+utterance_02,initial_location,I am in classroom 2.1 on the second floor,11.11,55.56,75.0,93.75,16
+utterance_22,hard_domain,Take me from classroom 0.1 to the AI laboratory on the ground floor,10.58,46.15,75.0,83.33,16
+utterance_05,initial_location,I am next to the elevator on floor 1 of building G,10.42,41.67,50.0,87.5,16
+utterance_26,edge_case,How do I get from building CD to building G,8.75,40.0,75.0,75.0,16
+utterance_21,hard_domain,I am in classroom 1.1 and I want to go to the EPS faculty offices,8.33,40.0,75.0,100.0,16
+utterance_10,destination,Could you guide me to the EPS faculty offices please,8.12,30.0,56.25,56.25,16
+utterance_07,destination,Take me to the gym in building CD,7.81,25.0,62.5,68.75,16
+utterance_11,navigation_command,I am in a hurry please use the stairs,6.25,33.33,56.25,96.88,16
+utterance_29,edge_case,Could you tell me how to reach the AI laboratory from here,6.25,25.0,62.5,62.5,16
+utterance_04,initial_location,I am in the AI laboratory on the ground floor of building G,5.77,38.46,75.0,83.33,16
+utterance_25,hard_domain,I am at the directory sign in building G next to the mentoring room,4.46,21.43,75.0,83.33,16
+utterance_09,destination,Take me to the nearest restroom on this floor,4.17,22.22,75.0,75.0,16
+utterance_18,confirmation,I have arrived at the elevator on floor 2,4.17,22.22,75.0,87.5,16
+utterance_27,edge_case,Where is the secretary office in building G,3.91,25.0,81.25,90.62,16
+utterance_14,navigation_command,Cancel navigation and start again,2.5,20.0,87.5,87.5,16
+utterance_20,confirmation,Yes I can see the elevator and the doors are open,2.27,9.09,75.0,100.0,16
+utterance_23,hard_domain,I just came out of the elevator on the first floor of building G,1.79,14.29,87.5,95.83,16
+utterance_08,destination,I want to go to the cafeteria,1.79,14.29,87.5,87.5,16
+utterance_19,confirmation,Done I have reached my destination,1.04,16.67,93.75,96.88,16
+utterance_13,navigation_command,I am lost I need help,0.0,0.0,100.0,100.0,16
+utterance_03,initial_location,I am at the main entrance of building G,0.0,0.0,100.0,100.0,16
+utterance_12,navigation_command,Repeat the instructions please,0.0,0.0,100.0,100.0,16
+utterance_16,confirmation,Yes I am ready to continue,0.0,0.0,100.0,,16
+utterance_15,navigation_command,Stop and tell me where I am,0.0,0.0,100.0,100.0,16
+utterance_17,confirmation,No that is not my location,0.0,0.0,100.0,,16
+utterance_24,hard_domain,I do not know where I am I need help finding my location,0.0,0.0,100.0,,16

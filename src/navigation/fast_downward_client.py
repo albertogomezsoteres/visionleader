@@ -14,7 +14,7 @@ from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Default search configuration — A* with landmark-cut heuristic.
+# Default search configuration - A* with landmark-cut heuristic.
 _DEFAULT_SEARCH = "astar(lmcut())"
 
 # Default timeout in seconds.  Can be overridden per-instance.
@@ -42,12 +42,12 @@ class FastDownwardPlanner:
         Run Fast Downward and return the plan.
 
         Returns a dict with:
-          success (bool)    — whether a plan was found
-          plan    (List[str]) — list of PDDL action strings
-          cost    (int)     — plan cost reported by Fast Downward
-          steps   (int)     — number of plan steps
-          error   (str|None) — error message if success is False
-          output  (str)     — raw Fast Downward stdout+stderr
+          success (bool)    - whether a plan was found
+          plan    (List[str]) - list of PDDL action strings
+          cost    (int)     - plan cost reported by Fast Downward
+          steps   (int)     - number of plan steps
+          error   (str|None) - error message if success is False
+          output  (str)     - raw Fast Downward stdout+stderr
         """
         domain_path  = Path(domain_path).absolute()
         problem_path = Path(problem_path).absolute()

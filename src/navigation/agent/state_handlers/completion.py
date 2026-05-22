@@ -1,4 +1,4 @@
-"""Phase 7 — arrival and what to do next.
+"""Phase 7 - arrival and what to do next.
 
 ``navigation_complete`` is the transition called by execution handlers
 when ``current_step_idx`` walks off the end of the route. It also

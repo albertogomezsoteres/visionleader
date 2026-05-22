@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Two compact panels that show the agent's current understanding of the
-/// initial location and the goal — both as natural text and as the
+/// initial location and the goal - both as natural text and as the
 /// underlying PDDL atom that will be sent to the symbolic planner.
 class StatusRow extends StatelessWidget {
   final String? initialBuilding;

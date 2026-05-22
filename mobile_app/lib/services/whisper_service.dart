@@ -72,7 +72,7 @@ class WhisperService {
     );
 
     // Drain stdout/stderr so the OS pipe buffers do not fill up and stall the
-    // subprocess. Drop the data — we only care that the socket comes up.
+    // subprocess. Drop the data - we only care that the socket comes up.
     _server!.stdout.transform(const SystemEncoding().decoder).listen((_) {});
     _server!.stderr.transform(const SystemEncoding().decoder).listen((_) {});
 

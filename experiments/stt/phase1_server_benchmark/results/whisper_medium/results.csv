@@ -1,0 +1,61 @@
+model,group,condition,phrase_id,category,ground_truth,prediction,wer,cer,sentence_accuracy,dka,latency_s,latency_s_std,latency_s_run1,latency_s_run2,latency_s_run3
+whisper-medium,local,no_prompt,utterance_01,initial_location,I am in classroom 0.3 building G,I am in classroom 0.3 building G,0.0,0.0,1.0,1.0,0.5364,0.003,0.5377,0.5386,0.533
+whisper-medium,local,no_prompt,utterance_02,initial_location,I am in classroom 2.1 on the second floor,I am in classroom 2.1 on the second floor.,0.0,0.0,1.0,1.0,0.6695,0.0247,0.6676,0.6457,0.6951
+whisper-medium,local,no_prompt,utterance_03,initial_location,I am at the main entrance of building G,I am at the main entrance of building G.,0.0,0.0,1.0,1.0,0.5919,0.0097,0.5813,0.5939,0.6004
+whisper-medium,local,no_prompt,utterance_04,initial_location,I am in the AI laboratory on the ground floor of building G,I am in the AI laboratory on the ground floor of building G.,0.0,0.0,1.0,1.0,0.7212,0.0176,0.7188,0.7049,0.7398
+whisper-medium,local,no_prompt,utterance_05,initial_location,I am next to the elevator on floor 1 of building G,I am next to the elevator on floor 1 of building G.,0.0,0.0,1.0,1.0,0.6912,0.0179,0.7021,0.7009,0.6705
+whisper-medium,local,no_prompt,utterance_06,destination,I want to go to classroom 1.4,I want to go to classroom 1.4,0.0,0.0,1.0,1.0,0.551,0.0161,0.5696,0.5426,0.5409
+whisper-medium,local,no_prompt,utterance_07,destination,Take me to the gym in building CD,Take me to the gym in building CD.,0.0,0.0,1.0,1.0,0.5437,0.0072,0.539,0.5519,0.5402
+whisper-medium,local,no_prompt,utterance_08,destination,I want to go to the cafeteria,I want to go to the cafeteria.,0.0,0.0,1.0,1.0,0.506,0.0004,0.5059,0.5056,0.5064
+whisper-medium,local,no_prompt,utterance_09,destination,Take me to the nearest restroom on this floor,Take me to the nearest restroom on this floor.,0.0,0.0,1.0,1.0,0.5741,0.0062,0.5711,0.57,0.5813
+whisper-medium,local,no_prompt,utterance_10,destination,Could you guide me to the EPS faculty offices please,"Could you guide me to the EPS faculty offices, please?",0.0,0.0,1.0,1.0,0.6767,0.0053,0.6728,0.6746,0.6828
+whisper-medium,local,no_prompt,utterance_11,navigation_command,I am in a hurry please use the stairs,I am in a hurry. Please use the stairs.,0.0,0.0,1.0,1.0,0.6453,0.0122,0.6419,0.6588,0.6351
+whisper-medium,local,no_prompt,utterance_12,navigation_command,Repeat the instructions please,Repeat the instructions please.,0.0,0.0,1.0,1.0,0.4148,0.0193,0.4026,0.4048,0.4371
+whisper-medium,local,no_prompt,utterance_13,navigation_command,I am lost I need help,"I am lost, I need help.",0.0,0.0,1.0,1.0,0.519,0.0206,0.5064,0.5427,0.5077
+whisper-medium,local,no_prompt,utterance_14,navigation_command,Cancel navigation and start again,Cancel navigation and start again.,0.0,0.0,1.0,1.0,0.4732,0.0037,0.4705,0.4717,0.4774
+whisper-medium,local,no_prompt,utterance_15,navigation_command,Stop and tell me where I am,Stop and tell me where I am.,0.0,0.0,1.0,1.0,0.5177,0.0234,0.508,0.5008,0.5444
+whisper-medium,local,no_prompt,utterance_16,confirmation,Yes I am ready to continue,"Yes, I am ready to continue.",0.0,0.0,1.0,,0.5116,0.0063,0.5188,0.5073,0.5086
+whisper-medium,local,no_prompt,utterance_17,confirmation,No that is not my location,"No, that is not my location.",0.0,0.0,1.0,,0.5179,0.0144,0.5059,0.5339,0.5139
+whisper-medium,local,no_prompt,utterance_18,confirmation,I have arrived at the elevator on floor 2,I have arrived at the elevator on floor 2.,0.0,0.0,1.0,1.0,0.5982,0.0077,0.6018,0.6036,0.5894
+whisper-medium,local,no_prompt,utterance_19,confirmation,Done I have reached my destination,"Done, I have reached my destination.",0.0,0.0,1.0,1.0,0.5117,0.0049,0.5153,0.5138,0.5061
+whisper-medium,local,no_prompt,utterance_20,confirmation,Yes I can see the elevator and the doors are open,"Yes, I can see the elevator and the doors are open.",0.0,0.0,1.0,1.0,0.6934,0.0252,0.7224,0.6813,0.6765
+whisper-medium,local,no_prompt,utterance_21,hard_domain,I am in classroom 1.1 and I want to go to the EPS faculty offices,I am in classroom 1.1 and I want to go to the EPS faculty offices.,0.0,0.0,1.0,1.0,0.8788,0.0084,0.878,0.8708,0.8876
+whisper-medium,local,no_prompt,utterance_22,hard_domain,Take me from classroom 0.1 to the AI laboratory on the ground floor,Take me from classroom 0.1 to the AI laboratory on the ground floor.,0.0,0.0,1.0,1.0,0.7837,0.0088,0.793,0.7826,0.7755
+whisper-medium,local,no_prompt,utterance_23,hard_domain,I just came out of the elevator on the first floor of building G,I just came out of the elevator on the first floor of building G.,0.0,0.0,1.0,1.0,0.7766,0.0043,0.7813,0.7729,0.7755
+whisper-medium,local,no_prompt,utterance_24,hard_domain,I do not know where I am I need help finding my location,I do not know where I am. I need help finding my location.,0.0,0.0,1.0,,0.7406,0.0053,0.7464,0.7394,0.7361
+whisper-medium,local,no_prompt,utterance_25,hard_domain,I am at the directory sign in building G next to the mentoring room,I am at the directory sign in building G next to the mentoring room.,0.0,0.0,1.0,1.0,0.7392,0.0065,0.7323,0.7451,0.7401
+whisper-medium,local,no_prompt,utterance_26,edge_case,How do I get from building CD to building G,How do I get from building CD to building G?,0.0,0.0,1.0,1.0,0.6074,0.004,0.6038,0.6067,0.6117
+whisper-medium,local,no_prompt,utterance_27,edge_case,Where is the secretary office in building G,Where is the secretary office in building G?,0.0,0.0,1.0,1.0,0.5399,0.0049,0.5362,0.538,0.5455
+whisper-medium,local,no_prompt,utterance_28,edge_case,I need to find classroom 0.3 quickly,I need to find classroom 0.3 quickly.,0.0,0.0,1.0,1.0,0.6026,0.0381,0.6465,0.5791,0.5821
+whisper-medium,local,no_prompt,utterance_29,edge_case,Could you tell me how to reach the AI laboratory from here,Could you tell me how to reach the AI laboratory from here?,0.0,0.0,1.0,1.0,0.6734,0.0045,0.6766,0.6682,0.6754
+whisper-medium,local,no_prompt,utterance_30,edge_case,My destination is classroom 1.4 in building G please,"My destination is classroom 1.4 in building G, please.",0.0,0.0,1.0,1.0,0.6756,0.0019,0.6775,0.6737,0.6757
+whisper-medium,local,with_prompt,utterance_01,initial_location,I am in classroom 0.3 building G,"I am in classroom 0.3, building G.",0.0,0.0,1.0,1.0,0.6214,0.0158,0.6116,0.6129,0.6395
+whisper-medium,local,with_prompt,utterance_02,initial_location,I am in classroom 2.1 on the second floor,I am in classroom 2.1 on the second floor.,0.0,0.0,1.0,1.0,0.6472,0.0177,0.6323,0.6668,0.6425
+whisper-medium,local,with_prompt,utterance_03,initial_location,I am at the main entrance of building G,I am at the main entrance of building G.,0.0,0.0,1.0,1.0,0.5756,0.0073,0.5839,0.5705,0.5723
+whisper-medium,local,with_prompt,utterance_04,initial_location,I am in the AI laboratory on the ground floor of building G,I am in the AI laboratory on the ground floor of building G.,0.0,0.0,1.0,1.0,0.7286,0.0171,0.7089,0.7401,0.7368
+whisper-medium,local,with_prompt,utterance_05,initial_location,I am next to the elevator on floor 1 of building G,I am next to the elevator on floor 1 of building G.,0.0,0.0,1.0,1.0,0.683,0.0107,0.6707,0.6885,0.6899
+whisper-medium,local,with_prompt,utterance_06,destination,I want to go to classroom 1.4,I want to go to classroom 1.4.,0.0,0.0,1.0,1.0,0.5866,0.0182,0.567,0.5896,0.603
+whisper-medium,local,with_prompt,utterance_07,destination,Take me to the gym in building CD,Take me to the gym in building CD.,0.0,0.0,1.0,1.0,0.5429,0.0018,0.5449,0.5421,0.5416
+whisper-medium,local,with_prompt,utterance_08,destination,I want to go to the cafeteria,I want to go to the cafeteria.,0.0,0.0,1.0,1.0,0.5274,0.0233,0.5543,0.5153,0.5125
+whisper-medium,local,with_prompt,utterance_09,destination,Take me to the nearest restroom on this floor,Take me to the nearest restroom on this floor.,0.0,0.0,1.0,1.0,0.5757,0.0016,0.5769,0.5739,0.5763
+whisper-medium,local,with_prompt,utterance_10,destination,Could you guide me to the EPS faculty offices please,Could you guide me to the EPS faculty offices please?,0.0,0.0,1.0,1.0,0.661,0.006,0.6574,0.6679,0.6575
+whisper-medium,local,with_prompt,utterance_11,navigation_command,I am in a hurry please use the stairs,"I am in a hurry, please use the stairs.",0.0,0.0,1.0,1.0,0.6103,0.0117,0.6165,0.5968,0.6175
+whisper-medium,local,with_prompt,utterance_12,navigation_command,Repeat the instructions please,"Repeat the instructions, please.",0.0,0.0,1.0,1.0,0.4506,0.0192,0.4374,0.4727,0.4418
+whisper-medium,local,with_prompt,utterance_13,navigation_command,I am lost I need help,"I am lost, I need help.",0.0,0.0,1.0,1.0,0.5035,0.003,0.5011,0.5069,0.5026
+whisper-medium,local,with_prompt,utterance_14,navigation_command,Cancel navigation and start again,Cancel navigation and start again.,0.0,0.0,1.0,1.0,0.48,0.0152,0.4976,0.4708,0.4718
+whisper-medium,local,with_prompt,utterance_15,navigation_command,Stop and tell me where I am,Stop and tell me where I am.,0.0,0.0,1.0,1.0,0.5103,0.0129,0.5,0.5248,0.506
+whisper-medium,local,with_prompt,utterance_16,confirmation,Yes I am ready to continue,"Yes, I am ready to continue.",0.0,0.0,1.0,,0.5121,0.0071,0.5167,0.5157,0.504
+whisper-medium,local,with_prompt,utterance_17,confirmation,No that is not my location,"No, that is not my location.",0.0,0.0,1.0,,0.5136,0.0099,0.5072,0.5251,0.5087
+whisper-medium,local,with_prompt,utterance_18,confirmation,I have arrived at the elevator on floor 2,I have arrived at the elevator on floor 2.,0.0,0.0,1.0,1.0,0.5771,0.0046,0.5824,0.5742,0.5746
+whisper-medium,local,with_prompt,utterance_19,confirmation,Done I have reached my destination,"Done, I have reached my destination.",0.0,0.0,1.0,1.0,0.5166,0.0174,0.5084,0.5048,0.5365
+whisper-medium,local,with_prompt,utterance_20,confirmation,Yes I can see the elevator and the doors are open,"Yes, I can see the elevator and the doors are open.",0.0,0.0,1.0,1.0,0.6757,0.0115,0.6672,0.6888,0.6712
+whisper-medium,local,with_prompt,utterance_21,hard_domain,I am in classroom 1.1 and I want to go to the EPS faculty offices,I am in classroom 1.1 and I want to go to the EPS faculty offices.,0.0,0.0,1.0,1.0,0.8806,0.0171,0.8649,0.8781,0.8989
+whisper-medium,local,with_prompt,utterance_22,hard_domain,Take me from classroom 0.1 to the AI laboratory on the ground floor,Take me from classroom 0.1 to the AI laboratory on the ground floor.,0.0,0.0,1.0,1.0,0.7847,0.0031,0.7882,0.7822,0.7838
+whisper-medium,local,with_prompt,utterance_23,hard_domain,I just came out of the elevator on the first floor of building G,I just came out of the elevator on the first floor of building G.,0.0,0.0,1.0,1.0,0.747,0.0143,0.7412,0.7364,0.7632
+whisper-medium,local,with_prompt,utterance_24,hard_domain,I do not know where I am I need help finding my location,"I do not know where I am, I need help finding my location.",0.0,0.0,1.0,,0.7428,0.003,0.741,0.7412,0.7463
+whisper-medium,local,with_prompt,utterance_25,hard_domain,I am at the directory sign in building G next to the mentoring room,I am at the directory sign in building G next to the mentoring room.,0.0,0.0,1.0,1.0,0.7512,0.0055,0.745,0.7552,0.7533
+whisper-medium,local,with_prompt,utterance_26,edge_case,How do I get from building CD to building G,How do I get from building CD to building G?,0.0,0.0,1.0,1.0,0.6174,0.0173,0.6066,0.6373,0.6082
+whisper-medium,local,with_prompt,utterance_27,edge_case,Where is the secretary office in building G,Where is the secretary office in building G?,0.0,0.0,1.0,1.0,0.5773,0.0029,0.5805,0.5752,0.5762
+whisper-medium,local,with_prompt,utterance_28,edge_case,I need to find classroom 0.3 quickly,I need to find classroom 0.3 quickly.,0.0,0.0,1.0,1.0,0.583,0.0192,0.5746,0.6049,0.5694
+whisper-medium,local,with_prompt,utterance_29,edge_case,Could you tell me how to reach the AI laboratory from here,Could you tell me how to reach the AI laboratory from here?,0.0,0.0,1.0,1.0,0.6786,0.0088,0.6858,0.6813,0.6688
+whisper-medium,local,with_prompt,utterance_30,edge_case,My destination is classroom 1.4 in building G please,"My destination is classroom 1.4 in building G, please.",0.0,0.0,1.0,1.0,0.6761,0.0069,0.6755,0.6833,0.6695

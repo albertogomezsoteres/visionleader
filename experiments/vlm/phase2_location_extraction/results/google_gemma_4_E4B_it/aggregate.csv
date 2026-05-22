@@ -1,0 +1,3 @@
+question_id,n,floor_accuracy,building_accuracy,location_accuracy,macro_precision,macro_recall,macro_f1,classes_used,bertscore_f1,avg_output_length_words,room_code_accuracy
+floor_extraction,20,1.0,1.0,1.0,1.0,1.0,1.0,"['G 0', 'G 1', 'G 2', 'G Agora']",1.0,2.0,
+room_code_extraction,26,,,,,,,,,1.38,1.0

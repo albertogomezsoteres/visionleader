@@ -1,6 +1,6 @@
 """Room-level PDDL problem generator for the shared campus domain.
 
-Used by ``pddl/domain_indoor.pddl``, which models every UFV building plus the
+Used by ``pddl/domain.pddl``, which models every UFV building plus the
 outdoor hops between building entrances via the ``outdoor_walk`` action.
 
 For Building G, the generated problem encodes the full room graph with
@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 # Domain filename and :domain directive shared by every problem.
-DOMAIN_FILE = "domain_indoor.pddl"
+DOMAIN_FILE = "domain.pddl"
 DOMAIN_NAME = "campus-navigation"
 
 
@@ -89,12 +89,6 @@ class HierarchicalPDDLConverter:
         except Exception:
             return []
 
-    def _closure_key(
-        self, building_name: str, floor: int, json_id: str
-    ) -> Tuple[str, int, str]:
-        """Canonical key used to match closure entries."""
-        return (building_name, int(floor), json_id)
-
     def _build_closed_set(self, building_name: str) -> Set[Tuple[str, int, str]]:
         """Return the set of (building, floor, location_id) that are closed.
 
@@ -126,12 +120,9 @@ class HierarchicalPDDLConverter:
                 return bid
         return 1
 
-    # Domain lookup — single shared domain for the whole campus.
+    # Domain lookup - single shared domain for the whole campus.
     def get_domain_path(self, building_id: Optional[int] = None) -> Path:
         return self.pddl_dir / DOMAIN_FILE
-
-    def domain_name(self, building_id: Optional[int] = None) -> str:
-        return DOMAIN_NAME
 
     def json_name(self, building_id: int) -> str:
         return self.BUILDING_JSON_NAMES.get(building_id, "G")
@@ -310,7 +301,7 @@ class HierarchicalPDDLConverter:
                 seen.add(key)
                 out.append(key)
         # Fall back to the canonical single entrance if the heuristic
-        # produced nothing — keeps the converter resilient for buildings
+        # produced nothing - keeps the converter resilient for buildings
         # whose schema doesn't follow the *_exterior suffix convention.
         if not out:
             single = self._entrance_of(building_id)
@@ -318,7 +309,7 @@ class HierarchicalPDDLConverter:
                 out.append(single)
         return out
 
-    # Problem generation — supports one or two buildings in the same problem.
+    # Problem generation - supports one or two buildings in the same problem.
     def generate_building_problem(
         self,
         origin_building: int,
@@ -335,7 +326,7 @@ class HierarchicalPDDLConverter:
         """Build a PDDL problem encoding one or more buildings.
 
         If ``dest_building`` differs from ``origin_building``, both buildings
-        are included in the :init section and linked by ``conectado_exterior``
+        are included in the :init section and linked by ``outdoor_connected``
         edges between their entrance nodes, so a single Fast Downward call
         finds the whole door-to-door route.
         """
@@ -397,11 +388,10 @@ class HierarchicalPDDLConverter:
                     seen_pddl.add(pddl_id)
                     all_rooms.append((pddl_id, floor, json_id, bname))
 
-        floors_set = sorted({r[1] for r in all_rooms})
         pddl_room_names = sorted(r[0] for r in all_rooms)
 
         objects_lines = [
-            f"    user - person",
+            "    user - person",
             f"    {' '.join(pddl_room_names)} - location",
         ]
 
@@ -424,7 +414,7 @@ class HierarchicalPDDLConverter:
             if pddl_id not in closed_pddl_ids:
                 init_lines.append(f"    (open {pddl_id})")
 
-        # Elevator / stair tags — per building, per vertical core. Dual-core
+        # Elevator / stair tags - per building, per vertical core. Dual-core
         # buildings (CD) tag the rear column alongside the main one; buildings
         # without a rear core simply have no rear nodes and these emissions
         # are skipped silently.
@@ -488,7 +478,7 @@ class HierarchicalPDDLConverter:
                             init_lines.append(f"    (elevator_connected {a} {b})")
 
         # Stair directed connections (adjacent floors only, per building, per
-        # column). Same independence rule as elevators — main and rear stair
+        # column). Same independence rule as elevators - main and rear stair
         # columns are separate chains.
         for bid in buildings_in_problem:
             bname = self.json_name(bid)
@@ -510,7 +500,7 @@ class HierarchicalPDDLConverter:
                         f"    (stairs_down_connected {upper} {lower})"
                     )
 
-        # Outdoor edges between entrances — only emitted when at least two
+        # Outdoor edges between entrances - only emitted when at least two
         # buildings are in the problem. Each ``connections[]`` entry carries
         # a single distance, but a real building has multiple usable
         # exterior entrances; we emit one outdoor edge per (source ext.
@@ -559,21 +549,21 @@ class HierarchicalPDDLConverter:
         content = (
             f"(define (problem {problem_name})\n"
             f"  (:domain {DOMAIN_NAME})\n"
-            f"\n"
-            f"  (:objects\n"
+            "\n"
+            "  (:objects\n"
             + "\n".join(objects_lines) + "\n"
-            f"  )\n"
-            f"\n"
-            f"  (:init\n"
+            "  )\n"
+            "\n"
+            "  (:init\n"
             + "\n".join(init_lines) + "\n"
-            f"  )\n"
-            f"\n"
-            f"  (:goal\n"
+            "  )\n"
+            "\n"
+            "  (:goal\n"
             f"    (at user {dest_pddl})\n"
-            f"  )\n"
-            f"\n"
-            f"  (:metric minimize (total-cost))\n"
-            f")\n"
+            "  )\n"
+            "\n"
+            "  (:metric minimize (total-cost))\n"
+            ")\n"
         )
 
         if output_path:
@@ -590,11 +580,11 @@ if __name__ == "__main__":
         pddl_dir=str(BASE / "pddl"),
     )
 
-    problems_dir = BASE / "pddl" / "problems"
-    problems_dir.mkdir(parents=True, exist_ok=True)
+    examples_dir = BASE / "pddl" / "problems" / "examples"
+    examples_dir.mkdir(parents=True, exist_ok=True)
 
-    intra_path = problems_dir / "problem_g_intra_demo.pddl"
-    print(f"=== Building G: entrance_2 (floor 0) -> classroom_g_1_4 (floor 1) ===")
+    intra_path = examples_dir / "problem_g_intra_example.pddl"
+    print("=== Building G: entrance_2 (floor 0) -> classroom_g_1_4 (floor 1) ===")
     intra_pddl = converter.generate_building_problem(
         origin_building=1,
         origin_room="entrance_2", origin_floor=0,
@@ -605,8 +595,8 @@ if __name__ == "__main__":
     print(intra_pddl)
     print(f"Wrote {intra_path}")
 
-    cross_path = problems_dir / "problem_g_to_cd_demo.pddl"
-    print(f"=== Cross-building: classroom_g_1_4 of G -> gym of CD ===")
+    cross_path = examples_dir / "problem_g_to_cd_example.pddl"
+    print("=== Cross-building: classroom_g_1_4 of G -> gym of CD ===")
     cross_pddl = converter.generate_building_problem(
         origin_building=1,
         origin_room="classroom_g_1_4", origin_floor=1,

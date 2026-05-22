@@ -1,15 +1,14 @@
 """Prompt catalogue and response parsers for the navigation VLM.
 
-Loads the validated Gemma 4 E4B prompts from
-``extraction_validation/prompts.json`` and exposes two operations:
+Loads the Gemma 4 E4B prompts from
+``config/prompts.json`` and exposes two operations:
 
 * :func:`build_prompt` returns the raw text to send to the model.
 * :func:`parse_response` turns the model output into a structured
   :class:`ParsedResponse` (PDDL atom or JSON state, depending on the
   prompt family).
 
-The same JSON file is used by the validation notebook and by production,
-so prompt drift is impossible by construction.
+This is the runtime prompt catalogue read by the backend.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-PROMPTS_PATH = Path(__file__).resolve().parents[3] / "extraction_validation" / "prompts.json"
+PROMPTS_PATH = Path(__file__).resolve().parents[3] / "config" / "prompts.json"
 
 _PROMPTS: Optional[Dict[str, Dict[str, Any]]] = None
 

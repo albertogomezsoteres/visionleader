@@ -1,0 +1,25 @@
+{
+  "model_id": "google/gemma-4-E2B-it",
+  "family": "gemma4",
+  "experiment": "exp1_update",
+  "n_parameters": 5104297504,
+  "n_parameters_billions": 5.1,
+  "n_inferences": 50,
+  "overall_accuracy": 0.8,
+  "state_recognition_macro_precision": 0.7817,
+  "state_recognition_macro_recall": 0.5857,
+  "state_recognition_macro_f1": 0.5062,
+  "state_recognition_classes_used": [
+    "up",
+    "down",
+    "open",
+    "closed"
+  ],
+  "state_recognition_n": 25,
+  "vram_peak_gb": 10.017,
+  "model_load_time_s": 36.55,
+  "total_wall_time_s": 148.05,
+  "mean_inference_time_ms": 943.19,
+  "avg_inference_time_ms_std": 9.6,
+  "throughput_inf_per_s": 1.06
+}

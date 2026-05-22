@@ -1,0 +1,82 @@
+{
+  "model_id": "google/gemma-4-E4B-it",
+  "family": "gemma4",
+  "experiment": "exp2_update",
+  "floor_extraction": {
+    "classes": [
+      "G 0",
+      "G 1",
+      "G 2",
+      "G Agora"
+    ],
+    "matrix": {
+      "G 0": {
+        "G 0": 5,
+        "G 1": 0,
+        "G 2": 0,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G 1": {
+        "G 0": 0,
+        "G 1": 5,
+        "G 2": 0,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G 2": {
+        "G 0": 0,
+        "G 1": 0,
+        "G 2": 5,
+        "G Agora": 0,
+        "unparseable": 0
+      },
+      "G Agora": {
+        "G 0": 0,
+        "G 1": 0,
+        "G 2": 0,
+        "G Agora": 5,
+        "unparseable": 0
+      }
+    },
+    "per_class_metrics": {
+      "G 0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      },
+      "G 1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      },
+      "G 2": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      },
+      "G Agora": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 5,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "note": "Rows = ground truth, columns = predicted. \"unparseable\" column collects predictions whose parsing failed."
+  }
+}

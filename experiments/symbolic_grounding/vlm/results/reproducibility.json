@@ -1,0 +1,126 @@
+{
+  "run_timestamp_utc": "2026-05-10T01:22:35.630150+00:00",
+  "experiment": "vlm_pddl_validation",
+  "model": {
+    "id": "google/gemma-4-E4B-it",
+    "n_params_billions": 7.94,
+    "dtype": "torch.bfloat16",
+    "load_time_s": 53.75
+  },
+  "hardware": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA A100-SXM4-40GB",
+    "gpu_capability": "8.0",
+    "gpu_total_vram_gb": 39.49,
+    "vram_peak_gb_during_run": 15.31,
+    "cuda_version": "12.8",
+    "cudnn_version": 91002
+  },
+  "software": {
+    "python": "3.12.13",
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "torch": "2.10.0+cu128",
+    "transformers": "5.8.0",
+    "pillow": "10.4.0",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2"
+  },
+  "seed": 0,
+  "decoding": {
+    "do_sample": false,
+    "num_beams": 1,
+    "enable_thinking": false,
+    "max_new_tokens": 32
+  },
+  "system_prompt": "You are a strict format extractor for indoor navigation. Read the question, follow its rules exactly, and output only what the question asks. Never invent identifiers. Never add explanations or extra words. Stop generating immediately after the requested output is complete.",
+  "prompt_variants_evaluated": [
+    "basic",
+    "optimized"
+  ],
+  "prompt_ids_evaluated": [
+    "room_plate",
+    "directory_sign"
+  ],
+  "dataset": {
+    "n_images": 46,
+    "per_prompt_id": {
+      "directory_sign": 20,
+      "room_plate": 26
+    }
+  },
+  "total_inference_time_s": 232.83,
+  "primary_metrics_per_variant": [
+    {
+      "prompt_variant": "basic",
+      "n": 46,
+      "format_validity": 1.0,
+      "format_validity_strict": 1.0,
+      "exact_pddl_match": 0.3478,
+      "location_id_accuracy": 0.3478,
+      "valid_location_rate": 0.3478,
+      "mean_ms": 2705.8,
+      "p95_ms": 3106.7
+    },
+    {
+      "prompt_variant": "optimized",
+      "n": 46,
+      "format_validity": 1.0,
+      "format_validity_strict": 1.0,
+      "exact_pddl_match": 0.9565,
+      "location_id_accuracy": 0.9565,
+      "valid_location_rate": 0.9783,
+      "mean_ms": 2287.3,
+      "p95_ms": 3235.4
+    }
+  ],
+  "primary_metrics_per_variant_per_prompt": [
+    {
+      "prompt_variant": "basic",
+      "prompt_id": "room_plate",
+      "n": 26,
+      "exact_pddl_match": 0.0,
+      "location_id_accuracy": 0.0,
+      "format_validity": 1.0
+    },
+    {
+      "prompt_variant": "basic",
+      "prompt_id": "directory_sign",
+      "n": 20,
+      "exact_pddl_match": 0.8,
+      "location_id_accuracy": 0.8,
+      "format_validity": 1.0
+    },
+    {
+      "prompt_variant": "optimized",
+      "prompt_id": "room_plate",
+      "n": 26,
+      "exact_pddl_match": 0.9231,
+      "location_id_accuracy": 0.9231,
+      "format_validity": 1.0
+    },
+    {
+      "prompt_variant": "optimized",
+      "prompt_id": "directory_sign",
+      "n": 20,
+      "exact_pddl_match": 1.0,
+      "location_id_accuracy": 1.0,
+      "format_validity": 1.0
+    }
+  ],
+  "supportive_metrics_per_variant": [
+    {
+      "prompt_variant": "basic",
+      "bleu3": 0.5577,
+      "gleu": 0.6739,
+      "meteor": 0.749,
+      "bertscore_f1": 0.8434
+    },
+    {
+      "prompt_variant": "optimized",
+      "bleu3": 0.9705,
+      "gleu": 0.9783,
+      "meteor": 0.966,
+      "bertscore_f1": 0.9828
+    }
+  ]
+}

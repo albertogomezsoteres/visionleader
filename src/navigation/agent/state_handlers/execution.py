@@ -1,10 +1,10 @@
-"""Phase 6 — execute the plan step by step.
+"""Phase 6 - execute the plan step by step.
 
 Three states share this module:
 
-- EXECUTING            — between voice steps, dispatches the next step
-- AWAITING_STEP_DONE   — waiting for the user to say "done" / "next"
-- WAITING_STEP_PHOTO   — waiting for a verification photo
+- EXECUTING            - between voice steps, dispatches the next step
+- AWAITING_STEP_DONE   - waiting for the user to say "done" / "next"
+- WAITING_STEP_PHOTO   - waiting for a verification photo
 
 Plus the universal recovery actions reachable from any of these via the
 shortcuts handled in :func:`ConversationAgent.process_turn`:

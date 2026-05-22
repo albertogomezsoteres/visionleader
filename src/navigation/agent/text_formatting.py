@@ -41,7 +41,6 @@ PHOTO_LABELS: Dict[str, str] = {
     "directory_sign": "directory sign",
     "elevator_state": "elevator",
     "stair_direction": "stairs",
-    "restroom_gender": "restroom sign",
     "service_plate": "service sign",
 }
 
@@ -60,11 +59,6 @@ def floor_text(f: int) -> str:
     if f == 0:
         return "the ground floor"
     return f"floor {f}"
-
-
-def get_building_name(building_id: int) -> str:
-    """Short building label (e.g. 'G', 'CD'). Falls back to the raw id."""
-    return BUILDING_NAMES.get(building_id, str(building_id))
 
 
 def nice_location_name(loc_id: str) -> str:
@@ -120,7 +114,6 @@ def normalize_instruction(text: str) -> str:
     if not text:
         return text
     out = text
-    out = out.replace("elevator", "elevator").replace("stairs", "stairs")
     out = out.replace("entrance_main", "main entrance").replace(
         "entrada principal", "main entrance"
     )

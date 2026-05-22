@@ -1,4 +1,4 @@
-"""Phase 4 — gather and parse the user's destination.
+"""Phase 4 - gather and parse the user's destination.
 
 The single state ASK_DESTINATION accepts free-form text ("classroom 1.4",
 "the cafeteria", "main entrance"). Parsing is delegated to
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # A user can reach hurry mode either by stating urgency ("I'm in a hurry",
 # "rápido"…) or by stating a stair preference ("I'll take the stairs").
 # Both map to the same `(hurry_mode)` PDDL flag, which favours stairs in
-# the cost model — we just expose more phrasings so STT variations don't
+# the cost model - we just expose more phrasings so STT variations don't
 # trip people up.
 _HURRY_KEYWORDS = (
     "hurry", "rush", "fast", "quick", "prisa",
@@ -60,7 +60,7 @@ def handle_ask_destination(
         log_event(
             "AGENT",
             f"goal grounded: (at user {dest['location_id']})  "
-            f"— hurry_mode={str(ctx.hurry_mode).lower()}",
+            f"- hurry_mode={str(ctx.hurry_mode).lower()}",
             destination=dest,
             hurry_mode=ctx.hurry_mode,
         )

@@ -67,7 +67,7 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   // VLM prompt the FSM expects for the next photo (one of the prompt ids
   // declared in extraction_validation/prompts.json). Null when no photo is
-  // expected — the camera button refuses to fire in that case.
+  // expected - the camera button refuses to fire in that case.
   String? _expectedPromptId;
 
   // Raw symbolic plan from Fast Downward, surfaced in the PlanCard. Cleared
@@ -400,7 +400,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   void _setMessage(String message, String nextInput, String action) {
     setState(() { _ttsMessage = message; _nextInput = nextInput; _currentAction = action; });
     // Don't yank the transcription off-screen the instant the backend
-    // replies — its 3-second auto-fade timer will take it out smoothly
+    // replies - its 3-second auto-fade timer will take it out smoothly
     // a moment later. This lets the user see what they just said even
     // for fast turnarounds like "I am lost".
   }
@@ -495,7 +495,7 @@ class _ConversationScreenState extends State<ConversationScreen>
     final path = await _recorder.stopRecorder();
     _pulseCtrl.stop();
     _pulseCtrl.reset();
-    // Mic released — anchor the turn stopwatch here and start the STT timer.
+    // Mic released - anchor the turn stopwatch here and start the STT timer.
     TelemetryService.instance.startTurn('voice');
     TelemetryService.instance.markSttStart();
     setState(() { _isRecording = false; _isProcessing = true; _processingMsg = 'Transcribing your voice...'; });
@@ -545,7 +545,7 @@ class _ConversationScreenState extends State<ConversationScreen>
       final sttLatencyMs = sw.elapsedMilliseconds;
       TelemetryService.instance.markSttEnd();
       // Always echo the transcription to the backend log so the demo
-      // terminal shows STT inline — Whisper runs on-device and would be
+      // terminal shows STT inline - Whisper runs on-device and would be
       // invisible otherwise.
       unawaited(TelemetryService.instance.logStt(
         text, sttLatencyMs, audioMs: _lastAudioMs,

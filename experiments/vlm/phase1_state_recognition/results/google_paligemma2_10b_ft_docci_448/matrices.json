@@ -1,0 +1,136 @@
+{
+  "model_id": "google/paligemma2-10b-ft-docci-448",
+  "family": "paligemma",
+  "experiment": "exp1_update",
+  "questions": {
+    "element_identification": {
+      "classes_in_matrix": [
+        "stairs",
+        "elevator"
+      ],
+      "classes_in_f1": [
+        "stairs",
+        "elevator"
+      ],
+      "matrix": {
+        "stairs": {
+          "stairs": 14,
+          "elevator": 0,
+          "other": 1
+        },
+        "elevator": {
+          "stairs": 0,
+          "elevator": 9,
+          "other": 1
+        }
+      },
+      "per_class_metrics": {
+        "stairs": {
+          "precision": 1.0,
+          "recall": 0.9333,
+          "f1": 0.9655,
+          "support": 15,
+          "tp": 14,
+          "fp": 0,
+          "fn": 1
+        },
+        "elevator": {
+          "precision": 1.0,
+          "recall": 0.9,
+          "f1": 0.9474,
+          "support": 10,
+          "tp": 9,
+          "fp": 0,
+          "fn": 1
+        }
+      },
+      "note": "rows = ground truth, columns = predicted (incl. \"other\" for unrecognised predictions)"
+    },
+    "stairs_direction": {
+      "classes_in_matrix": [
+        "up",
+        "down"
+      ],
+      "classes_in_f1": [
+        "up",
+        "down"
+      ],
+      "matrix": {
+        "up": {
+          "up": 2,
+          "down": 0,
+          "other": 6
+        },
+        "down": {
+          "up": 0,
+          "down": 0,
+          "other": 7
+        }
+      },
+      "per_class_metrics": {
+        "up": {
+          "precision": 1.0,
+          "recall": 0.25,
+          "f1": 0.4,
+          "support": 8,
+          "tp": 2,
+          "fp": 0,
+          "fn": 6
+        },
+        "down": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 7,
+          "tp": 0,
+          "fp": 0,
+          "fn": 7
+        }
+      },
+      "note": "rows = ground truth, columns = predicted (incl. \"other\" for unrecognised predictions)"
+    },
+    "elevator_state": {
+      "classes_in_matrix": [
+        "open",
+        "closed"
+      ],
+      "classes_in_f1": [
+        "open",
+        "closed"
+      ],
+      "matrix": {
+        "open": {
+          "open": 0,
+          "closed": 0,
+          "other": 5
+        },
+        "closed": {
+          "open": 0,
+          "closed": 0,
+          "other": 5
+        }
+      },
+      "per_class_metrics": {
+        "open": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 5,
+          "tp": 0,
+          "fp": 0,
+          "fn": 5
+        },
+        "closed": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 5,
+          "tp": 0,
+          "fp": 0,
+          "fn": 5
+        }
+      },
+      "note": "rows = ground truth, columns = predicted (incl. \"other\" for unrecognised predictions)"
+    }
+  }
+}

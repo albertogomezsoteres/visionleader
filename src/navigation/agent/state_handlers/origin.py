@@ -1,4 +1,4 @@
-"""Phase 3 — confirm the resolved origin and bridge to destination.
+"""Phase 3 - confirm the resolved origin and bridge to destination.
 
 ``confirm_origin`` is the universal "we now know where the user is"
 transition. Most location-discovery handlers funnel here once they have
@@ -35,7 +35,7 @@ def confirm_origin(agent: "ConversationAgent", ctx: ConversationContext) -> Dict
         log_event(
             "AGENT",
             f"origin grounded: (at user {loc_id})  "
-            f"— building={BUILDING_NAMES.get(bld, bld)}  floor={flr}",
+            f"- building={BUILDING_NAMES.get(bld, bld)}  floor={flr}",
             origin=ctx.origin,
         )
         log_event(

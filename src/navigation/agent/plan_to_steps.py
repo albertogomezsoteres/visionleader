@@ -1,7 +1,7 @@
 """Translate Fast Downward plan output into navigation steps for the app.
 
 :func:`fd_plan_to_steps_room_level` consumes a room-level plan from the
-shared ``domain_indoor.pddl`` and produces navigation steps. Walking hops
+shared ``domain.pddl`` and produces navigation steps. Walking hops
 on the same floor are merged and enriched with hints from the campus
 places table. ``mover_exterior`` actions become outdoor steps with
 ``use_gps`` so the mobile app opens Google Maps for the exterior segment.
@@ -13,6 +13,7 @@ so the agent can re-use them without coupling to the FSM.
 import re
 from typing import Dict, List, Optional, Tuple
 
+from .parsing import building_id_from_name as _building_id_from_name
 from .text_formatting import (
     BUILDING_FULL,
     BUILDING_NAMES,
@@ -29,27 +30,6 @@ def parse_fd_action(action_str: str) -> Optional[Dict]:
     if not parts:
         return None
     return {"name": parts[0], "params": parts[1:]}
-
-
-def room_code_for_location(
-    places_locations: Dict,
-    building_id: int,
-    floor: int,
-    location_id: Optional[str],
-) -> Optional[str]:
-    """Look up the published room code (e.g. '1.4') for a given location."""
-    if not location_id:
-        return None
-    floor_key = str(floor)
-    for bname, floors in (places_locations or {}).items():
-        bid = _building_id_from_name(bname)
-        if bid != building_id:
-            continue
-        locs = (floors or {}).get(floor_key, []) or []
-        for loc in locs:
-            if loc.get("id") == location_id and loc.get("room_code"):
-                return str(loc.get("room_code"))
-    return None
 
 
 def arrival_verification_for_location(
@@ -138,7 +118,7 @@ def fd_plan_to_steps_room_level(
     single walking step whose distance is the sum of all hops and whose
     directional hint is the one from the FINAL hop (the one that ends
     at the user's immediate target). Intermediate nodes the planner
-    chose for distance optimisation do not appear in the TTS — the user
+    chose for distance optimisation do not appear in the TTS - the user
     only hears the final leg.
 
     The generated instruction follows the demo-friendly pattern::
@@ -238,9 +218,9 @@ def fd_plan_to_steps_room_level(
 
         # Two ways to escape the rigid "Walk N meters, …" template and
         # write a full natural-language sentence:
-        #   • Use a ``{N}`` placeholder anywhere in the hint — distance
+        #   • Use a ``{N}`` placeholder anywhere in the hint - distance
         #     gets substituted in place.
-        #   • Or simply start the hint with a capital letter — the author
+        #   • Or simply start the hint with a capital letter - the author
         #     is signalling that the hint is the complete sentence and
         #     it is taken verbatim (the bare "Walk N meters," prefix is
         #     dropped). Existing short directional hints all start with
@@ -301,7 +281,7 @@ def fd_plan_to_steps_room_level(
 
         if name == "use_elevator":
             approach_distance, approach_hint = consume_walk_approach()
-            _jf, from_floor, _bf = pddl_to_json(params[1], current_floor, current_bname)
+            _jf, _ff, _bf = pddl_to_json(params[1], current_floor, current_bname)
             _jt, to_floor, b_to = pddl_to_json(params[2], current_floor, current_bname)
 
             approach = format_approach("the elevator", approach_distance, approach_hint)
@@ -329,7 +309,7 @@ def fd_plan_to_steps_room_level(
             "climb_stairs_fast", "descend_stairs_fast",
         ):
             approach_distance, approach_hint = consume_walk_approach()
-            _jf, from_floor, _bf = pddl_to_json(params[1], current_floor, current_bname)
+            _jf, _ff, _bf = pddl_to_json(params[1], current_floor, current_bname)
             _jt, to_floor, b_to = pddl_to_json(params[2], current_floor, current_bname)
             direction = "up" if name.startswith("climb") else "down"
             is_hurry = name.endswith("_fast")
@@ -380,16 +360,3 @@ def fd_plan_to_steps_room_level(
 
     flush_walk()
     return steps if steps else None
-
-
-def _building_id_from_name(name: Optional[str]) -> int:
-    """Resolve a building name (e.g. 'G', 'cd') to its numeric id."""
-    if not name:
-        return 0
-    mapping = {
-        "g": 1,   "cd": 2,  "h": 3,   "p": 4,   "o": 5,
-        "m": 6,   "n": 7,   "csq": 8, "k": 9,   "csc": 10,
-        "c": 11,  "e": 12,  "cm": 13, "lcb": 14,
-        "rodilla": 15, "chapel": 16,
-    }
-    return mapping.get(name.lower(), 0)

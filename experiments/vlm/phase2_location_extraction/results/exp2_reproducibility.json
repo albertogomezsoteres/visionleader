@@ -1,0 +1,58 @@
+{
+  "experiment": "exp2_update",
+  "date": "2026-04-26T18:36:08",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "torch_version": "2.10.0+cu128",
+  "transformers_version": "5.6.2",
+  "pillow_version": "12.2.0",
+  "bert_score_version": "0.3.13",
+  "seed": 42,
+  "cudnn_deterministic": true,
+  "max_new_tokens": 30,
+  "images_path": "/content/images",
+  "annotations_path": "/content/annotations",
+  "git_commit": "unavailable",
+  "models_evaluated": [
+    "google/paligemma2-3b-pt-448",
+    "google/paligemma2-3b-mix-448",
+    "google/paligemma2-10b-pt-448",
+    "google/paligemma2-10b-mix-448",
+    "google/paligemma2-10b-ft-docci-448",
+    "google/gemma-4-E2B-it",
+    "google/gemma-4-E4B-it"
+  ],
+  "decoding_protocol": {
+    "do_sample": false,
+    "num_beams": 1,
+    "temperature": null,
+    "max_new_tokens": 30,
+    "enable_thinking": false,
+    "torch_dtype": "auto on CUDA (bfloat16); float32 on CPU",
+    "gemma_recommended_overridden": "stochastic (T=1.0, top_p=0.95, top_k=64) replaced by greedy for reproducibility"
+  },
+  "latency_protocol": {
+    "n_warmup": 3,
+    "n_latency_runs": 3,
+    "cuda_synchronize_around_timer": true,
+    "warmup_image_source": "synthetic 224x224 deterministic RGB noise, seed=SEED",
+    "image_order": "shuffled deterministically per run (seed = SEED*1000 + run_idx)"
+  },
+  "dataset_artifact_hashes": {
+    "/content/images.zip": {
+      "sha256": "6a951601a06dd8549302945541853d0211920f1926d89a031dc7c91b88d4b253",
+      "size_bytes": 16783851
+    },
+    "/content/annotations/ground_truth.json": {
+      "sha256": "c6a42ebaf18830cbc280b637429b21a00ad6a83f53b375bc7a05a09ff4ca9ea1",
+      "size_bytes": 11531
+    },
+    "/content/annotations/questions.json": {
+      "sha256": "5b0ca74cd05856c1cf5177d8dd5563416e4f2d86a8365303217cef453e0b103a",
+      "size_bytes": 5713
+    },
+    "/content/models.json": {
+      "sha256": "c256bd8da295b4fc21008b6660b366e687dff96a2be8a2912be194dde0f5c90f",
+      "size_bytes": 3584
+    }
+  }
+}

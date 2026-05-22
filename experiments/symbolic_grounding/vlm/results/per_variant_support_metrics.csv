@@ -1,0 +1,3 @@
+prompt_variant,bleu3,gleu,meteor,bertscore_f1
+basic,0.5577,0.6739,0.749,0.8434
+optimized,0.9705,0.9783,0.966,0.9828

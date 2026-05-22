@@ -1,0 +1,53 @@
+Materialising 12 problem files to C:\tfg\pddl\problems\evaluation
+  g_same_floor              -> pddl\problems\evaluation\problem_g_same_floor.pddl
+  g_one_floor               -> pddl\problems\evaluation\problem_g_one_floor.pddl
+  g_two_floors              -> pddl\problems\evaluation\problem_g_two_floors.pddl
+  cd_one_floor              -> pddl\problems\evaluation\problem_cd_one_floor.pddl
+  cd_two_floors             -> pddl\problems\evaluation\problem_cd_two_floors.pddl
+  cd_cross_cores            -> pddl\problems\evaluation\problem_cd_cross_cores.pddl
+  hybrid_noncanonical       -> pddl\problems\evaluation\problem_hybrid_noncanonical.pddl
+  hybrid_aula_p1            -> pddl\problems\evaluation\problem_hybrid_aula_p1.pddl
+  hybrid_deep               -> pddl\problems\evaluation\problem_hybrid_deep.pddl
+  g_hurry                   -> pddl\problems\evaluation\problem_g_hurry.pddl
+  cd_cross_cores_hurry      -> pddl\problems\evaluation\problem_cd_cross_cores_hurry.pddl
+  hybrid_closure            -> pddl\problems\evaluation\problem_hybrid_closure.pddl
+
+Running 36 experiments (12 problems � 3 configs)
+  [  1/36] g_same_floor           astar_lmcut    ... OK   cost=  23 steps=  7 exp=     8 gen=    21 time=0.00s
+  [  2/36] g_same_floor           astar_blind    ... OK   cost=  23 steps=  7 exp=    15 gen=    40 time=0.00s
+  [  3/36] g_same_floor           lazy_ff        ... OK   cost=  24 steps=  7 exp=     9 gen=    30 time=0.00s
+  [  4/36] g_one_floor            astar_lmcut    ... OK   cost=  33 steps=  6 exp=     7 gen=    23 time=0.00s
+  [  5/36] g_one_floor            astar_blind    ... OK   cost=  33 steps=  6 exp=    80 gen=   215 time=0.01s
+  [  6/36] g_one_floor            lazy_ff        ... OK   cost=  33 steps=  6 exp=    10 gen=    38 time=0.00s
+  [  7/36] g_two_floors           astar_lmcut    ... OK   cost=  46 steps= 10 exp=    11 gen=    33 time=0.00s
+  [  8/36] g_two_floors           astar_blind    ... OK   cost=  46 steps= 10 exp=    86 gen=   233 time=0.01s
+  [  9/36] g_two_floors           lazy_ff        ... OK   cost=  46 steps= 10 exp=    14 gen=    47 time=0.00s
+  [ 10/36] cd_one_floor           astar_lmcut    ... OK   cost=  46 steps=  6 exp=     7 gen=    19 time=0.00s
+  [ 11/36] cd_one_floor           astar_blind    ... OK   cost=  46 steps=  6 exp=    70 gen=   196 time=0.00s
+  [ 12/36] cd_one_floor           lazy_ff        ... OK   cost=  46 steps=  6 exp=     7 gen=    25 time=0.00s
+  [ 13/36] cd_two_floors          astar_lmcut    ... OK   cost=  54 steps=  7 exp=     8 gen=    21 time=0.00s
+  [ 14/36] cd_two_floors          astar_blind    ... OK   cost=  54 steps=  7 exp=   105 gen=   287 time=0.01s
+  [ 15/36] cd_two_floors          lazy_ff        ... OK   cost=  54 steps=  7 exp=     9 gen=    30 time=0.00s
+  [ 16/36] cd_cross_cores         astar_lmcut    ... OK   cost=  52 steps=  9 exp=    10 gen=    24 time=0.00s
+  [ 17/36] cd_cross_cores         astar_blind    ... OK   cost=  52 steps=  9 exp=    95 gen=   269 time=0.01s
+  [ 18/36] cd_cross_cores         lazy_ff        ... OK   cost=  64 steps=  9 exp=    11 gen=    33 time=0.00s
+  [ 19/36] hybrid_noncanonical    astar_lmcut    ... OK   cost= 118 steps= 12 exp=    13 gen=    36 time=0.01s
+  [ 20/36] hybrid_noncanonical    astar_blind    ... OK   cost= 118 steps= 12 exp=  1896 gen=  5113 time=0.02s
+  [ 21/36] hybrid_noncanonical    lazy_ff        ... OK   cost= 121 steps= 13 exp=    16 gen=    51 time=0.00s
+  [ 22/36] hybrid_aula_p1         astar_lmcut    ... OK   cost= 140 steps= 15 exp=    16 gen=    48 time=0.01s
+  [ 23/36] hybrid_aula_p1         astar_blind    ... OK   cost= 140 steps= 15 exp=  3478 gen=  9460 time=0.03s
+  [ 24/36] hybrid_aula_p1         lazy_ff        ... OK   cost= 140 steps= 15 exp=    20 gen=    70 time=0.00s
+  [ 25/36] hybrid_deep            astar_lmcut    ... OK   cost= 132 steps= 15 exp=    16 gen=    44 time=0.01s
+  [ 26/36] hybrid_deep            astar_blind    ... OK   cost= 132 steps= 15 exp=  2674 gen=  7214 time=0.02s
+  [ 27/36] hybrid_deep            lazy_ff        ... OK   cost= 132 steps= 15 exp=    21 gen=    69 time=0.00s
+  [ 28/36] g_hurry                astar_lmcut    ... OK   cost=  33 steps=  7 exp=     8 gen=    21 time=0.00s
+  [ 29/36] g_hurry                astar_blind    ... OK   cost=  33 steps=  6 exp=    89 gen=   244 time=0.01s
+  [ 30/36] g_hurry                lazy_ff        ... OK   cost=  33 steps=  7 exp=    10 gen=    32 time=0.00s
+  [ 31/36] cd_cross_cores_hurry   astar_lmcut    ... OK   cost=  52 steps=  9 exp=    10 gen=    24 time=0.00s
+  [ 32/36] cd_cross_cores_hurry   astar_blind    ... OK   cost=  52 steps=  9 exp=   127 gen=   367 time=0.01s
+  [ 33/36] cd_cross_cores_hurry   lazy_ff        ... OK   cost=  64 steps=  9 exp=    11 gen=    33 time=0.00s
+  [ 34/36] hybrid_closure         astar_lmcut    ... OK   cost= 115 steps= 10 exp=    11 gen=    29 time=0.01s
+  [ 35/36] hybrid_closure         astar_blind    ... OK   cost= 115 steps= 10 exp=   718 gen=  1898 time=0.02s
+  [ 36/36] hybrid_closure         lazy_ff        ... OK   cost= 115 steps= 10 exp=    14 gen=    44 time=0.00s
+
+Wrote C:\tfg\experiments\planner\results\planner_evaluation.csv

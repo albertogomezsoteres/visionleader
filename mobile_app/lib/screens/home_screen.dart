@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const SizedBox(height: 36),
 
-                // Title — single solid wordmark
+                // Title - single solid wordmark
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: const Text(
@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 const Spacer(flex: 2),
 
-                // Feature chips — 2x2 grid of the main technical pillars
+                // Feature chips - 2x2 grid of the main technical pillars
                 const Column(
                   children: [
                     Row(

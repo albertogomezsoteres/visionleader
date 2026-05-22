@@ -1,101 +1,115 @@
-# VisionLeaderUFV
+# Neuro-Symbolic Campus Navigation System
 
-VisionLeaderUFV is a TFG project that combines vision-language models, speech interaction, and symbolic planning to assist indoor campus navigation (UFV).
+**VisionLeader UFV** is an assistive indoor navigation system for visually impaired
+users, developed as a final degree project (FDP) at Universidad Francisco de Vitoria.
+It combines on-device **speech-to-text**, a **vision-language model** for reading
+campus signage, and **automated planning** over a **PDDL** domain, coordinated by a
+finite-state conversation agent. The user states a destination by voice; the system
+transcribes it, grounds visual evidence from the camera into **symbolic predicates**,
+and returns spoken, turn-by-turn directions to an optimal route.
 
-## Repository structure
+## Architecture
+
+The system is **neuro-symbolic**. Neural models handle the unstructured inputs they
+are good at (noisy audio, campus photos), while a classical symbolic planner provides
+the guarantees they cannot: optimality, completeness and explainability over a
+structured world model. The neural components sit only at the perceptual edges of the
+loop; the route and the dialogue state are reasoned about symbolically.
+
+| Layer | Component | Where it runs |
+|-|-|-|
+| Speech recognition | On-device ASR: Whisper tiny (q5_0, whisper.cpp) | Android device |
+| Perception | Vision-language model (Gemma 4 E4B-it) grounding signage into PDDL atoms | Colab GPU, served from `deploy/` |
+| Reasoning | Automated planner: Fast Downward, A* with the LM-Cut heuristic | Docker |
+| Knowledge | PDDL domain (`pddl/domain.pddl`) and campus graph (`config/campus_topology.json`) | loaded by the backend |
+| Orchestration | Finite-state conversation agent | FastAPI backend |
+
+The interface between the two paradigms is structured textual output: the
+vision-language model emits PDDL atoms such as `(at user classroom_g_1_4)`, or a
+discrete state label such as an elevator's open or closed status, in a closed
+vocabulary defined by the campus topology and parsed deterministically. This forces
+the neural side to commit to an unambiguous symbolic claim that the planner can act
+on or reject. Two properties follow: the route is provably optimal under the metric
+cost model (A* with the admissible LM-Cut heuristic), and the system adapts to live
+state, since editing the room-availability file reroutes the next planning request
+with no retraining and no restart.
+
+## Pipeline (one turn)
+
+1. The Android client records audio and runs **on-device ASR** (Whisper) to produce a transcript.
+2. The transcript is posted to the FastAPI backend, where the **finite-state agent** updates the dialogue state and selects the next action.
+3. When visual evidence is required, the client captures an image and the **vision-language model** grounds it into a symbolic predicate (a PDDL atom in the topology's vocabulary).
+4. The agent generates a **PDDL problem** from the campus graph and the current state, and **Fast Downward** solves it (A* with LM-Cut) for an optimal route.
+5. The plan is compacted into spoken instructions and returned for on-device text-to-speech.
+
+## Documentation
+
+Detailed docs are in [`docs/`](docs/):
+
+- [Architecture](docs/architecture.md): components, technologies and the per-turn flow.
+- [Setup](docs/setup.md): install and run the backend, vision model, planner and app.
+- [Experiments](docs/experiments.md): how each component was chosen and validated.
+- [Data](docs/data.md): the test sets, and what is kept local for privacy.
+- [Reproducibility](docs/reproducibility.md): seeds, hardware and how to rerun.
+
+## Repository layout
 
 ```text
 tfg/
-├── .github/             # CI / GitHub metadata
-├── config/              # Runtime config (campus graph, model registry, etc.)
-├── data/                # Campus images + evaluation annotations (JSON, etc.)
-├── dashboard/           # Streamlit app to explore experiment results
-├── docker/              # Docker assets (e.g. Fast Downward)
-├── mobile_app/          # Flutter client (Android / iOS)
-├── notebooks/           # Jupyter / Colab experiments
-├── pddl/                # PDDL domain and generated problem files area
-├── results/             # Generated experiment outputs (CSVs, plots); ignored by Git by default
-├── scripts/             # `run_api`, `run_dashboard`, `validate_models`, `detener_api`, `close_room`
-├── src/                 # Python backend (FastAPI, navigation, `evaluation/`)
-├── EXPERIMENTS.md       # Experimental protocol and reproduction guide
-├── env.example          # Template for `.env` (safe to commit)
-├── requirements.txt     # Backend Python dependencies
-└── README.md
+├── src/            Python backend: the FastAPI API and the navigation/planning logic
+├── mobile_app/     Flutter client (Android)
+├── pddl/           PDDL planning domain and the problem files
+├── config/         Campus graph, room availability, model registry
+├── experiments/    The experiments that selected each component (one folder each)
+├── data/           The test sets the experiments consume
+├── docs/           Detailed documentation (architecture, setup, experiments, ...)
+├── deploy/         Colab notebook that serves the vision-language model over a tunnel
+├── docker/         Fast Downward Docker image
+├── scripts/        start_api, stop_api, close_room, regenerate_topology
+├── requirements.txt
+└── .env.example
 ```
+
+Each of `experiments/`, `data/` and `pddl/` has its own README with the detail.
 
 ## Prerequisites
 
-- Python 3.10+
-- Flutter SDK
-- Docker Desktop (for the Fast Downward planner container)
+- Python 3.10 or newer
+- Flutter SDK (the client targets Android)
+- Docker, with the `fast-downward:latest` image, for the planner
+- A Colab GPU runtime to serve the vision-language model
 
-## Installation
+## Setup
 
 ```bash
 pip install -r requirements.txt
-pip install -r dashboard/requirements.txt
+cp .env.example .env   # then fill in the values
 ```
 
-## Environment variables
-
-Secrets and optional service URLs are **not** stored in source code. Copy the template and fill in locally:
-
-```bash
-# Linux / macOS
-cp env.example .env
-
-# Windows (PowerShell or CMD)
-copy env.example .env
-```
+The backend reads these from `.env`:
 
 | Variable | Purpose |
-|----------|---------|
-| `HF_TOKEN` | Hugging Face token for downloading / using gated PaliGemma weights when running local inference. |
-| `GOOGLE_MAPS_API_KEY` | Google Maps Directions API key for outdoor routes between campus buildings. |
-| `COLAB_API_URL` | Optional base URL of your ngrok (or similar) tunnel to Colab for remote vision / transcription. |
+|-|-|
+| `COLAB_API_URL` | Base URL of the tunnel to the Colab vision server (no trailing slash). |
+| `GOOGLE_MAPS_API_KEY` | Google Maps Directions key, used for the outdoor segment between buildings. |
+| `TELEMETRY_JSONL_PATH` | Optional. Where to write the telemetry log read by the end-to-end validation. |
 
-`python-dotenv` loads `.env` from the project root when you start the API (`load_dotenv` in `planning_api` and `scripts/run_api.py`). The file `.env` is listed in `.gitignore` and must not be committed.
+The Colab notebook uses its own secrets (`HF_TOKEN` for the gated Gemma model and
+`NGROK_TOKEN` for the tunnel), set in Colab rather than in `.env`.
 
-## Run backend API
+## Running
 
-From the repository root:
-
-```bash
-python scripts/run_api.py
-```
-
-- API: http://localhost:8000  
-- Docs: http://localhost:8000/docs  
-
-Stop the API (interactive, Windows):
+**Backend**
 
 ```bash
-python scripts/detener_api.py
+python scripts/start_api.py     # API on http://localhost:8000, OpenAPI docs at /docs
+python scripts/stop_api.py      # stop it
 ```
 
-## Run evaluation dashboard
+**Vision-language model.** Open `deploy/colab_inference_server.ipynb` in Colab, run
+the cells, and copy the printed tunnel URL into `.env` as `COLAB_API_URL`.
 
-```bash
-python scripts/run_dashboard.py
-```
-
-Or:
-
-```bash
-streamlit run dashboard/app.py
-```
-
-The dashboard reads experiment exports under `results/` (see [`dashboard/README.md`](dashboard/README.md) for the expected layout).
-
-## Validate PaliGemma models (optional)
-
-Loads each model entry in `config/models.json` (heavy; requires GPU/VRAM for larger checkpoints):
-
-```bash
-python scripts/validate_models.py
-```
-
-## Run mobile app (Flutter)
+**Mobile client**
 
 ```bash
 cd mobile_app
@@ -103,17 +117,27 @@ flutter pub get
 flutter run
 ```
 
-Configure the API base URL in `mobile_app/lib/core/app_config.dart` (e.g. emulator uses `10.0.2.2` to reach the host). It can also be overridden at build time via `--dart-define=API_BASE_URL=...`.
+Point the client at the backend with `--dart-define=API_BASE_URL=http://<host>:8000`,
+or edit `mobile_app/lib/core/app_config.dart`.
 
-## Data and results
+**Planner.** The backend invokes Fast Downward in Docker, so the `fast-downward:latest`
+image must be available locally. Without it, routes that change floor or building
+cannot be computed.
 
-- **`data/`** — versioned dataset and question / expected-answer JSON used for evaluation.
-- **`results/`** — generated by experiments; listed in `.gitignore`. Regenerate locally after running notebooks or batch evaluation.
+## Dynamic replanning (demo)
 
-## Experiments
+Room availability is part of the planning state, so closing a room reroutes the next
+request with no restart:
 
-See [`EXPERIMENTS.md`](EXPERIMENTS.md) for the full experimental protocol: model set, datasets, metrics, notebook layout, and reproduction instructions for both PaliGemma evaluation experiments.
+```bash
+python scripts/close_room.py close G elevator --floor 0
+python scripts/close_room.py open  G elevator --floor 0
+python scripts/close_room.py list
+```
 
-## Notes
+## Experiments and datasets
 
-- **Fast Downward** runs via Docker; see `docker/fast-downward/README.md`.
+Every component was selected and validated through its own set of experiments
+(speech recognition, vision-language grounding, planner search, and end-to-end
+integration), and the assembled system was then validated end to end. See
+`experiments/` for the protocols and results, and `data/` for the test sets.
