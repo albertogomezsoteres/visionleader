@@ -11,11 +11,13 @@ import '../../core/building_locations.dart';
 import '../../core/file_utils.dart';
 import '../../services/api_service.dart';
 import '../../services/image_processing.dart';
+import '../../services/telemetry_service.dart';
 import '../../services/whisper_service.dart';
 import 'widgets/action_area.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/nav_quick_actions.dart';
 import 'widgets/outdoor_route_view.dart';
+import 'widgets/plan_card.dart';
 import 'widgets/processing_overlay.dart';
 import 'widgets/status_row.dart';
 
@@ -68,6 +70,30 @@ class _ConversationScreenState extends State<ConversationScreen>
   // expected — the camera button refuses to fire in that case.
   String? _expectedPromptId;
 
+  // Raw symbolic plan from Fast Downward, surfaced in the PlanCard. Cleared
+  // when the agent reports navigation_complete or cancel.
+  List<String> _pddlPlan = const [];
+  int _planCost = 0;
+  double? _planSearchTimeS;
+
+  // True while the TTS engine is actively speaking. Drives the live
+  // waveform indicator inside the message bubble. Set on the engine's
+  // start callback, cleared on completion / cancel / error.
+  bool _isTtsSpeaking = false;
+
+  // Soft-fade transcription preview shown below the bubble for a few
+  // seconds after the user speaks, then fades to nothing. Decoupled
+  // from `_transcription` itself so AnimatedOpacity can fade out
+  // smoothly before the underlying text is wiped.
+  bool _transcriptionVisible = false;
+  Timer? _transcriptionFadeTimer;
+  static const _transcriptionVisibleFor = Duration(seconds: 3);
+
+  // Tracks whether the Symbolic Plan card is expanded. The bubble is
+  // hidden while expanded so the plan list can occupy the freed space
+  // without overflowing the column.
+  bool _planExpanded = false;
+
   // Recording helpers
   DateTime? _recordingStartedAt;
   String? _currentRecordingPath;
@@ -96,14 +122,57 @@ class _ConversationScreenState extends State<ConversationScreen>
     _tts.stop();
     _recorder.closeRecorder().catchError((_) {});
     _pulseCtrl.dispose();
+    _transcriptionFadeTimer?.cancel();
     super.dispose();
+  }
+
+  // Show the just-transcribed user utterance below the bubble, then
+  // start the auto-fade timer. The text itself is wiped only after the
+  // AnimatedOpacity fade-out completes (in its onEnd callback).
+  void _showTranscription(String text) {
+    _transcriptionFadeTimer?.cancel();
+    setState(() {
+      _transcription = text;
+      _transcriptionVisible = true;
+    });
+    _transcriptionFadeTimer = Timer(_transcriptionVisibleFor, () {
+      if (!mounted) return;
+      setState(() => _transcriptionVisible = false);
+    });
+  }
+
+  void _hideTranscription() {
+    _transcriptionFadeTimer?.cancel();
+    if (_transcriptionVisible) {
+      setState(() => _transcriptionVisible = false);
+    }
   }
 
   Future<void> _initTtsAndRecorder() async {
     await _tts.setLanguage('en-US');
-    await _tts.setSpeechRate(0.42);
+    await _tts.setSpeechRate(0.63);
     await _tts.setVolume(1.0);
     await _tts.setPitch(1.0);
+
+    // Telemetry hooks: TTS engine fires these on the synthesizer thread; we
+    // forward them to the singleton, which is a no-op when validation is off.
+    // The same callbacks drive the live waveform indicator in the bubble.
+    _tts.setStartHandler(() {
+      if (mounted) setState(() => _isTtsSpeaking = true);
+      TelemetryService.instance.markTtsStarted();
+    });
+    _tts.setCompletionHandler(() {
+      if (mounted) setState(() => _isTtsSpeaking = false);
+      TelemetryService.instance.markTtsCompleted();
+      // Fire-and-forget; failures are logged inside the service.
+      unawaited(TelemetryService.instance.flushTurn());
+    });
+    _tts.setCancelHandler(() {
+      if (mounted) setState(() => _isTtsSpeaking = false);
+    });
+    _tts.setErrorHandler((msg) {
+      if (mounted) setState(() => _isTtsSpeaking = false);
+    });
 
     final micStatus = await Permission.microphone.request();
     if (!micStatus.isGranted) {
@@ -134,6 +203,7 @@ class _ConversationScreenState extends State<ConversationScreen>
   // Conversation turns - each method talks to ApiService and updates state
 
   Future<void> _fetchWelcome() async {
+    TelemetryService.instance.startTurn('init');
     setState(() { _isProcessing = true; _processingMsg = 'Starting assistant...'; });
     try {
       final result = await ApiService.sendConversationTurn(sessionId: widget.sessionId);
@@ -196,6 +266,19 @@ class _ConversationScreenState extends State<ConversationScreen>
       } else {
         setState(() { _totalSteps = 0; _currentStep = 0; });
       }
+
+      final pddl = (ctx['pddl_plan'] as List?)?.cast<String>() ?? const [];
+      final cost = ctx['plan_cost'] as int? ?? 0;
+      final searchTime = (ctx['plan_search_time_s'] as num?)?.toDouble();
+      setState(() {
+        _pddlPlan = pddl;
+        _planCost = cost;
+        _planSearchTimeS = searchTime;
+        // PlanCard remounts when the plan list changes, so its internal
+        // _expanded resets to false; mirror that here so the bubble
+        // becomes visible again at the start of every new route.
+        if (pddl.isEmpty) _planExpanded = false;
+      });
     }
 
     final gpsRoute = result['gps_route'] as Map<String, dynamic>?;
@@ -273,6 +356,8 @@ class _ConversationScreenState extends State<ConversationScreen>
           polylineEncoded: (route['polyline'] as String?) ?? '',
           destinationLabel: BuildingLocations.nameOf(dest),
           steps: steps,
+          totalDistance: route['distance'] as String?,
+          totalDuration: route['duration'] as String?,
           onArrived: _goNextStep,
         ),
       ),
@@ -313,14 +398,20 @@ class _ConversationScreenState extends State<ConversationScreen>
   }
 
   void _setMessage(String message, String nextInput, String action) {
-    setState(() { _ttsMessage = message; _nextInput = nextInput; _currentAction = action; _transcription = ''; });
+    setState(() { _ttsMessage = message; _nextInput = nextInput; _currentAction = action; });
+    // Don't yank the transcription off-screen the instant the backend
+    // replies — its 3-second auto-fade timer will take it out smoothly
+    // a moment later. This lets the user see what they just said even
+    // for fast turnarounds like "I am lost".
   }
 
   Future<void> _speakTts(String text) async {
     if (text.isEmpty) return;
     await _tts.stop();
     await Future.delayed(const Duration(milliseconds: 150));
-    if (mounted) await _tts.speak(text);
+    if (!mounted) return;
+    TelemetryService.instance.markTtsCalled();
+    await _tts.speak(text);
   }
 
   // Photo actions
@@ -352,6 +443,8 @@ class _ConversationScreenState extends State<ConversationScreen>
       return;
     }
 
+    TelemetryService.instance.startTurn('image');
+    TelemetryService.instance.markPhotoSubmitted();
     setState(() { _isProcessing = true; _processingMsg = 'Analyzing image...'; });
     try {
       final cropped = await ImageProcessing.cropToSquare(File(picked.path));
@@ -369,6 +462,12 @@ class _ConversationScreenState extends State<ConversationScreen>
 
   Future<void> _startRecording() async {
     await _tts.stop();
+    // flutter_tts.stop() returns once the cancel is queued, but the
+    // Android engine can still emit a tail of audio for ~100 ms. If the
+    // recorder starts during that tail, Whisper picks up the assistant's
+    // own voice instead of the user's. A short sleep lets the speaker
+    // go fully silent.
+    await Future<void>.delayed(const Duration(milliseconds: 150));
     final micStatus = await Permission.microphone.status;
     if (!micStatus.isGranted) {
       final req = await Permission.microphone.request();
@@ -387,14 +486,22 @@ class _ConversationScreenState extends State<ConversationScreen>
     await _recorder.startRecorder(toFile: filePath, codec: Codec.pcm16WAV, sampleRate: 16000, numChannels: 1);
   }
 
+  // Length of the audio recorded in the most recent _stopRecording call,
+  // used to enrich the [STT] log line with the audio duration.
+  int? _lastAudioMs;
+
   Future<void> _stopRecording() async {
     if (!_isRecording) return;
     final path = await _recorder.stopRecorder();
     _pulseCtrl.stop();
     _pulseCtrl.reset();
+    // Mic released — anchor the turn stopwatch here and start the STT timer.
+    TelemetryService.instance.startTurn('voice');
+    TelemetryService.instance.markSttStart();
     setState(() { _isRecording = false; _isProcessing = true; _processingMsg = 'Transcribing your voice...'; });
 
     final elapsedMs = _recordingStartedAt == null ? 0 : DateTime.now().difference(_recordingStartedAt!).inMilliseconds;
+    _lastAudioMs = elapsedMs;
     final finalPath = path ?? _currentRecordingPath;
     final tempFile = finalPath != null ? File(finalPath) : null;
 
@@ -432,10 +539,20 @@ class _ConversationScreenState extends State<ConversationScreen>
   }
 
   Future<void> _transcribeAndSend(File audio) async {
+    final sw = Stopwatch()..start();
     try {
       final text = await WhisperService.instance.transcribe(audio);
+      final sttLatencyMs = sw.elapsedMilliseconds;
+      TelemetryService.instance.markSttEnd();
+      // Always echo the transcription to the backend log so the demo
+      // terminal shows STT inline — Whisper runs on-device and would be
+      // invisible otherwise.
+      unawaited(TelemetryService.instance.logStt(
+        text, sttLatencyMs, audioMs: _lastAudioMs,
+      ));
       if (text.isNotEmpty) {
-        setState(() { _transcription = text; _processingMsg = 'Processing...'; });
+        _showTranscription(text);
+        setState(() => _processingMsg = 'Processing...');
         await _sendVoice(text);
       } else {
         if (!mounted) return;
@@ -476,7 +593,7 @@ class _ConversationScreenState extends State<ConversationScreen>
           icon: const Icon(Icons.arrow_back_ios_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Navigation Assistant',
+        title: const Text('VisionLeaderUFV',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
       ),
       body: Stack(
@@ -494,61 +611,105 @@ class _ConversationScreenState extends State<ConversationScreen>
                   goalFloor: _goalFloor,
                   goalLocationId: _goalLocationId,
                 ),
-                const SizedBox(height: 16),
+                if (_pddlPlan.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  PlanCard(
+                    actions: _pddlPlan,
+                    totalCost: _planCost,
+                    searchTimeS: _planSearchTimeS,
+                    currentStepIdx: _currentStep > 0 ? _currentStep - 1 : null,
+                    onExpansionChanged: (expanded) {
+                      setState(() => _planExpanded = expanded);
+                    },
+                  ),
+                ],
+                // Pre-bubble spacing collapses when the plan is expanded
+                // so the freed height fully translates to the plan list
+                // and the column doesn't spill into the action area.
+                SizedBox(height: _planExpanded ? 0 : 16),
+                // Compact indicator (icon + waveform + step badge). The
+                // assistant speaks through the speaker, so the visual
+                // stays minimal. Hidden (replaced by an empty Expanded
+                // that still claims available space) while the Symbolic
+                // Plan card is expanded, so the plan list can spread
+                // without making the column overflow.
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        MessageBubble(
+                  child: _planExpanded
+                      ? const SizedBox.shrink()
+                      : MessageBubble(
                           message: _ttsMessage,
                           currentAction: _currentAction,
-                          currentStep: _isNavigating ? _currentStep : null,
-                          totalSteps: _isNavigating ? _totalSteps : null,
+                          currentStep:
+                              _isNavigating ? _currentStep : null,
+                          totalSteps:
+                              _isNavigating ? _totalSteps : null,
+                          isTtsActive: _isTtsSpeaking,
                           onTapReplay: () => _speakTts(_ttsMessage),
                         ),
-                        const SizedBox(height: 14),
-                        if (_transcription.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.record_voice_over_rounded, size: 14, color: Color(0xFF3B82F6)),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    '"$_transcription"',
-                                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontStyle: FontStyle.italic),
-                                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
+                ),
+                SizedBox(height: _planExpanded ? 0 : 14),
+                if (_transcription.isNotEmpty)
+                  AnimatedOpacity(
+                    opacity: _transcriptionVisible ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 600),
+                    curve: Curves.easeOut,
+                    onEnd: () {
+                      // Wipe the underlying text only after the fade-out
+                      // completes, so the row keeps occupying its space
+                      // through the animation instead of snapping shut.
+                      if (!_transcriptionVisible &&
+                          _transcription.isNotEmpty &&
+                          mounted) {
+                        setState(() => _transcription = '');
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 14),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.record_voice_over_rounded,
+                              size: 16, color: Color(0xFF3B82F6)),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              '“$_transcription”',
+                              style: const TextStyle(
+                                color: Color(0xFF94A3B8),
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                letterSpacing: 0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                        if (_isNavigating)
-                          NavQuickActions(
-                            onNext: _goNextStep,
-                            onRepeat: () => _sendVoice('repeat'),
-                            onLost: () => _sendVoice("I'm lost"),
-                            onCancel: () => _sendVoice('cancel'),
-                          ),
-                        ActionArea(
-                          currentAction: _currentAction,
-                          nextInput: _nextInput,
-                          isRecording: _isRecording,
-                          pulseAnimation: _pulseAnim,
-                          pendingGpsDestinationId: _pendingGpsDestination,
-                          pendingGpsDestinationName: BuildingLocations.nameOf(_pendingGpsDestination),
-                          onStartRecording: _startRecording,
-                          onStopRecording: _stopRecording,
-                          onPickPhoto: _pickPhoto,
-                          onConfirmYes: () => _sendConfirmation(true),
-                          onConfirmNo: () => _sendConfirmation(false),
-                          onArrivedOutdoor: _goNextStep,
-                          onReopenOutdoorMap: _openOutdoorRouteInApp,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                if (_isNavigating)
+                  NavQuickActions(
+                    onNext: _goNextStep,
+                    onRepeat: () => _sendVoice('repeat'),
+                    onLost: () => _sendVoice("I'm lost"),
+                    onCancel: () => _sendVoice('cancel'),
+                  ),
+                ActionArea(
+                  currentAction: _currentAction,
+                  nextInput: _nextInput,
+                  isRecording: _isRecording,
+                  pulseAnimation: _pulseAnim,
+                  pendingGpsDestinationId: _pendingGpsDestination,
+                  pendingGpsDestinationName: BuildingLocations.nameOf(_pendingGpsDestination),
+                  onStartRecording: _startRecording,
+                  onStopRecording: _stopRecording,
+                  onPickPhoto: _pickPhoto,
+                  onConfirmYes: () => _sendConfirmation(true),
+                  onConfirmNo: () => _sendConfirmation(false),
+                  onArrivedOutdoor: _goNextStep,
+                  onReopenOutdoorMap: _openOutdoorRouteInApp,
                 ),
               ],
             ),

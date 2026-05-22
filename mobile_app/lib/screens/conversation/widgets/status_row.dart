@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Row of chips showing detected building, floor, and navigation progress.
+/// Two compact panels that show the agent's current understanding of the
+/// initial location and the goal — both as natural text and as the
+/// underlying PDDL atom that will be sent to the symbolic planner.
 class StatusRow extends StatelessWidget {
   final String? initialBuilding;
   final int? initialFloor;
@@ -28,38 +30,28 @@ class StatusRow extends StatelessWidget {
 
   String _locationText(String locationId) {
     switch (locationId) {
-      case 'entrance_main':
-        return 'Main Entrance';
-      case 'entrance_cd':
-        return 'CD Entrance';
-      case 'elevator':
-        return 'Elevator';
-      case 'stairs':
-        return 'Stairs';
-      case 'bathroom':
-        return 'Restroom';
-      case 'ai_lab':
-        return 'AI Laboratory';
-      case 'offices':
-        return 'Faculty Offices';
-      case 'eps_offices':
-        return 'EPS Faculty Offices';
-      case 'admin_office':
-        return 'Secretary Office';
-      case 'mentoring_room':
-        return 'Mentoring Room';
-      case 'cafeteria':
-        return 'Cafeteria';
-      case 'gym':
-        return 'Gym';
-      default:
-        final roomMatch =
-            RegExp(r'^classroom_(\d+)_(\d+)$').firstMatch(locationId);
-        if (roomMatch != null) {
-          return 'Classroom ${roomMatch.group(1)}.${roomMatch.group(2)}';
-        }
-        return locationId.replaceAll('_', ' ');
+      case 'entrance_main': return 'Main Entrance';
+      case 'entrance_1':    return 'Entrance 1';
+      case 'entrance_2':    return 'Entrance 2';
+      case 'entrance_cd':   return 'CD Entrance';
+      case 'elevator':      return 'Elevator';
+      case 'stairs':        return 'Stairs';
+      case 'bathroom':      return 'Restroom';
+      case 'ai_lab':        return 'AI Laboratory';
+      case 'offices':       return 'Faculty Offices';
+      case 'eps_offices':   return 'EPS Faculty Offices';
+      case 'admin_office':  return 'Secretary Office';
+      case 'mentoring_room':return 'Mentoring Room';
+      case 'cafeteria':     return 'Cafeteria';
+      case 'gym':           return 'Gym';
     }
+    final gMatch = RegExp(r'^classroom_g_(\d+)_(\d+)$').firstMatch(locationId);
+    if (gMatch != null) return 'Classroom ${gMatch.group(1)}.${gMatch.group(2)}';
+    final cdMatch = RegExp(r'^classroom_cd_(\d+)$').firstMatch(locationId);
+    if (cdMatch != null) return 'Classroom ${cdMatch.group(1)} (CD)';
+    final dirMatch = RegExp(r'^directory_sign_g_(\w+)$').firstMatch(locationId);
+    if (dirMatch != null) return 'Directory G ${dirMatch.group(1)!.toUpperCase()}';
+    return locationId.replaceAll('_', ' ');
   }
 
   @override
@@ -67,144 +59,124 @@ class StatusRow extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _StateSection(
+        _StatePanel(
           title: 'Initial State',
-          titleColor: const Color(0xFF10B981),
-          chips: [
-            _StatusChip(
-              icon: Icons.business_rounded,
-              label: initialBuilding ?? '?',
-              isKnown: initialBuilding != null,
-            ),
-            _StatusChip(
-              icon: Icons.layers_rounded,
-              label: initialFloor != null ? _floorText(initialFloor!) : '?',
-              isKnown: initialFloor != null,
-            ),
-            if (initialLocationId != null && initialLocationId!.isNotEmpty)
-              _StatusChip(
-                icon: Icons.place_rounded,
-                label: _locationText(initialLocationId!),
-                isKnown: true,
-              ),
-          ],
+          accent: const Color(0xFF10B981),
+          icon: Icons.my_location_rounded,
+          building: initialBuilding,
+          floor: initialFloor,
+          locationId: initialLocationId,
+          floorTextFn: _floorText,
+          locationTextFn: _locationText,
         ),
-        const SizedBox(height: 8),
-        _StateSection(
+        const SizedBox(height: 14),
+        _StatePanel(
           title: 'Goal State',
-          titleColor: const Color(0xFF3B82F6),
-          chips: [
-            _StatusChip(
-              icon: Icons.flag_rounded,
-              label: goalBuilding ?? '?',
-              isKnown: goalBuilding != null,
-            ),
-            _StatusChip(
-              icon: Icons.layers_rounded,
-              label: goalFloor != null ? _floorText(goalFloor!) : '?',
-              isKnown: goalFloor != null,
-            ),
-            if (goalLocationId != null && goalLocationId!.isNotEmpty)
-              _StatusChip(
-                icon: Icons.place_rounded,
-                label: _locationText(goalLocationId!),
-                isKnown: true,
-              ),
-          ],
+          accent: const Color(0xFF3B82F6),
+          icon: Icons.flag_rounded,
+          building: goalBuilding,
+          floor: goalFloor,
+          locationId: goalLocationId,
+          floorTextFn: _floorText,
+          locationTextFn: _locationText,
         ),
       ],
     );
   }
 }
 
-class _StateSection extends StatelessWidget {
+class _StatePanel extends StatelessWidget {
   final String title;
-  final Color titleColor;
-  final List<Widget> chips;
-
-  const _StateSection({
-    required this.title,
-    required this.titleColor,
-    required this.chips,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1E293B)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: titleColor,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: chips,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatusChip extends StatelessWidget {
+  final Color accent;
   final IconData icon;
-  final String label;
-  final bool isKnown;
+  final String? building;
+  final int? floor;
+  final String? locationId;
+  final String Function(int) floorTextFn;
+  final String Function(String) locationTextFn;
 
-  const _StatusChip({
+  const _StatePanel({
+    required this.title,
+    required this.accent,
     required this.icon,
-    required this.label,
-    required this.isKnown,
+    required this.building,
+    required this.floor,
+    required this.locationId,
+    required this.floorTextFn,
+    required this.locationTextFn,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = isKnown ? const Color(0xFF10B981) : const Color(0xFF94A3B8);
+    final parts = <String>[];
+    parts.add(building ?? '?');
+    parts.add(floor != null ? floorTextFn(floor!) : '?');
+    if (locationId != null && locationId!.isNotEmpty) {
+      parts.add(locationTextFn(locationId!));
+    }
+    final summary = parts.join('  ·  ');
+
+    final atom = (locationId != null && locationId!.isNotEmpty)
+        ? '(at user $locationId)'
+        : null;
+
     return Semantics(
-      label: label,
+      label: '$title: $summary',
       child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: isKnown
-            ? const Color(0xFF10B981).withValues(alpha: 0.08)
-            : const Color(0xFF1E293B),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isKnown
-              ? const Color(0xFF10B981).withValues(alpha: 0.35)
-              : const Color(0xFF334155),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF1E293B)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 16, color: accent),
+                const SizedBox(width: 7),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              summary,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0.1,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (atom != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                atom,
+                style: const TextStyle(
+                  color: Color(0xFF94A3B8),
+                  fontSize: 14,
+                  fontFamily: 'monospace',
+                  letterSpacing: 0.3,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    ));
+    );
   }
 }
