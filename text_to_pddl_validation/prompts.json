@@ -1,0 +1,42 @@
+{
+  "_comment": "Two prompt variants for the text-to-PDDL conversion experiment. 51 transcripts total (20 canonical in dataset.csv + 31 robustness in dataset_robust.csv) are evaluated under each variant on Gemma 4 E4B-it with deterministic decoding (do_sample=False, num_beams=1, seed=0). The 'optimized' few-shot examples use location_ids that are NOT in the test set (see test_set_overlap_check below), so any accuracy gain over 'basic' reflects rule following and pattern generalization, not memorization of test answers.",
+  "prompts": {
+    "basic": {
+      "id": "basic",
+      "name": "Basic prompt (minimal but reasonable)",
+      "description": "Single-line instruction stating the output format. No few-shot examples, no allowed location list, no naming rules. Represents what a developer would write without any prompt engineering effort.",
+      "template": "Convert the user's transcript into one PDDL atom of the form (at user LOCATION_ID).\nOutput only the atom, nothing else.\n\nTranscript: \"<TRANSCRIPT>\""
+    },
+    "optimized": {
+      "id": "optimized",
+      "name": "Optimized prompt (rules + 5 canonical functional IDs + held-out few-shot)",
+      "description": "Structured prompt with explicit output rules, naming rules (decimal->G, Aula->CD), 5 canonical functional IDs listed inline (cafeteria, gym, pool, mentoring_room, admin_office) and 6 in-context examples whose location_ids are deliberately disjoint from the test set. Listing only the 5 IDs whose natural-language phrasings diverge most from the canonical form (e.g. 'sports hall' vs gym, 'swimming pool' vs pool, 'administration office' vs admin_office) leaves the laboratory abbreviations (ai_lab, computer_lab) to be inferred from rules + examples, so the prompt is not a full vocabulary look-up. This separation produces a more extensible prompt at the cost of a few failures on the abbreviation cases.",
+      "few_shot_examples": [
+        {"input": "I am in classroom 1.2 in building G", "output": "(at user classroom_g_1_2)"},
+        {"input": "I am in Aula 2 in building CD", "output": "(at user classroom_cd_2)"},
+        {"input": "I am at the electronics laboratory", "output": "(at user electronics_lab)"},
+        {"input": "Take me to classroom 0.4 in building G", "output": "(at user classroom_g_0_4)"},
+        {"input": "I want to go to Aula 5 in building CD", "output": "(at user classroom_cd_5)"},
+        {"input": "Guide me to the subtractive manufacturing lab", "output": "(at user subtractive_manufacturing_lab)"}
+      ],
+      "test_set_overlap_check": {
+        "test_location_ids": ["classroom_g_0_1", "classroom_g_0_3", "classroom_g_1_4", "classroom_g_1_6", "classroom_g_2_1", "classroom_cd_3", "classroom_cd_4", "classroom_cd_7", "classroom_cd_8", "ai_lab", "cafeteria", "gym", "mentoring_room", "computer_lab", "admin_office", "pool"],
+        "few_shot_output_ids": ["classroom_g_1_2", "classroom_cd_2", "electronics_lab", "classroom_g_0_4", "classroom_cd_5", "subtractive_manufacturing_lab"],
+        "intersection": [],
+        "leakage_free": true
+      },
+      "template": "You are a text-to-PDDL conversion module for a campus navigation system.\n\nConvert exactly one user transcript into exactly one PDDL atom.\n\nOutput rules:\n- Output only the atom in the form: (at user LOCATION_ID)\n- No explanation, no markdown, no JSON, no extra text.\n- Whether the transcript states the user's current location or asks\n  to go somewhere, the atom format is the same.\n\nNaming rules:\n- Decimal classroom codes (e.g. 1.4, 0.3, 2.1) ALWAYS belong to building G:\n    classroom 1.4 in building G  ->  classroom_g_1_4\n- \"Aula N\" classroom names (N from 1 to 8) ALWAYS belong to building CD:\n    Aula 4 in building CD  ->  classroom_cd_4\n- Functional locations have unique IDs (no building prefix). Canonical names:\n    cafeteria, gym, pool, mentoring_room, admin_office\n\nExamples:\nInput: \"I am in classroom 1.2 in building G\"\nOutput: (at user classroom_g_1_2)\n\nInput: \"I am in Aula 2 in building CD\"\nOutput: (at user classroom_cd_2)\n\nInput: \"I am at the electronics laboratory\"\nOutput: (at user electronics_lab)\n\nInput: \"Take me to classroom 0.4 in building G\"\nOutput: (at user classroom_g_0_4)\n\nInput: \"I want to go to Aula 5 in building CD\"\nOutput: (at user classroom_cd_5)\n\nInput: \"Guide me to the subtractive manufacturing lab\"\nOutput: (at user subtractive_manufacturing_lab)\n\nNow convert this transcript:\n\"<TRANSCRIPT>\""
+    }
+  },
+  "allowed_location_ids": [
+    "classroom_g_0_1", "classroom_g_0_2", "classroom_g_0_3", "classroom_g_0_4",
+    "classroom_g_1_1", "classroom_g_1_2", "classroom_g_1_3", "classroom_g_1_4",
+    "classroom_g_1_5", "classroom_g_1_6", "classroom_g_2_1",
+    "classroom_g_agora_1", "classroom_g_agora_2", "classroom_g_agora_3",
+    "ai_lab", "computer_lab", "electronics_lab", "subtractive_manufacturing_lab",
+    "mentoring_room", "admin_office", "office_2_7",
+    "classroom_cd_1", "classroom_cd_2", "classroom_cd_3", "classroom_cd_4",
+    "classroom_cd_5", "classroom_cd_6", "classroom_cd_7", "classroom_cd_8",
+    "cafeteria", "gym", "pool"
+  ]
+}
