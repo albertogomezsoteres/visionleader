@@ -9,7 +9,7 @@ user to either give a new destination, ask for one, or end the session.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from ...conversation_agent import ConversationAgent
 
 
-def navigation_complete(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def navigation_complete(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     dest_text = location_text(ctx.destination)
     arrived_at = ctx.destination
     # Promote arrival to the new origin so the follow-up route does not
@@ -50,9 +50,7 @@ def navigation_complete(agent: "ConversationAgent", ctx: ConversationContext) ->
     return agent._reply(ctx, tts, "voice", "navigation_complete")
 
 
-def handle_nav_complete(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_nav_complete(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     from . import plan_confirmation  # lazy: cross-handler dependency
 
     low = msg.lower()
@@ -62,12 +60,25 @@ def handle_nav_complete(
     # in-navigation handle_lost does, but starts from a clean slate
     # because the previous trip is already over. Generous keyword set
     # because Whisper sometimes nibbles the short utterance.
-    if any(w in low for w in (
-        "lost", "lose", "help",
-        "i am lost", "i'm lost", "im lost", "i lost",
-        "perdido", "estoy perdido", "ayuda",
-        "find me", "where am i", "i don't know", "no idea",
-    )):
+    if any(
+        w in low
+        for w in (
+            "lost",
+            "lose",
+            "help",
+            "i am lost",
+            "i'm lost",
+            "im lost",
+            "i lost",
+            "perdido",
+            "estoy perdido",
+            "ayuda",
+            "find me",
+            "where am i",
+            "i don't know",
+            "no idea",
+        )
+    ):
         tts = "OK. Photograph any sign nearby so I can extract your location."
         ctx.origin = None
         ctx.destination = None

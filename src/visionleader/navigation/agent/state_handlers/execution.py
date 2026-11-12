@@ -13,7 +13,7 @@ shortcuts handled in :func:`ConversationAgent.process_turn`:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -26,27 +26,41 @@ if TYPE_CHECKING:
 
 
 _DONE_WORDS_VOICE = (
-    "done", "next", "ready", "listo", "siguiente",
-    "yes", "ok", "okay", "continue", "continuar",
+    "done",
+    "next",
+    "ready",
+    "listo",
+    "siguiente",
+    "yes",
+    "ok",
+    "okay",
+    "continue",
+    "continuar",
 )
 _DONE_WORDS_PHOTO_SKIP = (
-    "done", "next", "ready", "listo", "skip", "saltar",
-    "yes", "ok", "i am here", "i'm here",
+    "done",
+    "next",
+    "ready",
+    "listo",
+    "skip",
+    "saltar",
+    "yes",
+    "ok",
+    "i am here",
+    "i'm here",
 )
 
 
 def handle_executing(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
     msg: str,
-    analysis: Optional[Dict],
-) -> Dict:
+    analysis: dict | None,
+) -> dict:
     return deliver_step(agent, ctx)
 
 
-def handle_step_done(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_step_done(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     from . import completion  # lazy: completion.navigation_complete
 
     low = msg.lower()
@@ -62,11 +76,11 @@ def handle_step_done(
 
 
 def handle_step_photo(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
-    analysis: Optional[Dict],
+    analysis: dict | None,
     msg: str,
-) -> Dict:
+) -> dict:
     from . import completion  # lazy: completion.navigation_complete
 
     step = ctx.route_steps[ctx.current_step_idx]
@@ -92,7 +106,12 @@ def handle_step_photo(
     if expected and prompt_id == expected and analysis.get("success"):
         if step.get("arrival_strict_photo"):
             return _handle_arrival_strict_photo(
-                agent, ctx, analysis, step, expected_text, completion,
+                agent,
+                ctx,
+                analysis,
+                step,
+                expected_text,
+                completion,
             )
 
         # stair_direction safety check: the planner emits the action's
@@ -106,8 +125,10 @@ def handle_step_photo(
                 log_event(
                     "VALIDATION",
                     f"stairs_verification  FAIL  ·  expected={expected_dir} seen={seen_dir}",
-                    check="stairs_verification", result="fail",
-                    expected_direction=expected_dir, seen_direction=seen_dir,
+                    check="stairs_verification",
+                    result="fail",
+                    expected_direction=expected_dir,
+                    seen_direction=seen_dir,
                 )
                 tts = (
                     f"I see stairs going {seen_dir}, but you need to go "
@@ -118,7 +139,8 @@ def handle_step_photo(
             log_event(
                 "VALIDATION",
                 f"stairs_verification  PASS  ·  direction={seen_dir}",
-                check="stairs_verification", result="pass",
+                check="stairs_verification",
+                result="pass",
                 seen_direction=seen_dir,
             )
 
@@ -138,8 +160,10 @@ def handle_step_photo(
             log_event(
                 "VALIDATION",
                 f"elevator_verification  PASS  ·  doors={seen_state or 'unknown'}",
-                check="elevator_verification", result="pass",
-                seen_state=seen_state, target_floor=target_floor,
+                check="elevator_verification",
+                result="pass",
+                seen_state=seen_state,
+                target_floor=target_floor,
             )
             ctx.current_step_idx += 1
             if ctx.current_step_idx >= len(ctx.route_steps):
@@ -153,9 +177,11 @@ def handle_step_photo(
             next_instruction = (next_step.get("instruction") or "").strip()
             low = next_instruction.lower()
             if low.startswith("exit the elevator,"):
-                next_instruction = next_instruction[len("exit the elevator,"):].strip()
+                next_instruction = next_instruction[len("exit the elevator,") :].strip()
             elif low.startswith("exit the elevator"):
-                next_instruction = next_instruction[len("exit the elevator"):].lstrip(" ,.").strip()
+                next_instruction = (
+                    next_instruction[len("exit the elevator") :].lstrip(" ,.").strip()
+                )
             # Drop the first internal ", then " so the merged TTS doesn't
             # pile up two "then"s in a row ("...elevator, then turn left,
             # then walk 10 meters" → "...elevator, then turn left, walk
@@ -201,13 +227,13 @@ def handle_step_photo(
 
 
 def _handle_arrival_strict_photo(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
-    analysis: Dict,
-    step: Dict,
+    analysis: dict,
+    step: dict,
     expected_text: str,
     completion,
-) -> Dict:
+) -> dict:
     """Final arrival check: the VLM output must match the expected room
     code (classroom plate) or the expected location id (service sign)."""
     expected_code = step.get("expected_room_code")
@@ -221,13 +247,17 @@ def _handle_arrival_strict_photo(
             log_event(
                 "AGENT",
                 f"arrival verified: (at user {seen_loc}) == expected (at user {expected_loc})  ✓",
-                expected_location_id=expected_loc, seen_location_id=seen_loc, ok=True,
+                expected_location_id=expected_loc,
+                seen_location_id=seen_loc,
+                ok=True,
             )
             log_event(
                 "VALIDATION",
                 f"arrival_verification  PASS  ·  (at user {seen_loc}) matches expected",
-                check="arrival_verification", result="pass",
-                expected_location_id=expected_loc, seen_location_id=seen_loc,
+                check="arrival_verification",
+                result="pass",
+                expected_location_id=expected_loc,
+                seen_location_id=seen_loc,
             )
             tts = f"Confirmed! I can see {loc_label}."
             ctx.current_step_idx += 1
@@ -239,13 +269,17 @@ def _handle_arrival_strict_photo(
         log_event(
             "AGENT",
             f"arrival mismatch: seen={seen_loc!r} expected={expected_loc!r}  ✗",
-            expected_location_id=expected_loc, seen_location_id=seen_loc, ok=False,
+            expected_location_id=expected_loc,
+            seen_location_id=seen_loc,
+            ok=False,
         )
         log_event(
             "VALIDATION",
             f"arrival_verification  FAIL  ·  seen={seen_loc!r} expected={expected_loc!r}",
-            check="arrival_verification", result="fail",
-            expected_location_id=expected_loc, seen_location_id=seen_loc,
+            check="arrival_verification",
+            result="fail",
+            expected_location_id=expected_loc,
+            seen_location_id=seen_loc,
         )
         tts = f"That doesn't look like {loc_label}. Retake the photo."
         return agent._reply(ctx, tts, "photo", "retry_step_photo")
@@ -266,13 +300,17 @@ def _handle_arrival_strict_photo(
         log_event(
             "AGENT",
             f"arrival verified: room_code {seen_code!r} matches expected {expected_code!r}  ✓",
-            expected_room_code=expected_code, seen_room_code=seen_code, ok=True,
+            expected_room_code=expected_code,
+            seen_room_code=seen_code,
+            ok=True,
         )
         log_event(
             "VALIDATION",
             f"arrival_verification  PASS  ·  room_code {seen_code!r} matches expected",
-            check="arrival_verification", result="pass",
-            expected_room_code=expected_code, seen_room_code=seen_code,
+            check="arrival_verification",
+            result="pass",
+            expected_room_code=expected_code,
+            seen_room_code=seen_code,
         )
         tts = f"Confirmed! I can see classroom {normalize_room_code(expected_code)}."
         ctx.current_step_idx += 1
@@ -285,13 +323,17 @@ def _handle_arrival_strict_photo(
     log_event(
         "AGENT",
         f"arrival mismatch: room_code {seen_code!r} != expected {expected_code!r}  ✗",
-        expected_room_code=expected_code, seen_room_code=seen_code, ok=False,
+        expected_room_code=expected_code,
+        seen_room_code=seen_code,
+        ok=False,
     )
     log_event(
         "VALIDATION",
         f"arrival_verification  FAIL  ·  room_code {seen_code!r} != expected {expected_code!r}",
-        check="arrival_verification", result="fail",
-        expected_room_code=expected_code, seen_room_code=seen_code,
+        check="arrival_verification",
+        result="fail",
+        expected_room_code=expected_code,
+        seen_room_code=seen_code,
     )
     tts = (
         f"I expected classroom {normalize_room_code(expected_code)}, "
@@ -302,8 +344,10 @@ def _handle_arrival_strict_photo(
 
 
 def deliver_step(
-    agent: "ConversationAgent", ctx: ConversationContext, prefix: str = "",
-) -> Dict:
+    agent: ConversationAgent,
+    ctx: ConversationContext,
+    prefix: str = "",
+) -> dict:
     """Format the current ``route_steps[idx]`` as TTS and pick the next FSM
     state (waiting for voice "done", waiting for a verification photo, or
     waiting for the GPS leg to complete)."""
@@ -321,7 +365,7 @@ def deliver_step(
     # (status_row.dart reads current_step_idx + route_step_count from
     # the context), so the spoken / displayed TTS does not repeat it.
     tts = f"{prefix}{instruction}"
-    extra: Dict = {}
+    extra: dict = {}
 
     if step.get("use_gps"):
         from_bld = step.get("outdoor_from_building")
@@ -345,14 +389,14 @@ def deliver_step(
 
 
 def _deliver_photo_step(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
-    step: Dict,
+    step: dict,
     idx: int,
     total: int,
     instruction: str,
     prefix: str,
-) -> Dict:
+) -> dict:
     """Build TTS for a step that requires VLM photo verification."""
     expected_text = photo_label(step.get("expected_photo_type"))
 
@@ -363,12 +407,9 @@ def _deliver_photo_step(
 
     base_tts = f"{prefix}{instruction}"
 
-    if step.get("elevator_photo_flow") and step.get("_elevator_stage", 1) == 1:
-        pre_tts = step.get("pre_photo_instruction")
-        if pre_tts:
-            base_tts = f"{prefix}{pre_tts}"
-        tts = f"{base_tts} Photograph the {expected_text}."
-    elif step.get("two_phase_photo") and not step.get("_phase2_started"):
+    if (step.get("elevator_photo_flow") and step.get("_elevator_stage", 1) == 1) or (
+        step.get("two_phase_photo") and not step.get("_phase2_started")
+    ):
         pre_tts = step.get("pre_photo_instruction")
         if pre_tts:
             base_tts = f"{prefix}{pre_tts}"
@@ -383,7 +424,7 @@ def _deliver_photo_step(
     return agent._reply(ctx, tts, "photo", "navigation_step")
 
 
-def handle_lost(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def handle_lost(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     """User said "I'm lost": save the destination and restart the
     location-discovery flow."""
     dest_text = location_text(ctx.destination) if ctx.destination else "your destination"
@@ -398,7 +439,7 @@ def handle_lost(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
     return agent._reply(ctx, tts, "voice_or_photo", "replanning")
 
 
-def cancel_navigation(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def cancel_navigation(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     """User said "cancel": clear the route and ask for a new destination."""
     tts = "Navigation cancelled. Tell me a new destination."
     ctx.state = ConversationState.ASK_DESTINATION

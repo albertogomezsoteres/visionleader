@@ -10,7 +10,7 @@ new plan immediately.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from ...conversation_agent import ConversationAgent
 
 
-def confirm_origin(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def confirm_origin(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     """Origin is fully resolved -> either present a pending plan or ask
     for a destination."""
     from . import plan_confirmation  # lazy: plan_confirmation imports execution
@@ -53,10 +53,7 @@ def confirm_origin(agent: "ConversationAgent", ctx: ConversationContext) -> Dict
         if route:
             ctx.route_steps = route
             ctx.current_step_idx = 0
-            tts = (
-                f"Got it: {loc_text}. "
-                f"Recalculating route to {location_text(ctx.destination)}."
-            )
+            tts = f"Got it: {loc_text}. Recalculating route to {location_text(ctx.destination)}."
             ctx.add("system", tts)
             return plan_confirmation.present_plan(agent, ctx)
         tts = planner_failure_message(ctx)
@@ -68,9 +65,7 @@ def confirm_origin(agent: "ConversationAgent", ctx: ConversationContext) -> Dict
     return agent._reply(ctx, tts, "voice", "ask_destination")
 
 
-def handle_confirming_origin(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_confirming_origin(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     """State CONFIRMING_ORIGIN.
 
     Reachable only from earlier flows that explicitly ask the user to

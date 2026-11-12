@@ -1,7 +1,8 @@
 """Pydantic request and response schemas for every API endpoint."""
 
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Dict, Any
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlanningRequest(BaseModel):
@@ -14,15 +15,16 @@ class PlanningRequest(BaseModel):
     routes. When origin and goal are in different buildings the converter
     emits rooms of both plus `outdoor_connected` edges between entrances.
     """
-    initial_state: Dict[str, Any] = Field(
+
+    initial_state: dict[str, Any] = Field(
         ...,
         description="Starting location. Required: building, floor, room.",
     )
-    goal_state: Optional[Dict[str, Any]] = Field(
+    goal_state: dict[str, Any] | None = Field(
         None,
         description="Target location. Required: building, floor, room (unless goal_functional).",
     )
-    goal_functional: Optional[str] = Field(
+    goal_functional: str | None = Field(
         None,
         description="Named destination: 'cafeteria' or 'gym'",
     )
@@ -34,33 +36,37 @@ class PlanningRequest(BaseModel):
 
 class PlanningResponse(BaseModel):
     """Response with the generated plan."""
+
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     success: bool
-    plan: List[str] = Field(default_factory=list)
+    plan: list[str] = Field(default_factory=list)
     steps: int = 0
     cost: int = 0
-    initial_state: Optional[Dict[str, Any]] = None
-    goal_state: Optional[Any] = None
-    error: Optional[str] = None
-    output: Optional[str] = None
+    initial_state: dict[str, Any] | None = None
+    goal_state: Any | None = None
+    error: str | None = None
+    output: str | None = None
 
 
 class ValidationRequest(BaseModel):
     """Request to validate a plan."""
-    plan: List[str]
-    initial_state: Dict[str, Any]
-    goal_state: Dict[str, Any]
+
+    plan: list[str]
+    initial_state: dict[str, Any]
+    goal_state: dict[str, Any]
 
 
 class ValidationResponse(BaseModel):
     """Response from plan validation."""
+
     valid: bool
     message: str
 
 
 class DomainResponse(BaseModel):
     """Response with the PDDL domain file contents."""
+
     domain: str
 
 
@@ -72,54 +78,59 @@ class ImageAnalysisResponse(BaseModel):
     state prompts (`elevator_state`, `stair_direction`)
     the model returns ``state_type`` and ``state_detail``.
     """
+
     success: bool
     prompt_id: str
-    location_id: Optional[str] = None
-    state_type: Optional[str] = None
-    state_detail: Optional[str] = None
+    location_id: str | None = None
+    state_type: str | None = None
+    state_detail: str | None = None
     raw_response: str = ""
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class GPSRouteRequest(BaseModel):
     """Request for walking directions between two campus buildings."""
+
     from_building: int
     to_building: int
 
 
 class GPSRouteResponse(BaseModel):
     """Response with the Google Maps walking route."""
+
     success: bool
-    distance: Optional[str] = None
-    duration: Optional[str] = None
-    steps: Optional[List[Dict[str, Any]]] = None
-    polyline: Optional[str] = None
-    error: Optional[str] = None
+    distance: str | None = None
+    duration: str | None = None
+    steps: list[dict[str, Any]] | None = None
+    polyline: str | None = None
+    error: str | None = None
 
 
 class ConversationRequest(BaseModel):
     """Request for one conversation turn."""
+
     session_id: str
     user_message: str
-    image_analysis: Optional[Dict[str, Any]] = None
+    image_analysis: dict[str, Any] | None = None
 
 
 class ConversationResponse(BaseModel):
     """Response from one conversation turn."""
+
     response: str
     action: str
     needs_input: bool
-    context: Dict[str, Any]
-    tts_message: Optional[str] = None
-    next_input: Optional[str] = None
+    context: dict[str, Any]
+    tts_message: str | None = None
+    next_input: str | None = None
     # Tells the client which VLM prompt to run on the next photo. One of
     # the prompt ids defined in config/prompts.json
     # (room_plate, directory_sign, elevator_state, stair_direction).
     # Null when no photo is expected.
-    expect_photo: Optional[str] = None
-    plan_request: Optional[Dict[str, Any]] = None
-    location_partial: Optional[Dict[str, Any]] = None
-    auto_fill: Optional[Dict[str, Any]] = None
-    auto_fill_goal: Optional[Dict[str, Any]] = None
-    gps_route: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    expect_photo: str | None = None
+    plan_request: dict[str, Any] | None = None
+    location_partial: dict[str, Any] | None = None
+    auto_fill: dict[str, Any] | None = None
+    auto_fill_goal: dict[str, Any] | None = None
+    gps_route: dict[str, Any] | None = None
+    error: str | None = None

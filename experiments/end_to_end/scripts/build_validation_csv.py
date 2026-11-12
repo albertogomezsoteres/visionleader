@@ -18,10 +18,10 @@ import csv
 import json
 import statistics
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
-BASE = Path(__file__).resolve().parents[1]        # experiments/end_to_end
-REPO_ROOT = Path(__file__).resolve().parents[3]    # repository root, for tidy log paths
+BASE = Path(__file__).resolve().parents[1]  # experiments/end_to_end
+REPO_ROOT = Path(__file__).resolve().parents[3]  # repository root, for tidy log paths
 
 LOG_PATH = BASE / "logs" / "e2e_backend.jsonl"
 SCENARIOS_PATH = BASE / "scenarios.json"
@@ -33,12 +33,13 @@ GLOBAL_CSV = RESULTS_DIR / "e2e_validation_global.csv"
 
 # === I/O helpers ===
 
-def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         print(f"[warn] log file not found: {path}")
         return []
-    rows: List[Dict[str, Any]] = []
-    with open(path, "r", encoding="utf-8") as f:
+    rows: list[dict[str, Any]] = []
+    with open(path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -49,7 +50,8 @@ def _read_jsonl(path: Path) -> List[Dict[str, Any]]:
                 print(f"[warn] skipping malformed line: {e}")
     return rows
 
-def _write_csv(path: Path, rows: List[Dict[str, Any]], columns: List[str]) -> None:
+
+def _write_csv(path: Path, rows: list[dict[str, Any]], columns: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=columns)
@@ -57,9 +59,11 @@ def _write_csv(path: Path, rows: List[Dict[str, Any]], columns: List[str]) -> No
         for row in rows:
             w.writerow({c: row.get(c, "") for c in columns})
 
+
 # === Numeric helpers ===
 
-def _safe_float(x: Any) -> Optional[float]:
+
+def _safe_float(x: Any) -> float | None:
     """Parse to float, or None when the value is missing or non-numeric."""
     if x is None:
         return None
@@ -68,7 +72,8 @@ def _safe_float(x: Any) -> Optional[float]:
     except (TypeError, ValueError):
         return None
 
-def _percentile(values: List[float], p: float) -> Optional[float]:
+
+def _percentile(values: list[float], p: float) -> float | None:
     """Nearest-rank percentile (p in 0..100) of a list of values."""
     if not values:
         return None
@@ -76,13 +81,15 @@ def _percentile(values: List[float], p: float) -> Optional[float]:
     k = max(0, min(len(s) - 1, int(round((p / 100.0) * (len(s) - 1)))))
     return s[k]
 
+
 def _pct(num: int, denom: int) -> str:
     """Format num / denom as a percentage string, empty when denom is 0."""
     if denom == 0:
         return ""
     return f"{(100.0 * num / denom):.1f}%"
 
-def _wer(reference: str, hypothesis: str) -> Optional[float]:
+
+def _wer(reference: str, hypothesis: str) -> float | None:
     """Word Error Rate via word-level Levenshtein distance.
 
     Returns ``edits / reference_word_count`` (so a result > 1.0 is possible
@@ -93,10 +100,12 @@ def _wer(reference: str, hypothesis: str) -> Optional[float]:
     if not reference:
         return None
     import re as _re
-    def _toks(s: str) -> List[str]:
+
+    def _toks(s: str) -> list[str]:
         s = s.lower()
         s = _re.sub(r"[.,;:!?\"'()\[\]]", " ", s)
         return [w for w in s.split() if w]
+
     ref = _toks(reference)
     hyp = _toks(hypothesis or "")
     n, m = len(ref), len(hyp)
@@ -117,7 +126,8 @@ def _wer(reference: str, hypothesis: str) -> Optional[float]:
             )
     return dp[n][m] / n
 
-def _vlm_verification_applicable_checks(scenario: Dict[str, Any]) -> set:
+
+def _vlm_verification_applicable_checks(scenario: dict[str, Any]) -> set:
     """Return the set of VALIDATION check names that depend on a VLM call.
 
     arrival_verification is always VLM-driven (every scenario ends with
@@ -136,13 +146,15 @@ def _vlm_verification_applicable_checks(scenario: Dict[str, Any]) -> set:
         checks.add("stairs_verification")
     return checks
 
+
 # === Event grouping ===
 
+
 def _group_by_scenario_turn(
-    events: List[Dict[str, Any]],
-) -> Dict[str, Dict[int, List[Dict[str, Any]]]]:
+    events: list[dict[str, Any]],
+) -> dict[str, dict[int, list[dict[str, Any]]]]:
     """Group events into ``{scenario_id: {turn_idx: [events]}}``."""
-    out: Dict[str, Dict[int, List[Dict[str, Any]]]] = {}
+    out: dict[str, dict[int, list[dict[str, Any]]]] = {}
     for ev in events:
         sc = ev.get("scenario_id")
         turn = ev.get("turn_idx")
@@ -151,28 +163,30 @@ def _group_by_scenario_turn(
         out.setdefault(sc, {}).setdefault(int(turn), []).append(ev)
     return out
 
+
 # === Per-turn analysis ===
 
+
 def _summarise_turn(
-    turn_events: List[Dict[str, Any]],
-    expected_turn: Optional[Dict[str, Any]],
-) -> Dict[str, Any]:
+    turn_events: list[dict[str, Any]],
+    expected_turn: dict[str, Any] | None,
+) -> dict[str, Any]:
     """Reduce all events of a single turn to one CSV row.
 
     ``expected_turn`` is the matching entry from ``scenarios.json``'s
     ``turns[]``, used to score STT keyword correctness, FSM transition
     correctness, and the per-turn VLM expectation.
     """
-    vlm_calls: List[Dict[str, Any]] = []
-    planner_total_ms: Optional[float] = None
-    planner_action_count: Optional[int] = None
-    backend_internal_ms: Optional[float] = None
-    stt_latency_ms: Optional[float] = None
-    stt_text: Optional[str] = None
-    tts_message: Optional[str] = None
-    tts_duration_ms: Optional[float] = None
-    end_to_end_ms: Optional[float] = None
-    fsm_transitions: List[Tuple[Optional[str], Optional[str]]] = []
+    vlm_calls: list[dict[str, Any]] = []
+    planner_total_ms: float | None = None
+    planner_action_count: int | None = None
+    backend_internal_ms: float | None = None
+    stt_latency_ms: float | None = None
+    stt_text: str | None = None
+    tts_message: str | None = None
+    tts_duration_ms: float | None = None
+    end_to_end_ms: float | None = None
+    fsm_transitions: list[tuple[str | None, str | None]] = []
 
     for ev in turn_events:
         cat = ev.get("category")
@@ -184,11 +198,13 @@ def _summarise_turn(
             if dur is not None:
                 stt_latency_ms = dur
         elif cat == "VLM" and msg.startswith("raw=") and dur is not None:
-            vlm_calls.append({
-                "prompt_id": ev.get("prompt_id"),
-                "duration_ms": dur,
-                "raw_response": ev.get("raw_response"),
-            })
+            vlm_calls.append(
+                {
+                    "prompt_id": ev.get("prompt_id"),
+                    "duration_ms": dur,
+                    "raw_response": ev.get("raw_response"),
+                }
+            )
         elif cat == "VLM" and msg.startswith("symbol grounded:"):
             if vlm_calls:
                 vlm_calls[-1]["parsed_ok"] = True
@@ -219,29 +235,22 @@ def _summarise_turn(
                 end_to_end_ms = _safe_float(ev["end_to_end_ms"])
 
     # STT keyword correctness
-    keywords_expected: List[str] = (expected_turn or {}).get("stt_keywords") or []
-    keywords_matched: List[str] = []
-    keywords_missing: List[str] = []
+    keywords_expected: list[str] = (expected_turn or {}).get("stt_keywords") or []
+    keywords_matched: list[str] = []
+    keywords_missing: list[str] = []
     if keywords_expected and stt_text:
         low = stt_text.lower()
         for kw in keywords_expected:
             (keywords_matched if kw.lower() in low else keywords_missing).append(kw)
-    stt_keywords_ok = (
-        bool(keywords_expected)
-        and bool(stt_text)
-        and not keywords_missing
-    )
+    stt_keywords_ok = bool(keywords_expected) and bool(stt_text) and not keywords_missing
 
     # FSM transition correctness
     # The expected transition matches if it appears anywhere in this turn's
     # transition list (process_turn may collapse multiple internal hops).
-    expected_fsm: Optional[List[str]] = (expected_turn or {}).get("fsm")
+    expected_fsm: list[str] | None = (expected_turn or {}).get("fsm")
     if expected_fsm and len(expected_fsm) == 2:
         fsm_expected_from, fsm_expected_to = expected_fsm
-        fsm_match = any(
-            f == fsm_expected_from and t == fsm_expected_to
-            for f, t in fsm_transitions
-        )
+        fsm_match = any(f == fsm_expected_from and t == fsm_expected_to for f, t in fsm_transitions)
     else:
         fsm_expected_from = fsm_expected_to = None
         fsm_match = None  # not applicable for turns without an FSM expectation
@@ -253,7 +262,7 @@ def _summarise_turn(
     vlm_prompt_expected = (expected_turn or {}).get("vlm_prompt")
     vlm_loc_expected = (expected_turn or {}).get("vlm_expected_location_id")
     vlm_state_expected = (expected_turn or {}).get("vlm_expected_state_detail")
-    vlm_grounding_ok: Optional[bool] = None
+    vlm_grounding_ok: bool | None = None
     if vlm_prompt_expected and vlm_calls:
         # Pick the call whose prompt matches what was expected.
         match = next(
@@ -286,43 +295,39 @@ def _summarise_turn(
         "stt_keywords_missing": "|".join(keywords_missing),
         "stt_keywords_ok": "" if not keywords_expected else int(stt_keywords_ok),
         "wer": "" if wer_val is None else round(wer_val, 3),
-
         "vlm_calls": len(vlm_calls),
         "vlm_total_ms": sum(c["duration_ms"] for c in vlm_calls) if vlm_calls else None,
         "vlm_max_ms": max((c["duration_ms"] for c in vlm_calls), default=None),
         "vlm_prompt_ids": "|".join(str(c.get("prompt_id") or "") for c in vlm_calls),
         "vlm_format_ok": (
-            int(all(c.get("parsed_ok") is True for c in vlm_calls))
-            if vlm_calls else ""
+            int(all(c.get("parsed_ok") is True for c in vlm_calls)) if vlm_calls else ""
         ),
         "vlm_grounding_ok": "" if vlm_grounding_ok is None else int(vlm_grounding_ok),
-
         "planner_total_ms": planner_total_ms,
         "planner_action_count": planner_action_count,
-
         "backend_internal_ms": backend_internal_ms,
         "tts_duration_ms": tts_duration_ms,
         "end_to_end_ms": end_to_end_ms,
-
         "fsm_expected_from": fsm_expected_from or "",
         "fsm_expected_to": fsm_expected_to or "",
         "fsm_actual_from": fsm_from or "",
         "fsm_actual_to": fsm_to or "",
         "fsm_match": "" if fsm_match is None else int(fsm_match),
-
         "tts_message": (tts_message or "")[:200],
     }
 
+
 # === Per-scenario aggregation ===
 
+
 def _final_state_for_scenario(
-    turns: Dict[int, List[Dict[str, Any]]],
-) -> Dict[str, Any]:
+    turns: dict[int, list[dict[str, Any]]],
+) -> dict[str, Any]:
     """Pick the latest TTS / PLAN events to recover the final ctx snapshot."""
-    last_origin: Optional[Dict] = None
-    last_destination: Optional[Dict] = None
-    last_hurry: Optional[bool] = None
-    plan_actions: List[str] = []
+    last_origin: dict | None = None
+    last_destination: dict | None = None
+    last_hurry: bool | None = None
+    plan_actions: list[str] = []
     completed = False
     for turn_idx in sorted(turns.keys()):
         for ev in turns[turn_idx]:
@@ -348,7 +353,8 @@ def _final_state_for_scenario(
         "completed": completed,
     }
 
-def _slot_match(observed: Optional[Dict], expected: Optional[Dict]) -> bool:
+
+def _slot_match(observed: dict | None, expected: dict | None) -> bool:
     """True when observed and expected agree on building, floor and location_id."""
     if not observed or not expected:
         return False
@@ -357,8 +363,10 @@ def _slot_match(observed: Optional[Dict], expected: Optional[Dict]) -> bool:
             return False
     return True
 
-def _route_match(observed: List[str], reference: List[str]) -> bool:
+
+def _route_match(observed: list[str], reference: list[str]) -> bool:
     """Compare action sequences ignoring trailing cost annotations."""
+
     def _norm(seq):
         out = []
         for a in seq:
@@ -372,11 +380,13 @@ def _route_match(observed: List[str], reference: List[str]) -> bool:
                     a = head.strip()
             out.append(a)
         return out
+
     return _norm(observed) == _norm(reference)
 
+
 def _count_validation_results(
-    turn_events_all: List[Dict[str, Any]],
-) -> Tuple[int, int, int]:
+    turn_events_all: list[dict[str, Any]],
+) -> tuple[int, int, int]:
     """Count VALIDATION events as (pass, fail, total_applicable)."""
     p = f = 0
     for ev in turn_events_all:
@@ -389,7 +399,9 @@ def _count_validation_results(
             f += 1
     return p, f, p + f
 
+
 # === Main ===
+
 
 def main() -> int:
     if not LOG_PATH.exists():
@@ -407,26 +419,28 @@ def main() -> int:
     scenarios = json.loads(SCENARIOS_PATH.read_text(encoding="utf-8"))["scenarios"]
     scenarios_by_id = {s["scenario_id"]: s for s in scenarios}
 
-    references: Dict[str, Dict[str, Any]] = {}
+    references: dict[str, dict[str, Any]] = {}
     if REFERENCE_PATH.exists():
-        references = json.loads(REFERENCE_PATH.read_text(encoding="utf-8")).get("reference_plans", {})
+        references = json.loads(REFERENCE_PATH.read_text(encoding="utf-8")).get(
+            "reference_plans", {}
+        )
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    turn_rows: List[Dict[str, Any]] = []
-    summary_rows: List[Dict[str, Any]] = []
+    turn_rows: list[dict[str, Any]] = []
+    summary_rows: list[dict[str, Any]] = []
 
     # Cross-scenario accumulators for the global CSV.
     g_planner_attempts_total = 0
     g_planner_solves_total = 0
-    g_plan_costs: List[int] = []
+    g_plan_costs: list[int] = []
     g_pddl_actions_total = 0
     g_user_facing_steps_total = 0
     g_instructions_delivered_total = 0
     g_instructions_expected_total = 0
     g_vlm_verif_pass = 0
     g_vlm_verif_total = 0
-    g_wer_values: List[float] = []
+    g_wer_values: list[float] = []
     g_user_turns_total = 0
     g_voice_turns_total = 0
     g_photo_turns_total = 0
@@ -445,26 +459,24 @@ def main() -> int:
     g_scenarios_total = len(scenarios)
     g_routes_correct = 0
     g_routes_scored = 0
-    g_e2e_latencies: List[float] = []
-    g_stt_latencies: List[float] = []
-    g_vlm_latencies: List[float] = []
-    g_planner_latencies: List[float] = []
+    g_e2e_latencies: list[float] = []
+    g_stt_latencies: list[float] = []
+    g_vlm_latencies: list[float] = []
+    g_planner_latencies: list[float] = []
 
     # One pass per scenario: per-turn rows first, then the scenario summary row.
     for sid in sorted(grouped.keys()):
         scenario = scenarios_by_id.get(sid, {})
-        expected_turns_by_idx = {
-            t["idx"]: t for t in (scenario.get("turns") or [])
-        }
+        expected_turns_by_idx = {t["idx"]: t for t in (scenario.get("turns") or [])}
         turns = grouped[sid]
 
         # Per-scenario accumulators.
-        e2e_per_turn: List[float] = []
-        backend_per_turn: List[float] = []
-        vlm_per_call: List[float] = []
-        planner_per_call: List[float] = []
-        stt_per_turn: List[float] = []
-        wer_per_turn: List[float] = []
+        e2e_per_turn: list[float] = []
+        backend_per_turn: list[float] = []
+        vlm_per_call: list[float] = []
+        planner_per_call: list[float] = []
+        stt_per_turn: list[float] = []
+        wer_per_turn: list[float] = []
         voice_turns = photo_turns = 0
         stt_kw_pass = stt_kw_total = 0
         fsm_pass = fsm_total = 0
@@ -476,12 +488,8 @@ def main() -> int:
             row = _summarise_turn(turns[turn_idx], expected_turns_by_idx.get(turn_idx))
             row["scenario_id"] = sid
             row["turn_idx"] = turn_idx
-            row["expected_input_type"] = (
-                expected_turns_by_idx.get(turn_idx, {}).get("input") or ""
-            )
-            row["expected_say"] = (
-                expected_turns_by_idx.get(turn_idx, {}).get("say") or ""
-            )
+            row["expected_input_type"] = expected_turns_by_idx.get(turn_idx, {}).get("input") or ""
+            row["expected_say"] = expected_turns_by_idx.get(turn_idx, {}).get("say") or ""
             turn_rows.append(row)
 
             if row["expected_input_type"] == "voice":
@@ -526,9 +534,7 @@ def main() -> int:
 
         origin_ok = _slot_match(final["origin"], expected_session.get("origin"))
         destination_ok = _slot_match(final["destination"], expected_session.get("destination"))
-        hurry_ok = (
-            bool(final.get("hurry_mode")) == bool(expected_session.get("hurry_mode"))
-        )
+        hurry_ok = bool(final.get("hurry_mode")) == bool(expected_session.get("hurry_mode"))
         slots_correct = int(origin_ok) + int(destination_ok) + int(hurry_ok)
 
         route_ok = _route_match(final["plan_actions"], ref_actions) if ref_actions else None
@@ -541,7 +547,8 @@ def main() -> int:
         scenario_events = [ev for ts in turns.values() for ev in ts]
         v_pass, v_fail, v_total = _count_validation_results(scenario_events)
         backend_turn_count = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "AGENT" and "turn handled" in ev.get("message", "")
         )
 
@@ -551,21 +558,31 @@ def main() -> int:
 
         # Planner attempts/solves + last-plan stats
         planner_attempts = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "PLANNER" and (ev.get("message") or "").startswith("init=")
         )
         planner_solves = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "PLANNER" and (ev.get("message") or "").startswith("solved")
         )
         last_solved = next(
-            (ev for ev in reversed(scenario_events)
-             if ev.get("category") == "PLANNER" and (ev.get("message") or "").startswith("solved")),
+            (
+                ev
+                for ev in reversed(scenario_events)
+                if ev.get("category") == "PLANNER"
+                and (ev.get("message") or "").startswith("solved")
+            ),
             None,
         )
         last_compacted = next(
-            (ev for ev in reversed(scenario_events)
-             if ev.get("category") == "ROUTE" and (ev.get("message") or "").startswith("compacted")),
+            (
+                ev
+                for ev in reversed(scenario_events)
+                if ev.get("category") == "ROUTE"
+                and (ev.get("message") or "").startswith("compacted")
+            ),
             None,
         )
         plan_cost_val = (last_solved or {}).get("cost")
@@ -578,7 +595,8 @@ def main() -> int:
         # the regular indoor steps and "navigation_step_outdoor" for the
         # GPS leg. Both count as a delivered instruction.
         instructions_delivered = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "TTS"
             and (ev.get("action") or "").startswith("navigation_step")
         )
@@ -591,90 +609,101 @@ def main() -> int:
         # VLM verification subset of the validation chips
         vlm_checks = _vlm_verification_applicable_checks(scenario)
         vlm_verif_pass = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "VALIDATION"
             and ev.get("check") in vlm_checks
             and ev.get("result") == "pass"
         )
         vlm_verif_total = sum(
-            1 for ev in scenario_events
+            1
+            for ev in scenario_events
             if ev.get("category") == "VALIDATION"
             and ev.get("check") in vlm_checks
             and ev.get("result") in ("pass", "fail")
         )
 
         # Assemble this scenario's summary row.
-        summary_rows.append({
-            "scenario_id": sid,
-            "scenario_name": scenario.get("name", ""),
-            "completed": int(scenario_completed),
-
-            "user_turns": len(turns),
-            "voice_turns": voice_turns,
-            "photo_turns": photo_turns,
-            "backend_turns": backend_turn_count,
-
-            # Validation chips
-            "validation_pass": v_pass,
-            "validation_fail": v_fail,
-            "validation_total": v_total,
-            "validation_pass_rate": _pct(v_pass, v_total),
-
-            # STT
-            "stt_keywords_pass": stt_kw_pass,
-            "stt_keywords_total": stt_kw_total,
-            "stt_keywords_pass_rate": _pct(stt_kw_pass, stt_kw_total),
-            "stt_mean_ms": round(statistics.fmean(stt_per_turn), 1) if stt_per_turn else "",
-            "stt_mean_wer": round(statistics.fmean(wer_per_turn), 3) if wer_per_turn else "",
-
-            # FSM
-            "fsm_transitions_pass": fsm_pass,
-            "fsm_transitions_total": fsm_total,
-            "fsm_transitions_pass_rate": _pct(fsm_pass, fsm_total),
-
-            # Slots (session-level)
-            "origin_match": int(origin_ok),
-            "destination_match": int(destination_ok),
-            "hurry_match": int(hurry_ok),
-            "slots_correct": slots_correct,
-            "slots_total": 3,
-            "slots_pass_rate": _pct(slots_correct, 3),
-
-            # VLM
-            "vlm_calls_total": sum(r["vlm_calls"] for r in turn_rows if r["scenario_id"] == sid),
-            "vlm_format_pass": vlm_format_pass,
-            "vlm_format_total": vlm_format_total,
-            "vlm_format_validity": _pct(vlm_format_pass, vlm_format_total),
-            "vlm_grounding_pass": vlm_grounding_pass,
-            "vlm_grounding_total": vlm_grounding_total,
-            "vlm_grounding_correctness": _pct(vlm_grounding_pass, vlm_grounding_total),
-            "vlm_verification_pass": vlm_verif_pass,
-            "vlm_verification_total": vlm_verif_total,
-            "vlm_verification_success_rate": _pct(vlm_verif_pass, vlm_verif_total),
-            "vlm_mean_ms": round(statistics.fmean(vlm_per_call), 1) if vlm_per_call else "",
-
-            # Planner
-            "planner_calls_total": len(planner_per_call),
-            "planner_attempts": planner_attempts,
-            "planner_solves": planner_solves,
-            "planner_solved_rate": _pct(planner_solves, planner_attempts),
-            "plan_cost": plan_cost_val if plan_cost_val is not None else "",
-            "pddl_action_count": pddl_action_count_val if pddl_action_count_val is not None else "",
-            "user_facing_step_count": user_facing_step_count_val if user_facing_step_count_val is not None else "",
-            "instructions_delivered": instructions_delivered,
-            "instructions_expected": instructions_expected,
-            "instruction_correctness": (
-                "" if instruction_correctness_val is None
-                else f"{(100.0 * instruction_correctness_val):.1f}%"
-            ),
-            "planner_mean_ms": round(statistics.fmean(planner_per_call), 1) if planner_per_call else "",
-            "route_correct": "" if route_ok is None else int(route_ok),
-
-            # Latency
-            "end_to_end_mean_ms": round(statistics.fmean(e2e_per_turn), 1) if e2e_per_turn else "",
-            "end_to_end_p95_ms": round(_percentile(e2e_per_turn, 95), 1) if e2e_per_turn else "",
-            "backend_mean_ms": round(statistics.fmean(backend_per_turn), 1) if backend_per_turn else "",
-        })
+        summary_rows.append(
+            {
+                "scenario_id": sid,
+                "scenario_name": scenario.get("name", ""),
+                "completed": int(scenario_completed),
+                "user_turns": len(turns),
+                "voice_turns": voice_turns,
+                "photo_turns": photo_turns,
+                "backend_turns": backend_turn_count,
+                # Validation chips
+                "validation_pass": v_pass,
+                "validation_fail": v_fail,
+                "validation_total": v_total,
+                "validation_pass_rate": _pct(v_pass, v_total),
+                # STT
+                "stt_keywords_pass": stt_kw_pass,
+                "stt_keywords_total": stt_kw_total,
+                "stt_keywords_pass_rate": _pct(stt_kw_pass, stt_kw_total),
+                "stt_mean_ms": round(statistics.fmean(stt_per_turn), 1) if stt_per_turn else "",
+                "stt_mean_wer": round(statistics.fmean(wer_per_turn), 3) if wer_per_turn else "",
+                # FSM
+                "fsm_transitions_pass": fsm_pass,
+                "fsm_transitions_total": fsm_total,
+                "fsm_transitions_pass_rate": _pct(fsm_pass, fsm_total),
+                # Slots (session-level)
+                "origin_match": int(origin_ok),
+                "destination_match": int(destination_ok),
+                "hurry_match": int(hurry_ok),
+                "slots_correct": slots_correct,
+                "slots_total": 3,
+                "slots_pass_rate": _pct(slots_correct, 3),
+                # VLM
+                "vlm_calls_total": sum(
+                    r["vlm_calls"] for r in turn_rows if r["scenario_id"] == sid
+                ),
+                "vlm_format_pass": vlm_format_pass,
+                "vlm_format_total": vlm_format_total,
+                "vlm_format_validity": _pct(vlm_format_pass, vlm_format_total),
+                "vlm_grounding_pass": vlm_grounding_pass,
+                "vlm_grounding_total": vlm_grounding_total,
+                "vlm_grounding_correctness": _pct(vlm_grounding_pass, vlm_grounding_total),
+                "vlm_verification_pass": vlm_verif_pass,
+                "vlm_verification_total": vlm_verif_total,
+                "vlm_verification_success_rate": _pct(vlm_verif_pass, vlm_verif_total),
+                "vlm_mean_ms": round(statistics.fmean(vlm_per_call), 1) if vlm_per_call else "",
+                # Planner
+                "planner_calls_total": len(planner_per_call),
+                "planner_attempts": planner_attempts,
+                "planner_solves": planner_solves,
+                "planner_solved_rate": _pct(planner_solves, planner_attempts),
+                "plan_cost": plan_cost_val if plan_cost_val is not None else "",
+                "pddl_action_count": pddl_action_count_val
+                if pddl_action_count_val is not None
+                else "",
+                "user_facing_step_count": user_facing_step_count_val
+                if user_facing_step_count_val is not None
+                else "",
+                "instructions_delivered": instructions_delivered,
+                "instructions_expected": instructions_expected,
+                "instruction_correctness": (
+                    ""
+                    if instruction_correctness_val is None
+                    else f"{(100.0 * instruction_correctness_val):.1f}%"
+                ),
+                "planner_mean_ms": round(statistics.fmean(planner_per_call), 1)
+                if planner_per_call
+                else "",
+                "route_correct": "" if route_ok is None else int(route_ok),
+                # Latency
+                "end_to_end_mean_ms": round(statistics.fmean(e2e_per_turn), 1)
+                if e2e_per_turn
+                else "",
+                "end_to_end_p95_ms": round(_percentile(e2e_per_turn, 95), 1)
+                if e2e_per_turn
+                else "",
+                "backend_mean_ms": round(statistics.fmean(backend_per_turn), 1)
+                if backend_per_turn
+                else "",
+            }
+        )
 
         # Roll into global accumulators.
         g_user_turns_total += len(turns)
@@ -714,26 +743,21 @@ def main() -> int:
         "scenarios_total": g_scenarios_total,
         "scenarios_completed": g_scenarios_completed,
         "scenario_completion_rate": _pct(g_scenarios_completed, g_scenarios_total),
-
         "user_turns_total": g_user_turns_total,
         "voice_turns_total": g_voice_turns_total,
         "photo_turns_total": g_photo_turns_total,
         "backend_turns_total": g_backend_turns_total,
-
         "validation_pass": g_validation_pass,
         "validation_total": g_validation_total,
         "validation_pass_rate": _pct(g_validation_pass, g_validation_total),
-
         "stt_keywords_pass": g_stt_keywords_pass,
         "stt_keywords_total": g_stt_keywords_total,
         "stt_keyword_correctness": _pct(g_stt_keywords_pass, g_stt_keywords_total),
         "stt_mean_wer": round(statistics.fmean(g_wer_values), 3) if g_wer_values else "",
         "stt_mean_ms": round(statistics.fmean(g_stt_latencies), 1) if g_stt_latencies else "",
-
         "fsm_transitions_pass": g_fsm_transitions_pass,
         "fsm_transitions_total": g_fsm_transitions_total,
         "fsm_transition_correctness": _pct(g_fsm_transitions_pass, g_fsm_transitions_total),
-
         "vlm_calls_total": g_vlm_calls_total,
         "vlm_format_validity": _pct(g_vlm_format_ok, g_vlm_calls_total),
         "vlm_grounding_correctness": _pct(g_vlm_grounding_ok, g_vlm_grounding_total),
@@ -741,7 +765,6 @@ def main() -> int:
         "vlm_verification_total": g_vlm_verif_total,
         "vlm_verification_success_rate": _pct(g_vlm_verif_pass, g_vlm_verif_total),
         "vlm_mean_ms": round(statistics.fmean(g_vlm_latencies), 1) if g_vlm_latencies else "",
-
         "planner_calls_total": len(g_planner_latencies),
         "planner_attempts_total": g_planner_attempts_total,
         "planner_solves_total": g_planner_solves_total,
@@ -751,46 +774,113 @@ def main() -> int:
         "user_facing_steps_total": g_user_facing_steps_total,
         "instructions_delivered_total": g_instructions_delivered_total,
         "instructions_expected_total": g_instructions_expected_total,
-        "instruction_correctness": _pct(g_instructions_delivered_total, g_instructions_expected_total),
-        "planner_mean_ms": round(statistics.fmean(g_planner_latencies), 1) if g_planner_latencies else "",
+        "instruction_correctness": _pct(
+            g_instructions_delivered_total, g_instructions_expected_total
+        ),
+        "planner_mean_ms": round(statistics.fmean(g_planner_latencies), 1)
+        if g_planner_latencies
+        else "",
         "routes_correct": g_routes_correct,
         "routes_scored": g_routes_scored,
         "route_correctness": _pct(g_routes_correct, g_routes_scored),
-
-        "end_to_end_mean_ms": round(statistics.fmean(g_e2e_latencies), 1) if g_e2e_latencies else "",
+        "end_to_end_mean_ms": round(statistics.fmean(g_e2e_latencies), 1)
+        if g_e2e_latencies
+        else "",
         "end_to_end_p95_ms": round(_percentile(g_e2e_latencies, 95), 1) if g_e2e_latencies else "",
     }
 
     # Write the three CSVs with an explicit, stable column order.
-    _write_csv(TURNS_CSV, turn_rows, [
-        "scenario_id", "turn_idx", "expected_input_type", "expected_say",
-        "stt_text", "stt_latency_ms", "wer",
-        "stt_keywords_expected", "stt_keywords_matched", "stt_keywords_missing", "stt_keywords_ok",
-        "vlm_calls", "vlm_total_ms", "vlm_max_ms", "vlm_prompt_ids",
-        "vlm_format_ok", "vlm_grounding_ok",
-        "planner_total_ms", "planner_action_count",
-        "backend_internal_ms", "tts_duration_ms", "end_to_end_ms",
-        "fsm_expected_from", "fsm_expected_to", "fsm_actual_from", "fsm_actual_to", "fsm_match",
-        "tts_message",
-    ])
-    _write_csv(SUMMARY_CSV, summary_rows, [
-        "scenario_id", "scenario_name", "completed",
-        "user_turns", "voice_turns", "photo_turns", "backend_turns",
-        "validation_pass", "validation_fail", "validation_total", "validation_pass_rate",
-        "stt_keywords_pass", "stt_keywords_total", "stt_keywords_pass_rate", "stt_mean_ms", "stt_mean_wer",
-        "fsm_transitions_pass", "fsm_transitions_total", "fsm_transitions_pass_rate",
-        "origin_match", "destination_match", "hurry_match",
-        "slots_correct", "slots_total", "slots_pass_rate",
-        "vlm_calls_total", "vlm_format_pass", "vlm_format_total", "vlm_format_validity",
-        "vlm_grounding_pass", "vlm_grounding_total", "vlm_grounding_correctness",
-        "vlm_verification_pass", "vlm_verification_total", "vlm_verification_success_rate",
-        "vlm_mean_ms",
-        "planner_calls_total", "planner_attempts", "planner_solves", "planner_solved_rate",
-        "plan_cost", "pddl_action_count", "user_facing_step_count",
-        "instructions_delivered", "instructions_expected", "instruction_correctness",
-        "planner_mean_ms", "route_correct",
-        "end_to_end_mean_ms", "end_to_end_p95_ms", "backend_mean_ms",
-    ])
+    _write_csv(
+        TURNS_CSV,
+        turn_rows,
+        [
+            "scenario_id",
+            "turn_idx",
+            "expected_input_type",
+            "expected_say",
+            "stt_text",
+            "stt_latency_ms",
+            "wer",
+            "stt_keywords_expected",
+            "stt_keywords_matched",
+            "stt_keywords_missing",
+            "stt_keywords_ok",
+            "vlm_calls",
+            "vlm_total_ms",
+            "vlm_max_ms",
+            "vlm_prompt_ids",
+            "vlm_format_ok",
+            "vlm_grounding_ok",
+            "planner_total_ms",
+            "planner_action_count",
+            "backend_internal_ms",
+            "tts_duration_ms",
+            "end_to_end_ms",
+            "fsm_expected_from",
+            "fsm_expected_to",
+            "fsm_actual_from",
+            "fsm_actual_to",
+            "fsm_match",
+            "tts_message",
+        ],
+    )
+    _write_csv(
+        SUMMARY_CSV,
+        summary_rows,
+        [
+            "scenario_id",
+            "scenario_name",
+            "completed",
+            "user_turns",
+            "voice_turns",
+            "photo_turns",
+            "backend_turns",
+            "validation_pass",
+            "validation_fail",
+            "validation_total",
+            "validation_pass_rate",
+            "stt_keywords_pass",
+            "stt_keywords_total",
+            "stt_keywords_pass_rate",
+            "stt_mean_ms",
+            "stt_mean_wer",
+            "fsm_transitions_pass",
+            "fsm_transitions_total",
+            "fsm_transitions_pass_rate",
+            "origin_match",
+            "destination_match",
+            "hurry_match",
+            "slots_correct",
+            "slots_total",
+            "slots_pass_rate",
+            "vlm_calls_total",
+            "vlm_format_pass",
+            "vlm_format_total",
+            "vlm_format_validity",
+            "vlm_grounding_pass",
+            "vlm_grounding_total",
+            "vlm_grounding_correctness",
+            "vlm_verification_pass",
+            "vlm_verification_total",
+            "vlm_verification_success_rate",
+            "vlm_mean_ms",
+            "planner_calls_total",
+            "planner_attempts",
+            "planner_solves",
+            "planner_solved_rate",
+            "plan_cost",
+            "pddl_action_count",
+            "user_facing_step_count",
+            "instructions_delivered",
+            "instructions_expected",
+            "instruction_correctness",
+            "planner_mean_ms",
+            "route_correct",
+            "end_to_end_mean_ms",
+            "end_to_end_p95_ms",
+            "backend_mean_ms",
+        ],
+    )
     _write_csv(GLOBAL_CSV, [global_row], list(global_row.keys()))
 
     print(f"Wrote {TURNS_CSV.relative_to(REPO_ROOT)} ({len(turn_rows)} rows)")
@@ -799,22 +889,39 @@ def main() -> int:
     print()
     # Headline block: printed to stdout and pasted into the report.
     print("=== HEADLINE METRICS ===")
-    print(f"  Scenarios completed:        {global_row['scenarios_completed']} / {global_row['scenarios_total']}  ({global_row['scenario_completion_rate']})")
-    print(f"  Validation pass rate:       {global_row['validation_pass']} / {global_row['validation_total']}  ({global_row['validation_pass_rate']})")
-    print(f"  STT keyword correctness:    {global_row['stt_keywords_pass']} / {global_row['stt_keywords_total']}  ({global_row['stt_keyword_correctness']})")
+    print(
+        f"  Scenarios completed:        {global_row['scenarios_completed']} / {global_row['scenarios_total']}  ({global_row['scenario_completion_rate']})"
+    )
+    print(
+        f"  Validation pass rate:       {global_row['validation_pass']} / {global_row['validation_total']}  ({global_row['validation_pass_rate']})"
+    )
+    print(
+        f"  STT keyword correctness:    {global_row['stt_keywords_pass']} / {global_row['stt_keywords_total']}  ({global_row['stt_keyword_correctness']})"
+    )
     print(f"  STT mean WER:               {global_row['stt_mean_wer']}")
-    print(f"  FSM transitions OK:         {global_row['fsm_transitions_pass']} / {global_row['fsm_transitions_total']}  ({global_row['fsm_transition_correctness']})")
+    print(
+        f"  FSM transitions OK:         {global_row['fsm_transitions_pass']} / {global_row['fsm_transitions_total']}  ({global_row['fsm_transition_correctness']})"
+    )
     print(f"  VLM format validity:        {global_row['vlm_format_validity']}")
     print(f"  VLM grounding accuracy:     {global_row['vlm_grounding_correctness']}")
-    print(f"  VLM verification success:   {global_row['vlm_verification_pass']} / {global_row['vlm_verification_total']}  ({global_row['vlm_verification_success_rate']})")
-    print(f"  Planner solved rate:        {global_row['planner_solves_total']} / {global_row['planner_attempts_total']}  ({global_row['planner_solved_rate']})")
+    print(
+        f"  VLM verification success:   {global_row['vlm_verification_pass']} / {global_row['vlm_verification_total']}  ({global_row['vlm_verification_success_rate']})"
+    )
+    print(
+        f"  Planner solved rate:        {global_row['planner_solves_total']} / {global_row['planner_attempts_total']}  ({global_row['planner_solved_rate']})"
+    )
     print(f"  Mean plan cost:             {global_row['plan_cost_mean']}")
     print(f"  PDDL actions (total):       {global_row['pddl_actions_total']}")
     print(f"  User-facing steps (total):  {global_row['user_facing_steps_total']}")
-    print(f"  Instruction correctness:    {global_row['instructions_delivered_total']} / {global_row['instructions_expected_total']}  ({global_row['instruction_correctness']})")
-    print(f"  Routes correct:             {global_row['routes_correct']} / {global_row['routes_scored']}  ({global_row['route_correctness']})")
+    print(
+        f"  Instruction correctness:    {global_row['instructions_delivered_total']} / {global_row['instructions_expected_total']}  ({global_row['instruction_correctness']})"
+    )
+    print(
+        f"  Routes correct:             {global_row['routes_correct']} / {global_row['routes_scored']}  ({global_row['route_correctness']})"
+    )
     print(f"  Mean end-to-end:            {global_row['end_to_end_mean_ms']} ms")
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

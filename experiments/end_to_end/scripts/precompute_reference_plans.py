@@ -15,16 +15,14 @@ Usage:
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BASE = Path(__file__).resolve().parents[1]
 
-from visionleader.navigation.agent.planner_bridge import run_indoor_planner  # noqa: E402
-from visionleader.navigation.fast_downward_client import FastDownwardPlanner  # noqa: E402
-from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter  # noqa: E402
-
+from visionleader.navigation.agent.planner_bridge import run_indoor_planner
+from visionleader.navigation.fast_downward_client import FastDownwardPlanner
+from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 
 SCENARIOS_PATH = BASE / "scenarios.json"
 OUTPUT_PATH = BASE / "reference_plans" / "e2e_reference_plans.json"

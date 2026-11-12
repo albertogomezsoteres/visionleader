@@ -9,7 +9,7 @@ destination.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING
 
 from ..context import ConversationContext, ConversationState
 from ..parsing import is_no, is_yes
@@ -23,13 +23,13 @@ if TYPE_CHECKING:
 
 _STEP_TYPE_LABELS = {
     "local_walk": "walk",
-    "elevator":   "elevator",
-    "stairs":     "stairs",
-    "outdoor":    "outdoor walk",
+    "elevator": "elevator",
+    "stairs": "stairs",
+    "outdoor": "outdoor walk",
 }
 
 
-def present_plan(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def present_plan(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     """Build a one-line route summary and deliver the first step in the same
     TTS, skipping the manual ``Say start`` round-trip. The summary itself
     (elevator/stairs/outdoor mention, hurry-mode note, pending closure
@@ -66,17 +66,22 @@ def present_plan(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
     return execution.deliver_step(agent, ctx, prefix=summary + " ")
 
 
-def handle_confirming_plan(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_confirming_plan(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     from . import execution  # lazy: execution.deliver_step
 
     low = msg.lower()
 
-    if any(w in low for w in (
-        "change dest", "cambiar dest", "different",
-        "otro destino", "otra cosa", "change",
-    )):
+    if any(
+        w in low
+        for w in (
+            "change dest",
+            "cambiar dest",
+            "different",
+            "otro destino",
+            "otra cosa",
+            "change",
+        )
+    ):
         tts = "Sure. What would you like the new destination to be?"
         ctx.state = ConversationState.ASK_DESTINATION
         ctx.destination = None

@@ -6,7 +6,7 @@ the round trip. Every event is replayed through the same telemetry
 helper, so it appears in the demo log inline with backend events.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -17,12 +17,12 @@ router = APIRouter()
 
 
 class ClientMetric(BaseModel):
-    scenario_id: Optional[str] = None
-    turn_idx: Optional[int] = None
+    scenario_id: str | None = None
+    turn_idx: int | None = None
     category: str = "CLIENT"
     message: str = ""
-    duration_ms: Optional[float] = None
-    fields: Dict[str, Any] = {}
+    duration_ms: float | None = None
+    fields: dict[str, Any] = {}
 
 
 @router.post("/_client_metric")

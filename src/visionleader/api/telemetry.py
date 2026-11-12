@@ -20,25 +20,27 @@ import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 try:
-    from colorama import Fore, Style, init as _colorama_init
+    from colorama import Fore, Style
+    from colorama import init as _colorama_init
+
     _colorama_init()
     _COLORS = {
-        "STT":        Fore.CYAN,
-        "VLM":        Fore.MAGENTA,
-        "PLANNER":    Fore.GREEN,
-        "PLAN":       Fore.GREEN,
-        "AGENT":      Fore.YELLOW,
-        "TTS":        Fore.BLUE,
-        "TURN":       Fore.WHITE + Style.BRIGHT,
-        "CLOSURE":    Style.DIM,
-        "ROUTE":      Style.DIM,
-        "CLIENT":     Fore.LIGHTBLACK_EX,
-        "FSM":        Fore.LIGHTBLUE_EX,
+        "STT": Fore.CYAN,
+        "VLM": Fore.MAGENTA,
+        "PLANNER": Fore.GREEN,
+        "PLAN": Fore.GREEN,
+        "AGENT": Fore.YELLOW,
+        "TTS": Fore.BLUE,
+        "TURN": Fore.WHITE + Style.BRIGHT,
+        "CLOSURE": Style.DIM,
+        "ROUTE": Style.DIM,
+        "CLIENT": Fore.LIGHTBLACK_EX,
+        "FSM": Fore.LIGHTBLUE_EX,
         "VALIDATION": Fore.LIGHTGREEN_EX,
-        "SCENARIO":   Fore.WHITE + Style.BRIGHT,
+        "SCENARIO": Fore.WHITE + Style.BRIGHT,
     }
     _RESET = Style.RESET_ALL
 except Exception:
@@ -56,15 +58,15 @@ _CATEGORY_LABELS = {
 _CATEGORY_COL_WIDTH = 11
 
 
-_scenario_id: contextvars.ContextVar[Optional[str]] = contextvars.ContextVar(
+_scenario_id: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "telemetry_scenario_id", default=None
 )
-_turn_idx: contextvars.ContextVar[Optional[int]] = contextvars.ContextVar(
+_turn_idx: contextvars.ContextVar[int | None] = contextvars.ContextVar(
     "telemetry_turn_idx", default=None
 )
 
 
-def set_request_context(scenario_id: Optional[str], turn_idx: Optional[int]) -> None:
+def set_request_context(scenario_id: str | None, turn_idx: int | None) -> None:
     """Bind scenario and turn for every event emitted from this request."""
     _scenario_id.set(scenario_id)
     if turn_idx is None:
@@ -76,11 +78,11 @@ def set_request_context(scenario_id: Optional[str], turn_idx: Optional[int]) -> 
         _turn_idx.set(None)
 
 
-_JSONL_PATH: Optional[Path] = None
+_JSONL_PATH: Path | None = None
 _JSONL_RESOLVED: bool = False
 
 
-def _resolve_jsonl_path() -> Optional[Path]:
+def _resolve_jsonl_path() -> Path | None:
     global _JSONL_PATH, _JSONL_RESOLVED
     if _JSONL_RESOLVED:
         return _JSONL_PATH
@@ -100,7 +102,7 @@ def log_event(
     category: str,
     message: str,
     *,
-    duration_ms: Optional[float] = None,
+    duration_ms: float | None = None,
     **fields: Any,
 ) -> None:
     """Emit one event to all sinks (stdout + JSONL). Never raises."""
@@ -138,9 +140,9 @@ def _format_line(
     ts: datetime,
     category: str,
     message: str,
-    duration_ms: Optional[float],
-    scenario: Optional[str],
-    turn: Optional[int],
+    duration_ms: float | None,
+    scenario: str | None,
+    turn: int | None,
 ) -> str:
     color = _COLORS.get(category, "")
     label = _CATEGORY_LABELS.get(category, category)
@@ -154,7 +156,7 @@ def _format_line(
     return f"{color}{' '.join(parts)}{_RESET}  {message}{suffix}"
 
 
-def log_separator(title: Optional[str] = None) -> None:
+def log_separator(title: str | None = None) -> None:
     """Print a thin horizontal rule for visually separating turns.
 
     When ``title`` is provided it is printed inline with the rule, in the
@@ -164,8 +166,7 @@ def log_separator(title: Optional[str] = None) -> None:
         color = _COLORS.get("TURN", "")
         rule = "─" * 76
         if title:
-            print(f"{color}\n┄┄┄  {title}  {'┄' * max(0, 70 - len(title))}{_RESET}",
-                  flush=True)
+            print(f"{color}\n┄┄┄  {title}  {'┄' * max(0, 70 - len(title))}{_RESET}", flush=True)
         else:
             print(f"{color}{rule}{_RESET}", flush=True)
     except Exception:

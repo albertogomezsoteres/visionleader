@@ -5,17 +5,14 @@ Expensive resources (campus graph, planner, conversation agent) are loaded
 once at startup and reused on every request.
 """
 
-import os
 import json
-from pathlib import Path
-from typing import Optional
+import os
 
 from dotenv import load_dotenv
 
+from visionleader.navigation.conversation_agent import ConversationAgent
 from visionleader.navigation.fast_downward_client import FastDownwardPlanner
 from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
-from visionleader.navigation.conversation_agent import ConversationAgent
-
 from visionleader.paths import ENV_FILE, PDDL_DIR
 from visionleader.paths import PLACES_PATH as PLACES_JSON
 from visionleader.paths import TOPOLOGY_PATH as TOPOLOGY_JSON
@@ -30,15 +27,15 @@ hierarchical_converter = HierarchicalPDDLConverter(
     pddl_dir=str(PDDL_DIR),
 )
 
-_topology_data: Optional[dict] = None
-_places_data:   Optional[dict] = None
+_topology_data: dict | None = None
+_places_data: dict | None = None
 
 
 def load_topology() -> dict:
     """Load campus_topology.json once and keep it in memory."""
     global _topology_data
     if _topology_data is None:
-        with open(TOPOLOGY_JSON, "r", encoding="utf-8") as f:
+        with open(TOPOLOGY_JSON, encoding="utf-8") as f:
             _topology_data = json.load(f)
     return _topology_data
 
@@ -47,12 +44,12 @@ def load_places() -> dict:
     """Load campus_places.json once and keep it in memory."""
     global _places_data
     if _places_data is None:
-        with open(PLACES_JSON, "r", encoding="utf-8") as f:
+        with open(PLACES_JSON, encoding="utf-8") as f:
             _places_data = json.load(f)
     return _places_data
 
 
-_conversation_agent: Optional[ConversationAgent] = None
+_conversation_agent: ConversationAgent | None = None
 
 
 def get_conversation_agent() -> ConversationAgent:

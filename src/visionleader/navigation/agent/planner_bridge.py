@@ -13,14 +13,14 @@ import logging
 import re
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from visionleader.api.telemetry import log_event
 
 logger = logging.getLogger(__name__)
 
 
-def _problem_stats(text: str) -> Dict[str, Any]:
+def _problem_stats(text: str) -> dict[str, Any]:
     """Cheap structural stats from a generated PDDL problem file.
 
     Used for the demo log line so the operator can tell at a glance how
@@ -59,12 +59,12 @@ def run_indoor_planner(
     origin_building: int,
     origin_room: str,
     origin_floor: int,
-    dest_building: Optional[int] = None,
-    dest_room: Optional[str] = None,
-    dest_floor: Optional[int] = None,
-    goal_functional: Optional[str] = None,
+    dest_building: int | None = None,
+    dest_room: str | None = None,
+    dest_floor: int | None = None,
+    goal_functional: str | None = None,
     hurry_mode: bool = False,
-) -> Optional[dict]:
+) -> dict | None:
     """Generate a room-level PDDL problem and solve it with Fast Downward.
 
     Returns ``{"actions": List[str], "cost": int, "search_time_s": float}``
@@ -88,7 +88,7 @@ def run_indoor_planner(
         logger.error("PDDL domain file not found: %s", domain_path)
         return None
 
-    problem_path: Optional[str] = None
+    problem_path: str | None = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".pddl", dir=str(pddl_dir), delete=False

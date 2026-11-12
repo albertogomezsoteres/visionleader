@@ -11,14 +11,16 @@ import tempfile
 
 from fastapi import APIRouter, HTTPException
 
-from visionleader.api.schemas import (
-    PlanningRequest, PlanningResponse,
-    ValidationRequest, ValidationResponse,
-    DomainResponse,
-)
 from visionleader.api.dependencies import (
-    planner,
     hierarchical_converter,
+    planner,
+)
+from visionleader.api.schemas import (
+    DomainResponse,
+    PlanningRequest,
+    PlanningResponse,
+    ValidationRequest,
+    ValidationResponse,
 )
 from visionleader.paths import DOMAIN_PATH, PDDL_DIR
 
@@ -44,9 +46,7 @@ def _run_plan(request: PlanningRequest) -> PlanningResponse:
     origin_floor = int(initial["floor"])
     origin_room = initial.get("room")
 
-    dest_building = (
-        int(goal["building"]) if goal.get("building") is not None else None
-    )
+    dest_building = int(goal["building"]) if goal.get("building") is not None else None
     dest_floor = int(goal["floor"]) if goal.get("floor") is not None else None
     dest_room = goal.get("room")
 
@@ -87,11 +87,12 @@ def _run_plan(request: PlanningRequest) -> PlanningResponse:
         except ValueError as e:
             if os.path.exists(problem_path):
                 os.remove(problem_path)
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
     try:
         result = planner.plan(
-            domain_path=str(domain_path), problem_path=problem_path,
+            domain_path=str(domain_path),
+            problem_path=problem_path,
         )
         result["initial_state"] = initial
         result["goal_state"] = {
@@ -116,7 +117,7 @@ async def generate_plan(request: PlanningRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating plan: {e}")
+        raise HTTPException(status_code=500, detail=f"Error generating plan: {e}") from e
 
 
 @router.get("/domain", response_model=DomainResponse)
@@ -127,7 +128,7 @@ async def get_domain():
     try:
         return DomainResponse(domain=DOMAIN_PATH.read_text(encoding="utf-8"))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading domain: {e}")
+        raise HTTPException(status_code=500, detail=f"Error reading domain: {e}") from e
 
 
 @router.post("/validate", response_model=ValidationResponse)

@@ -8,7 +8,7 @@ data: no IO, no model calls, no planner calls.
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class ConversationState(Enum):
@@ -37,43 +37,43 @@ class ConversationContext:
         self.session_id = session_id
         self.state = ConversationState.WELCOME
 
-        self.origin: Optional[Dict[str, Any]] = None
-        self.destination: Optional[Dict[str, Any]] = None
+        self.origin: dict[str, Any] | None = None
+        self.destination: dict[str, Any] | None = None
 
-        self.route_steps: List[Dict[str, Any]] = []
+        self.route_steps: list[dict[str, Any]] = []
         self.current_step_idx: int = 0
 
         # Raw PDDL plan from Fast Downward (action strings with "(N)" cost
         # annotations) plus the total cost it found. Surfaced on the
         # conversation response so the mobile can render the symbolic plan
         # card. Cleared on navigation completion / cancellation.
-        self.pddl_plan: List[str] = []
+        self.pddl_plan: list[str] = []
         self.plan_cost: int = 0
-        self.plan_search_time_s: Optional[float] = None
+        self.plan_search_time_s: float | None = None
 
         self.last_tts: str = ""
         self.photo_attempts: int = 0
         self.voice_retries: int = 0
-        self.history: List[Dict[str, str]] = []
+        self.history: list[dict[str, str]] = []
         self.hurry_mode: bool = False
 
         # Closure handling: populated by routing.compute_route when the
         # original destination was closed. Consumed by present_plan (success
         # path) or by destination handlers (failure path) to prepend the
         # reason.
-        self.pending_announcement: Optional[str] = None
+        self.pending_announcement: str | None = None
         self.closure_blocked: bool = False
 
         # Partial location accumulation (building known but floor unknown,
         # etc.) Used while the FSM is still gathering origin pieces.
-        self.partial_building: Optional[int] = None
-        self.partial_floor: Optional[int] = None
-        self.partial_location_id: Optional[str] = None
+        self.partial_building: int | None = None
+        self.partial_floor: int | None = None
+        self.partial_location_id: str | None = None
 
     def add(self, role: str, text: str) -> None:
         self.history.append({"role": role, "text": text})
 
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
             "session_id": self.session_id,
             "state": self.state.value,

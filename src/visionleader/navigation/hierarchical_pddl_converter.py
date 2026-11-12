@@ -12,7 +12,7 @@ edges between entrance nodes.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import ClassVar
 
 # Domain filename and :domain directive shared by every problem.
 DOMAIN_FILE = "domain.pddl"
@@ -29,52 +29,65 @@ class HierarchicalPDDLConverter:
     # appear alongside the main-side ``elevator`` / ``stairs``. Bathrooms in G
     # and CD are split by sex; other buildings may still use a single
     # ``bathroom`` node (kept for backward compat).
-    SHARED_LOC_IDS: Set[str] = {
-        "elevator", "elevator_rear",
-        "stairs", "stairs_rear",
-        "bathroom", "bathroom_men", "bathroom_women",
+    SHARED_LOC_IDS: ClassVar[set[str]] = {
+        "elevator",
+        "elevator_rear",
+        "stairs",
+        "stairs_rear",
+        "bathroom",
+        "bathroom_men",
+        "bathroom_women",
     }
 
     # Per-core shared id pairs used when emitting vertical connections. Each
     # tuple is (elevator_id, stairs_id) for one column; columns never mix.
-    VERTICAL_CORES: List[Tuple[str, str]] = [
-        ("elevator",      "stairs"),
+    VERTICAL_CORES: ClassVar[list[tuple[str, str]]] = [
+        ("elevator", "stairs"),
         ("elevator_rear", "stairs_rear"),
     ]
 
     # Buildings that physically have an elevator (elevator nodes in campus_graph).
     # CD (id 2) joined the set after the 2026 remodel added its twin cores.
-    HAS_ELEVATOR: Set[int] = {1, 2, 4, 5, 6}   # G, CD, P, O, M
+    HAS_ELEVATOR: ClassVar[set[int]] = {1, 2, 4, 5, 6}  # G, CD, P, O, M
 
     # Default distance for non-G buildings (approximate, 15 m per hop).
     # G uses exact measured distances from campus_topology.json.
     DEFAULT_DISTANCE_NON_G: int = 15
 
     # Mapping from numeric building id to the campus_topology.json "locations" key
-    BUILDING_JSON_NAMES: Dict[int, str] = {
-        1:  "G",  2:  "CD",  3:  "H",   4:  "P",
-        5:  "O",  6:  "M",   7:  "N",   8:  "CSQ",
-        9:  "K",  10: "CSC", 11: "C",   12: "E",
-        13: "CM", 14: "LCB",
-        15: "Rodilla", 16: "Chapel",
+    BUILDING_JSON_NAMES: ClassVar[dict[int, str]] = {
+        1: "G",
+        2: "CD",
+        3: "H",
+        4: "P",
+        5: "O",
+        6: "M",
+        7: "N",
+        8: "CSQ",
+        9: "K",
+        10: "CSC",
+        11: "C",
+        12: "E",
+        13: "CM",
+        14: "LCB",
+        15: "Rodilla",
+        16: "Chapel",
     }
 
     def __init__(
         self,
         json_path: str,
         pddl_dir: str,
-        closed_rooms_path: Optional[str] = None,
+        closed_rooms_path: str | None = None,
     ):
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             self.data = json.load(f)
         self.pddl_dir = Path(pddl_dir)
         if closed_rooms_path is None:
-            closed_rooms_path = str(
-                Path(json_path).parent / "closed_rooms.json"
-            )
+            closed_rooms_path = str(Path(json_path).parent / "closed_rooms.json")
         self.closed_rooms_path = Path(closed_rooms_path)
 
-    def load_closed_rooms(self) -> List[Dict]:
+    def load_closed_rooms(self) -> list[dict]:
         """Read the current closure state from disk.
 
         The file is reloaded on every planning request so live edits take
@@ -89,14 +102,14 @@ class HierarchicalPDDLConverter:
         except Exception:
             return []
 
-    def _build_closed_set(self, building_name: str) -> Set[Tuple[str, int, str]]:
+    def _build_closed_set(self, building_name: str) -> set[tuple[str, int, str]]:
         """Return the set of (building, floor, location_id) that are closed.
 
         For ids that repeat across floors (elevator, stairs, bathroom) the
         closure entry must include the floor; otherwise the closure
         applies to every floor that contains that id.
         """
-        closed: Set[Tuple[str, int, str]] = set()
+        closed: set[tuple[str, int, str]] = set()
         for entry in self.load_closed_rooms():
             if entry.get("building") != building_name:
                 continue
@@ -108,7 +121,7 @@ class HierarchicalPDDLConverter:
                 for f, locs in self.building_locations(
                     self._building_id_from_name(building_name)
                 ).items():
-                    if any(l.get("id") == loc_id for l in locs):
+                    if any(entry.get("id") == loc_id for entry in locs):
                         closed.add((building_name, int(f), loc_id))
             else:
                 closed.add((building_name, int(floor), loc_id))
@@ -121,7 +134,7 @@ class HierarchicalPDDLConverter:
         return 1
 
     # Domain lookup - single shared domain for the whole campus.
-    def get_domain_path(self, building_id: Optional[int] = None) -> Path:
+    def get_domain_path(self, building_id: int | None = None) -> Path:
         return self.pddl_dir / DOMAIN_FILE
 
     def json_name(self, building_id: int) -> str:
@@ -133,7 +146,7 @@ class HierarchicalPDDLConverter:
         cls,
         location_id: str,
         floor: int,
-        building_name: Optional[str] = None,
+        building_name: str | None = None,
     ) -> str:
         """Convert a campus location_id + floor to a unique PDDL location name.
 
@@ -170,9 +183,7 @@ class HierarchicalPDDLConverter:
         return name
 
     @classmethod
-    def pddl_to_location(
-        cls, pddl_id: str
-    ) -> Tuple[str, Optional[int], Optional[str]]:
+    def pddl_to_location(cls, pddl_id: str) -> tuple[str, int | None, str | None]:
         """Reverse mapping: PDDL id -> (json location_id, floor, building_name).
 
         Examples:
@@ -188,7 +199,7 @@ class HierarchicalPDDLConverter:
         for base in sorted(cls.SHARED_LOC_IDS, key=len, reverse=True):
             if not pddl_id.startswith(base + "_"):
                 continue
-            remainder = pddl_id[len(base) + 1:]
+            remainder = pddl_id[len(base) + 1 :]
             # Try building-prefixed form first: {base}_{bld}_f{N} or _fm{N}
             parts = remainder.rsplit("_", 1)
             if len(parts) == 2:
@@ -218,13 +229,13 @@ class HierarchicalPDDLConverter:
         return pddl_id, None, None
 
     # Data access helpers
-    def building_locations(self, building_id: int) -> Dict[int, List[Dict]]:
+    def building_locations(self, building_id: int) -> dict[int, list[dict]]:
         """Return {floor_int: [location_dicts]} for a building."""
         name = self.json_name(building_id)
         floors_data = self.data.get("locations", {}).get(name, {})
         return {int(k): v for k, v in floors_data.items()}
 
-    def find_location_floor(self, building_id: int, location_id: str) -> Optional[int]:
+    def find_location_floor(self, building_id: int, location_id: str) -> int | None:
         """Look up which floor a location_id is on within a building."""
         for floor, locs in self.building_locations(building_id).items():
             for loc in locs:
@@ -234,7 +245,7 @@ class HierarchicalPDDLConverter:
 
     def find_functional_room(
         self, building_id: int, goal_functional: str
-    ) -> Optional[Tuple[str, int]]:
+    ) -> tuple[str, int] | None:
         """Resolve a functional goal (cafeteria, gym) to (location_id, floor)
         inside a specific building. Returns None if not found.
         """
@@ -253,9 +264,7 @@ class HierarchicalPDDLConverter:
                     return (loc["id"], floor)
         return None
 
-    def find_functional_anywhere(
-        self, goal_functional: str
-    ) -> Optional[Tuple[int, str, int]]:
+    def find_functional_anywhere(self, goal_functional: str) -> tuple[int, str, int] | None:
         """Scan every building for a functional goal. Returns
         (building_id, location_id, floor) or None.
         """
@@ -266,7 +275,7 @@ class HierarchicalPDDLConverter:
         return None
 
     # Entrance helpers (for cross-building outdoor edges)
-    def _entrance_of(self, building_id: int) -> Optional[Tuple[str, int]]:
+    def _entrance_of(self, building_id: int) -> tuple[str, int] | None:
         """Return (entrance_location_id, floor) for a building, or None."""
         for floor, locs in self.building_locations(building_id).items():
             for loc in locs:
@@ -274,14 +283,14 @@ class HierarchicalPDDLConverter:
                     return loc["id"], floor
         return None
 
-    def _outdoor_entrances_of(self, building_id: int) -> List[Tuple[str, int]]:
+    def _outdoor_entrances_of(self, building_id: int) -> list[tuple[str, int]]:
         """All exterior-side entrance nodes of a building, used to wire
         cross-building ``outdoor_connected`` edges. Includes the canonical
         ``entrance`` plus any ``entrance_secondary`` exterior nodes so the
         planner can pick the entrance closest to the user instead of being
         forced through a single one.
         """
-        out: List[Tuple[str, int]] = []
+        out: list[tuple[str, int]] = []
         seen: set = set()
         for floor, locs in self.building_locations(building_id).items():
             for loc in locs:
@@ -315,13 +324,13 @@ class HierarchicalPDDLConverter:
         origin_building: int,
         origin_room: str,
         origin_floor: int,
-        dest_building: Optional[int] = None,
-        dest_room: Optional[str] = None,
-        dest_floor: Optional[int] = None,
-        goal_functional: Optional[str] = None,
+        dest_building: int | None = None,
+        dest_room: str | None = None,
+        dest_floor: int | None = None,
+        goal_functional: str | None = None,
         hurry_mode: bool = False,
-        problem_name: Optional[str] = None,
-        output_path: Optional[str] = None,
+        problem_name: str | None = None,
+        output_path: str | None = None,
     ) -> str:
         """Build a PDDL problem encoding one or more buildings.
 
@@ -359,19 +368,15 @@ class HierarchicalPDDLConverter:
         if not dest_room or dest_floor is None:
             raise ValueError("Provide dest_room+dest_floor or goal_functional")
 
-        buildings_in_problem: List[int] = [origin_building]
+        buildings_in_problem: list[int] = [origin_building]
         if dest_building != origin_building:
             buildings_in_problem.append(dest_building)
 
-        origin_pddl = self.location_to_pddl(
-            origin_room, origin_floor, origin_bname
-        )
-        dest_pddl = self.location_to_pddl(
-            dest_room, dest_floor, dest_bname
-        )
+        origin_pddl = self.location_to_pddl(origin_room, origin_floor, origin_bname)
+        dest_pddl = self.location_to_pddl(dest_room, dest_floor, dest_bname)
 
-        all_rooms: List[Tuple[str, int, str, str]] = []  # (pddl, floor, json_id, bname)
-        seen_pddl: Set[str] = set()
+        all_rooms: list[tuple[str, int, str, str]] = []  # (pddl, floor, json_id, bname)
+        seen_pddl: set[str] = set()
         for bid in buildings_in_problem:
             bname = self.json_name(bid)
             locations_by_floor = self.building_locations(bid)
@@ -395,16 +400,16 @@ class HierarchicalPDDLConverter:
             f"    {' '.join(pddl_room_names)} - location",
         ]
 
-        closed_sets: Dict[str, Set[Tuple[str, int, str]]] = {
+        closed_sets: dict[str, set[tuple[str, int, str]]] = {
             self.json_name(bid): self._build_closed_set(self.json_name(bid))
             for bid in buildings_in_problem
         }
-        closed_pddl_ids: Set[str] = set()
+        closed_pddl_ids: set[str] = set()
         for pddl_id, floor, json_id, bname in all_rooms:
             if (bname, int(floor), json_id) in closed_sets.get(bname, set()):
                 closed_pddl_ids.add(pddl_id)
 
-        init_lines: List[str] = ["    (= (total-cost) 0)"]
+        init_lines: list[str] = ["    (= (total-cost) 0)"]
         init_lines.append(f"    (at user {origin_pddl})")
 
         if hurry_mode:
@@ -450,12 +455,8 @@ class HierarchicalPDDLConverter:
                 if not isinstance(distance, (int, float)) or distance <= 0:
                     distance = default_distance
                 distance = int(round(distance))
-                init_lines.append(
-                    f"    (hallway_connected {from_pddl} {to_pddl})"
-                )
-                init_lines.append(
-                    f"    (= (distance {from_pddl} {to_pddl}) {distance})"
-                )
+                init_lines.append(f"    (hallway_connected {from_pddl} {to_pddl})")
+                init_lines.append(f"    (= (distance {from_pddl} {to_pddl}) {distance})")
 
         # Elevator vertical connections, per building, per column. Each column
         # forms its own all-to-all graph across floors; the main and rear
@@ -470,7 +471,7 @@ class HierarchicalPDDLConverter:
                 elevator_ids = [
                     self.location_to_pddl(elev_id, f, bname)
                     for f in bld_floors
-                    if any(l.get("id") == elev_id for l in locations_by_floor.get(f, []))
+                    if any(entry.get("id") == elev_id for entry in locations_by_floor.get(f, []))
                 ]
                 for i, a in enumerate(elevator_ids):
                     for j, b in enumerate(elevator_ids):
@@ -485,20 +486,17 @@ class HierarchicalPDDLConverter:
             locations_by_floor = self.building_locations(bid)
             for _elev_id, stairs_id in self.VERTICAL_CORES:
                 stair_floors = sorted(
-                    f for f, locs in locations_by_floor.items()
-                    if any(l.get("id") == stairs_id for l in locs)
+                    f
+                    for f, locs in locations_by_floor.items()
+                    if any(entry.get("id") == stairs_id for entry in locs)
                 )
                 for i in range(len(stair_floors) - 1):
                     lower_floor = stair_floors[i]
                     upper_floor = stair_floors[i + 1]
                     lower = self.location_to_pddl(stairs_id, lower_floor, bname)
                     upper = self.location_to_pddl(stairs_id, upper_floor, bname)
-                    init_lines.append(
-                        f"    (stairs_up_connected {lower} {upper})"
-                    )
-                    init_lines.append(
-                        f"    (stairs_down_connected {upper} {lower})"
-                    )
+                    init_lines.append(f"    (stairs_up_connected {lower} {upper})")
+                    init_lines.append(f"    (stairs_down_connected {upper} {lower})")
 
         # Outdoor edges between entrances - only emitted when at least two
         # buildings are in the problem. Each ``connections[]`` entry carries
@@ -528,34 +526,26 @@ class HierarchicalPDDLConverter:
                     distance_outdoor = 50
                 distance_outdoor = int(round(distance_outdoor))
                 for f_entry in f_entries:
-                    f_pddl = self.location_to_pddl(
-                        f_entry[0], f_entry[1], self.json_name(f_bld)
-                    )
+                    f_pddl = self.location_to_pddl(f_entry[0], f_entry[1], self.json_name(f_bld))
                     for t_entry in t_entries:
                         t_pddl = self.location_to_pddl(
                             t_entry[0], t_entry[1], self.json_name(t_bld)
                         )
-                        init_lines.append(
-                            f"    (outdoor_connected {f_pddl} {t_pddl})"
-                        )
+                        init_lines.append(f"    (outdoor_connected {f_pddl} {t_pddl})")
                         init_lines.append(
                             f"    (= (distance_outdoor {f_pddl} {t_pddl}) {distance_outdoor})"
                         )
 
-        problem_name = problem_name or (
-            f"{origin_bname.lower()}-to-{dest_bname.lower()}-problem"
-        )
+        problem_name = problem_name or (f"{origin_bname.lower()}-to-{dest_bname.lower()}-problem")
 
         content = (
             f"(define (problem {problem_name})\n"
             f"  (:domain {DOMAIN_NAME})\n"
             "\n"
-            "  (:objects\n"
-            + "\n".join(objects_lines) + "\n"
+            "  (:objects\n" + "\n".join(objects_lines) + "\n"
             "  )\n"
             "\n"
-            "  (:init\n"
-            + "\n".join(init_lines) + "\n"
+            "  (:init\n" + "\n".join(init_lines) + "\n"
             "  )\n"
             "\n"
             "  (:goal\n"
@@ -588,8 +578,10 @@ if __name__ == "__main__":
     print("=== Building G: entrance_2 (floor 0) -> classroom_g_1_4 (floor 1) ===")
     intra_pddl = converter.generate_building_problem(
         origin_building=1,
-        origin_room="entrance_2", origin_floor=0,
-        dest_room="classroom_g_1_4", dest_floor=1,
+        origin_room="entrance_2",
+        origin_floor=0,
+        dest_room="classroom_g_1_4",
+        dest_floor=1,
         problem_name="g_intra",
         output_path=str(intra_path),
     )
@@ -600,7 +592,8 @@ if __name__ == "__main__":
     print("=== Cross-building: classroom_g_1_4 of G -> gym of CD ===")
     cross_pddl = converter.generate_building_problem(
         origin_building=1,
-        origin_room="classroom_g_1_4", origin_floor=1,
+        origin_room="classroom_g_1_4",
+        origin_floor=1,
         dest_building=2,
         goal_functional="gym",
         problem_name="g_to_cd_gym",

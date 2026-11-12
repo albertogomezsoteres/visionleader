@@ -7,12 +7,12 @@ about the agent itself; they only depend on the hierarchical converter
 (for finding alternative rooms of the same type).
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .text_formatting import BUILDING_NAMES
 
 
-def load_current_closures(hierarchical_converter: Any) -> List[Dict]:
+def load_current_closures(hierarchical_converter: Any) -> list[dict]:
     """Fresh read of ``config/closed_rooms.json`` via the converter."""
     if not hierarchical_converter:
         return []
@@ -22,9 +22,9 @@ def load_current_closures(hierarchical_converter: Any) -> List[Dict]:
 def is_room_closed(
     hierarchical_converter: Any,
     building_id: int,
-    floor: Optional[int],
+    floor: int | None,
     location_id: str,
-) -> Optional[Dict]:
+) -> dict | None:
     """Return the matching closure entry if the room is closed, else None."""
     if not location_id:
         return None
@@ -44,11 +44,11 @@ def is_room_closed(
 
 def find_open_alternative(
     hierarchical_converter: Any,
-    places_locations: Dict,
+    places_locations: dict,
     building_id: int,
     floor: int,
     location_id: str,
-) -> Optional[Dict]:
+) -> dict | None:
     """Search ``campus_places.json`` for a room of the SAME type that is
     currently open. Prefers the same floor first, then the nearest other
     floors in the same building.
@@ -61,9 +61,9 @@ def find_open_alternative(
         return None
     floors_data = places_locations.get(bname, {}) or {}
 
-    original_type: Optional[str] = None
-    original_name: Optional[str] = None
-    for f_str, locs in floors_data.items():
+    original_type: str | None = None
+    original_name: str | None = None
+    for locs in floors_data.values():
         for loc in locs:
             if loc.get("id") == location_id:
                 original_type = loc.get("type")
@@ -74,7 +74,7 @@ def find_open_alternative(
     if not original_type:
         return None
 
-    def candidate_on_floor(f_int: int) -> Optional[Dict]:
+    def candidate_on_floor(f_int: int) -> dict | None:
         locs = floors_data.get(str(f_int), []) or []
         for loc in locs:
             if loc.get("id") == location_id:
@@ -98,7 +98,7 @@ def find_open_alternative(
     if same_floor:
         return same_floor
 
-    all_floors = sorted(int(f) for f in floors_data.keys())
+    all_floors = sorted(int(f) for f in floors_data)
     by_distance = sorted(all_floors, key=lambda f: abs(f - floor))
     for f_int in by_distance:
         if f_int == floor:

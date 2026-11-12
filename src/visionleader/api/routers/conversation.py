@@ -4,8 +4,8 @@ import traceback
 
 from fastapi import APIRouter
 
-from visionleader.api.schemas import ConversationRequest, ConversationResponse
 from visionleader.api.dependencies import get_conversation_agent
+from visionleader.api.schemas import ConversationRequest, ConversationResponse
 
 router = APIRouter()
 
@@ -20,7 +20,9 @@ async def conversation(request: ConversationRequest):
     """
     try:
         agent = get_conversation_agent()
-        image_analysis = request.image_analysis if isinstance(request.image_analysis, dict) else None
+        image_analysis = (
+            request.image_analysis if isinstance(request.image_analysis, dict) else None
+        )
         user_message = request.user_message or ""
 
         result = agent.process_turn(
@@ -49,7 +51,9 @@ async def conversation(request: ConversationRequest):
         traceback.print_exc()
         return ConversationResponse(
             response=f"Sorry, I encountered an error: {e}",
-            action="error", needs_input=True, context={},
+            action="error",
+            needs_input=True,
+            context={},
             error=str(e),
             tts_message=f"Sorry, I encountered an error: {e}",
             next_input="voice",

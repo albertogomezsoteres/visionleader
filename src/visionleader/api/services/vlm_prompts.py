@@ -16,18 +16,17 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from visionleader.paths import PROMPTS_PATH
 
-_PROMPTS: Optional[Dict[str, Dict[str, Any]]] = None
+_PROMPTS: dict[str, dict[str, Any]] | None = None
 
 
-def _load() -> Dict[str, Dict[str, Any]]:
+def _load() -> dict[str, dict[str, Any]]:
     global _PROMPTS
     if _PROMPTS is None:
-        with open(PROMPTS_PATH, "r", encoding="utf-8") as f:
+        with open(PROMPTS_PATH, encoding="utf-8") as f:
             _PROMPTS = json.load(f)["prompts"]
     return _PROMPTS
 
@@ -44,10 +43,11 @@ class ParsedResponse:
     successful parse. ``ok=False`` means the raw output did not match the
     prompt's expected format.
     """
+
     ok: bool
-    location_id: Optional[str] = None
-    state_type: Optional[str] = None
-    state_detail: Optional[str] = None
+    location_id: str | None = None
+    state_type: str | None = None
+    state_detail: str | None = None
 
 
 def build_prompt(prompt_id: str) -> str:

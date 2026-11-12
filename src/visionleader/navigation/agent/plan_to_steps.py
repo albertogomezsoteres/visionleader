@@ -11,7 +11,6 @@ so the agent can re-use them without coupling to the FSM.
 """
 
 import re
-from typing import Dict, List, Optional, Tuple
 
 from .parsing import building_id_from_name as _building_id_from_name
 from .text_formatting import (
@@ -23,7 +22,7 @@ from .text_formatting import (
 )
 
 
-def parse_fd_action(action_str: str) -> Optional[Dict]:
+def parse_fd_action(action_str: str) -> dict | None:
     """Parse a single PDDL action string into a structured dict."""
     clean = re.sub(r"\s*\(\d+\)\s*$", "", action_str).strip()
     parts = clean.split()
@@ -33,11 +32,11 @@ def parse_fd_action(action_str: str) -> Optional[Dict]:
 
 
 def arrival_verification_for_location(
-    places_locations: Dict,
+    places_locations: dict,
     building_id: int,
     floor: int,
-    location_id: Optional[str],
-) -> Optional[Tuple[str, str, str]]:
+    location_id: str | None,
+) -> tuple[str, str, str] | None:
     """Decide how the FSM should verify arrival at this destination.
 
     Returns ``(prompt_id, expected_value, mode)``:
@@ -57,7 +56,7 @@ def arrival_verification_for_location(
         for fstr, locs in (floors or {}).items():
             if floor_key is not None and fstr != floor_key:
                 continue
-            for loc in (locs or []):
+            for loc in locs or []:
                 if loc.get("id") != location_id:
                     continue
                 if loc.get("room_code"):
@@ -71,10 +70,10 @@ def arrival_verification_for_location(
 
 
 def apply_arrival_strict_photo(
-    steps: List[Dict],
-    destination: Dict,
-    places_locations: Dict,
-) -> List[Dict]:
+    steps: list[dict],
+    destination: dict,
+    places_locations: dict,
+) -> list[dict]:
     """If the destination has a verifiable arrival (classroom plate or a
     service sign declared in places.json), force the LAST step to be a
     strict photo checkpoint comparing the VLM output against the
@@ -105,13 +104,13 @@ def apply_arrival_strict_photo(
 
 
 def fd_plan_to_steps_room_level(
-    fd_actions: List[str],
-    origin: Dict,
-    destination: Dict,
-    places_locations: Dict,
-    local_distance: Dict[str, int],
-    local_hint: Dict[str, str],
-) -> Optional[List[Dict]]:
+    fd_actions: list[str],
+    origin: dict,
+    destination: dict,
+    places_locations: dict,
+    local_distance: dict[str, int],
+    local_hint: dict[str, str],
+) -> list[dict] | None:
     """Convert a room-level plan into navigation steps with merged walks.
 
     Consecutive ``caminar`` hops on the same floor are merged into a
@@ -128,21 +127,21 @@ def fd_plan_to_steps_room_level(
     """
     from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
 
-    steps: List[Dict] = []
+    steps: list[dict] = []
     origin_bname = BUILDING_NAMES.get(origin.get("building"), "G")
     current_bname = origin_bname
     current_floor = origin.get("floor", 0) or 0
 
-    walk_buffer: List[Dict] = []
+    walk_buffer: list[dict] = []
 
-    def consume_walk_approach() -> Tuple[int, Optional[str]]:
+    def consume_walk_approach() -> tuple[int, str | None]:
         """Drain ``walk_buffer`` into ``(distance_m, final_hint)`` without
         emitting a separate step. Used when an elevator or stair action
         immediately follows the walks: the approach is folded into the
         next photo step so the user hears one instruction instead of two.
         """
         total_distance = 0
-        final_hint: Optional[str] = None
+        final_hint: str | None = None
         for hop in walk_buffer:
             key = f"{hop['bname']}_{hop['floor']}_{hop['json_from']}_{hop['json_to']}"
             d = local_distance.get(key)
@@ -158,7 +157,7 @@ def fd_plan_to_steps_room_level(
         walk_buffer.clear()
         return total_distance, final_hint
 
-    def format_approach(target_label: str, distance: int, hint: Optional[str]) -> str:
+    def format_approach(target_label: str, distance: int, hint: str | None) -> str:
         """Compose the natural-language approach phrase for an elevator or
         stairs step, honoring the same ``{N}`` / capital-first conventions
         as :func:`flush_walk` so authors can write fully natural sentences
@@ -180,7 +179,7 @@ def fd_plan_to_steps_room_level(
             sentence += "."
         return sentence
 
-    def pddl_to_json(pddl_id: str, default_floor: int, default_bname: str) -> Tuple[str, int, str]:
+    def pddl_to_json(pddl_id: str, default_floor: int, default_bname: str) -> tuple[str, int, str]:
         base, floor, bname = HierarchicalPDDLConverter.pddl_to_location(pddl_id)
         if floor is not None:
             return base, floor, bname or default_bname
@@ -226,9 +225,7 @@ def fd_plan_to_steps_room_level(
         #     dropped). Existing short directional hints all start with
         #     lowercase, so this stays backwards-compatible.
         if final_hint and "{N}" in final_hint:
-            sentence = final_hint.replace(
-                "{N}", str(total_distance) if any_distance else "a few"
-            )
+            sentence = final_hint.replace("{N}", str(total_distance) if any_distance else "a few")
             if not sentence.rstrip().endswith((".", "!", "?")):
                 sentence += "."
         elif final_hint and final_hint[:1].isupper():
@@ -244,12 +241,14 @@ def fd_plan_to_steps_room_level(
         else:
             sentence = f"Walk to {final_target}."
 
-        steps.append({
-            "instruction": normalize_instruction(sentence),
-            "type": "local_walk",
-            "verification": "voice",
-            "expected_photo_type": None,
-        })
+        steps.append(
+            {
+                "instruction": normalize_instruction(sentence),
+                "type": "local_walk",
+                "verification": "voice",
+                "expected_photo_type": None,
+            }
+        )
         walk_buffer.clear()
 
     for action_str in fd_actions:
@@ -267,14 +266,16 @@ def fd_plan_to_steps_room_level(
                 continue
             j_from, f_from, b_from = pddl_to_json(params[1], current_floor, current_bname)
             j_to, f_to, b_to = pddl_to_json(params[2], current_floor, current_bname)
-            walk_buffer.append({
-                "pddl_from": params[1],
-                "pddl_to": params[2],
-                "json_from": j_from,
-                "json_to": j_to,
-                "floor": f_from,
-                "bname": b_from,
-            })
+            walk_buffer.append(
+                {
+                    "pddl_from": params[1],
+                    "pddl_to": params[2],
+                    "json_from": j_from,
+                    "json_to": j_to,
+                    "floor": f_from,
+                    "bname": b_from,
+                }
+            )
             current_floor = f_to
             current_bname = b_to
             continue
@@ -286,27 +287,29 @@ def fd_plan_to_steps_room_level(
 
             approach = format_approach("the elevator", approach_distance, approach_hint)
 
-            steps.append({
-                "instruction": normalize_instruction(
-                    f"{approach} Photograph the elevator doors."
-                ),
-                "type": "elevator",
-                "verification": "photo",
-                "expected_photo_type": "elevator_state",
-                "elevator_photo_flow": True,
-                "pre_photo_instruction": approach,
-                "post_photo_instruction": (
-                    f"Press floor {to_floor} and exit when you arrive."
-                ),
-                "elevator_target_floor": to_floor,
-            })
+            steps.append(
+                {
+                    "instruction": normalize_instruction(
+                        f"{approach} Photograph the elevator doors."
+                    ),
+                    "type": "elevator",
+                    "verification": "photo",
+                    "expected_photo_type": "elevator_state",
+                    "elevator_photo_flow": True,
+                    "pre_photo_instruction": approach,
+                    "post_photo_instruction": (f"Press floor {to_floor} and exit when you arrive."),
+                    "elevator_target_floor": to_floor,
+                }
+            )
             current_floor = to_floor
             current_bname = b_to
             continue
 
         if name in (
-            "climb_stairs_accessible", "descend_stairs_accessible",
-            "climb_stairs_fast", "descend_stairs_fast",
+            "climb_stairs_accessible",
+            "descend_stairs_accessible",
+            "climb_stairs_fast",
+            "descend_stairs_fast",
         ):
             approach_distance, approach_hint = consume_walk_approach()
             _jf, _ff, _bf = pddl_to_json(params[1], current_floor, current_bname)
@@ -320,18 +323,18 @@ def fd_plan_to_steps_room_level(
             if not is_hurry:
                 safety_msg += " Use the handrail."
 
-            steps.append({
-                "instruction": normalize_instruction(
-                    f"{approach} Photograph the staircase."
-                ),
-                "type": "stairs",
-                "verification": "photo",
-                "expected_photo_type": "stair_direction",
-                "two_phase_photo": True,
-                "pre_photo_instruction": approach,
-                "post_photo_instruction": safety_msg,
-                "stairs_direction": direction,
-            })
+            steps.append(
+                {
+                    "instruction": normalize_instruction(f"{approach} Photograph the staircase."),
+                    "type": "stairs",
+                    "verification": "photo",
+                    "expected_photo_type": "stair_direction",
+                    "two_phase_photo": True,
+                    "pre_photo_instruction": approach,
+                    "post_photo_instruction": safety_msg,
+                    "stairs_direction": direction,
+                }
+            )
             current_floor = to_floor
             current_bname = b_to
             continue
@@ -346,15 +349,17 @@ def fd_plan_to_steps_room_level(
                 f"You are outside {BUILDING_FULL.get(from_bld, 'the building')}. "
                 "Opening Google Maps."
             )
-            steps.append({
-                "instruction": normalize_instruction(instr_text),
-                "type": "outdoor",
-                "verification": "voice",
-                "expected_photo_type": None,
-                "outdoor_from_building": from_bld,
-                "outdoor_to_building": to_bld,
-                "use_gps": True,
-            })
+            steps.append(
+                {
+                    "instruction": normalize_instruction(instr_text),
+                    "type": "outdoor",
+                    "verification": "voice",
+                    "expected_photo_type": None,
+                    "outdoor_from_building": from_bld,
+                    "outdoor_to_building": to_bld,
+                    "use_gps": True,
+                }
+            )
             current_bname = b_to
             continue
 

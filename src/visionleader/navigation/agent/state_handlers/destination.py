@@ -9,7 +9,7 @@ to do with the result.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -27,16 +27,25 @@ if TYPE_CHECKING:
 # the cost model - we just expose more phrasings so STT variations don't
 # trip people up.
 _HURRY_KEYWORDS = (
-    "hurry", "rush", "fast", "quick", "prisa",
-    "rápido", "rapido", "deprisa", "urgente",
-    "stairs", "stair", "escaleras", "escalera",
-    "by foot", "on foot",
+    "hurry",
+    "rush",
+    "fast",
+    "quick",
+    "prisa",
+    "rápido",
+    "rapido",
+    "deprisa",
+    "urgente",
+    "stairs",
+    "stair",
+    "escaleras",
+    "escalera",
+    "by foot",
+    "on foot",
 )
 
 
-def handle_ask_destination(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_ask_destination(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     from . import plan_confirmation  # lazy: cross-handler dependency
 
     low = msg.lower()
@@ -69,7 +78,7 @@ def handle_ask_destination(
             f"destination_grounding  PASS  ·  (at user {dest['location_id']})",
             check="destination_grounding",
             result="pass",
-            location_id=dest['location_id'],
+            location_id=dest["location_id"],
             hurry_mode=ctx.hurry_mode,
         )
         ctx.destination = dest
@@ -85,9 +94,7 @@ def handle_ask_destination(
     return agent._reply(ctx, tts, "voice", "ask_destination")
 
 
-def parse_destination_for(
-    agent: "ConversationAgent", msg: str
-) -> Optional[Dict]:
+def parse_destination_for(agent: ConversationAgent, msg: str) -> dict | None:
     """Inject the agent's room lookup, last origin and topology into the
     pure parser."""
     last_origin = None

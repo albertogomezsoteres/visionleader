@@ -10,7 +10,6 @@ import logging
 import re
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,7 @@ class FastDownwardPlanner:
         domain_path: str,
         problem_path: str,
         search_config: str = _DEFAULT_SEARCH,
-    ) -> Dict:
+    ) -> dict:
         """
         Run Fast Downward and return the plan.
 
@@ -49,7 +48,7 @@ class FastDownwardPlanner:
           error   (str|None) - error message if success is False
           output  (str)     - raw Fast Downward stdout+stderr
         """
-        domain_path  = Path(domain_path).absolute()
+        domain_path = Path(domain_path).absolute()
         problem_path = Path(problem_path).absolute()
 
         if not domain_path.exists():
@@ -57,14 +56,15 @@ class FastDownwardPlanner:
         if not problem_path.exists():
             return self._failure(f"Problem file not found: {problem_path}")
 
-        pddl_dir       = domain_path.parent
+        pddl_dir = domain_path.parent
         container_name = "fast-downward-planner"
 
         # Remove any leftover container from a previous run (ignore errors).
         try:
             subprocess.run(
                 ["docker", "rm", "-f", container_name],
-                capture_output=True, timeout=5,
+                capture_output=True,
+                timeout=5,
             )
         except (OSError, subprocess.SubprocessError):
             pass
@@ -73,14 +73,19 @@ class FastDownwardPlanner:
         # that callers can pick the ``search_config``. Going straight to
         # fast-downward.py lets us pass --search explicitly.
         cmd = [
-            "docker", "run",
-            "--name", container_name,
-            "--entrypoint", "/fast-downward/fast-downward.py",
-            "-v", f"{pddl_dir}:/pddl",
+            "docker",
+            "run",
+            "--name",
+            container_name,
+            "--entrypoint",
+            "/fast-downward/fast-downward.py",
+            "-v",
+            f"{pddl_dir}:/pddl",
             self.docker_image,
             f"/pddl/{domain_path.name}",
             f"/pddl/{problem_path.name}",
-            "--search", search_config,
+            "--search",
+            search_config,
         ]
 
         try:
@@ -94,9 +99,7 @@ class FastDownwardPlanner:
             output = result.stdout + result.stderr
 
             if result.returncode != 0:
-                logger.warning(
-                    "Fast Downward exited with code %d", result.returncode
-                )
+                logger.warning("Fast Downward exited with code %d", result.returncode)
                 return self._failure(
                     f"Fast Downward failed (exit code {result.returncode})",
                     output=output,
@@ -106,40 +109,39 @@ class FastDownwardPlanner:
             if plan_info["success"]:
                 logger.info(
                     "Plan found: %d steps, cost=%d",
-                    plan_info["steps"], plan_info["cost"],
+                    plan_info["steps"],
+                    plan_info["cost"],
                 )
             else:
                 logger.warning("Fast Downward found no solution")
 
             return {
                 "success": plan_info["success"],
-                "plan":    plan_info["plan"],
-                "cost":    plan_info["cost"],
-                "steps":   plan_info["steps"],
-                "output":  output,
-                "error":   plan_info.get("error"),
-                "expanded":       plan_info.get("expanded"),
-                "generated":      plan_info.get("generated"),
-                "evaluated":      plan_info.get("evaluated"),
-                "search_time_s":  plan_info.get("search_time_s"),
-                "total_time_s":   plan_info.get("total_time_s"),
+                "plan": plan_info["plan"],
+                "cost": plan_info["cost"],
+                "steps": plan_info["steps"],
+                "output": output,
+                "error": plan_info.get("error"),
+                "expanded": plan_info.get("expanded"),
+                "generated": plan_info.get("generated"),
+                "evaluated": plan_info.get("evaluated"),
+                "search_time_s": plan_info.get("search_time_s"),
+                "total_time_s": plan_info.get("total_time_s"),
             }
 
         except subprocess.TimeoutExpired:
             logger.error("Fast Downward timed out after %ds", self.timeout)
-            return self._failure(
-                f"Fast Downward timed out after {self.timeout}s"
-            )
+            return self._failure(f"Fast Downward timed out after {self.timeout}s")
         except Exception as exc:
             logger.exception("Unexpected error running Fast Downward")
             return self._failure(f"Error running Fast Downward: {exc}")
 
     # ── parsing ───────────────────────────────────────────────────────────────
 
-    def _parse_plan(self, output: str) -> Dict:
+    def _parse_plan(self, output: str) -> dict:
         """Extract plan actions, step count, cost, and search stats."""
-        plan:    List[str] = []
-        cost  = 0
+        plan: list[str] = []
+        cost = 0
         steps = 0
         success = False
 
@@ -166,50 +168,53 @@ class FastDownwardPlanner:
 
         # Fallback: match PDDL action lines directly (some FD versions differ).
         if not plan and success:
-            matches = re.findall(
-                r"([a-z_]+(?:\s+[a-z0-9_]+)+)\s*\(\d+\)", output
-            )
+            matches = re.findall(r"([a-z_]+(?:\s+[a-z0-9_]+)+)\s*\(\d+\)", output)
             if matches:
                 plan = [m.strip() for m in matches]
 
         # Search statistics (useful for heuristic comparison). FD prints these
         # regardless of success; parse them best-effort.
-        stats: Dict[str, Optional[float]] = {
-            "expanded":       None,
-            "generated":      None,
-            "evaluated":      None,
-            "search_time_s":  None,
-            "total_time_s":   None,
+        stats: dict[str, float | None] = {
+            "expanded": None,
+            "generated": None,
+            "evaluated": None,
+            "search_time_s": None,
+            "total_time_s": None,
         }
         m = re.search(r"Expanded\s+(\d+)\s+state", output)
-        if m: stats["expanded"] = int(m.group(1))
+        if m:
+            stats["expanded"] = int(m.group(1))
         m = re.search(r"Generated\s+(\d+)\s+state", output)
-        if m: stats["generated"] = int(m.group(1))
+        if m:
+            stats["generated"] = int(m.group(1))
         m = re.search(r"Evaluated\s+(\d+)\s+state", output)
-        if m: stats["evaluated"] = int(m.group(1))
+        if m:
+            stats["evaluated"] = int(m.group(1))
         m = re.search(r"Search time:\s+([\d.]+)s", output)
-        if m: stats["search_time_s"] = float(m.group(1))
+        if m:
+            stats["search_time_s"] = float(m.group(1))
         m = re.search(r"Total time:\s+([\d.]+)s", output)
-        if m: stats["total_time_s"] = float(m.group(1))
+        if m:
+            stats["total_time_s"] = float(m.group(1))
 
         return {
             "success": success,
-            "plan":    plan,
-            "cost":    cost,
-            "steps":   steps,
-            "error":   None if success else "No solution found",
+            "plan": plan,
+            "cost": cost,
+            "steps": steps,
+            "error": None if success else "No solution found",
             **stats,
         }
 
     # ── helpers ───────────────────────────────────────────────────────────────
 
     @staticmethod
-    def _failure(msg: str, output: str = "") -> Dict:
+    def _failure(msg: str, output: str = "") -> dict:
         return {
             "success": False,
-            "error":   msg,
-            "plan":    [],
-            "cost":    0,
-            "steps":   0,
-            "output":  output,
+            "error": msg,
+            "plan": [],
+            "cost": 0,
+            "steps": 0,
+            "output": output,
         }

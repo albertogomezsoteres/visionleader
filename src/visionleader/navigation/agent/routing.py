@@ -10,7 +10,7 @@ mutating agent state.
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -25,11 +25,11 @@ if TYPE_CHECKING:
 
 
 def compute_route(
-    agent: "ConversationAgent",
-    origin: Dict,
-    destination: Dict,
-    ctx: Optional["ConversationContext"] = None,
-) -> Optional[List[Dict]]:
+    agent: ConversationAgent,
+    origin: dict,
+    destination: dict,
+    ctx: ConversationContext | None = None,
+) -> list[dict] | None:
     """Build navigation steps for an (origin, destination) pair.
 
     ``ctx`` is the active session context, passed in by callers so the
@@ -88,12 +88,17 @@ def compute_route(
         goal_atom = f"<functional:{goal_functional}>"
     log_event(
         "PLANNER",
-        f"init={init_atom}  →  goal={goal_atom}  "
-        f"hurry={str(ctx_hurry).lower()}",
-        origin_location_id=o_loc, origin_building=o_bld, origin_floor=o_flr,
-        destination_location_id=d_loc, destination_building=d_bld, destination_floor=d_flr,
-        goal_functional=goal_functional, hurry_mode=ctx_hurry,
-        init_atom=init_atom, goal_atom=goal_atom,
+        f"init={init_atom}  →  goal={goal_atom}  hurry={str(ctx_hurry).lower()}",
+        origin_location_id=o_loc,
+        origin_building=o_bld,
+        origin_floor=o_flr,
+        destination_location_id=d_loc,
+        destination_building=d_bld,
+        destination_floor=d_flr,
+        goal_functional=goal_functional,
+        hurry_mode=ctx_hurry,
+        init_atom=init_atom,
+        goal_atom=goal_atom,
     )
 
     started = time.perf_counter()
@@ -102,9 +107,11 @@ def compute_route(
         hierarchical_converter=agent._hierarchical_converter,
         pddl_dir=agent._pddl_dir,
         origin_building=o_bld,
-        origin_room=o_loc, origin_floor=o_flr,
+        origin_room=o_loc,
+        origin_floor=o_flr,
         dest_building=d_bld,
-        dest_room=d_loc, dest_floor=d_flr,
+        dest_room=d_loc,
+        dest_floor=d_flr,
         goal_functional=goal_functional,
         hurry_mode=ctx_hurry,
     )
@@ -116,12 +123,14 @@ def compute_route(
             "PLANNER",
             f"NO PLAN found for {bname} -> {BUILDING_NAMES.get(d_bld, d_bld)} "
             "(check Docker, domain, and problem generation)",
-            duration_ms=planner_total_ms, success=False,
+            duration_ms=planner_total_ms,
+            success=False,
         )
         log_event(
             "VALIDATION",
             "planner_route  FAIL  ·  no plan found",
-            check="planner_route", result="fail",
+            check="planner_route",
+            result="fail",
         )
         return None
 
@@ -148,15 +157,20 @@ def compute_route(
     uses_stairs = any("climb_stairs" in a or "descend_stairs" in a for a in fd_actions)
     uses_outdoor = any("outdoor_walk" in a for a in fd_actions)
     transport_modes = []
-    if uses_elevator: transport_modes.append("elevator")
-    if uses_stairs: transport_modes.append("stairs")
-    if uses_outdoor: transport_modes.append("outdoor")
-    if not transport_modes: transport_modes.append("walk only")
+    if uses_elevator:
+        transport_modes.append("elevator")
+    if uses_stairs:
+        transport_modes.append("stairs")
+    if uses_outdoor:
+        transport_modes.append("outdoor")
+    if not transport_modes:
+        transport_modes.append("walk only")
     log_event(
         "VALIDATION",
         f"planner_route  PASS  ·  {len(fd_actions)} actions, cost {plan_cost}, "
         f"transport={'+'.join(transport_modes)}",
-        check="planner_route", result="pass",
+        check="planner_route",
+        result="pass",
         action_count=len(fd_actions),
         cost=plan_cost,
         transport=transport_modes,
@@ -167,7 +181,9 @@ def compute_route(
         log_event("PLAN", f"{i}. {action_str.strip()}", action_index=i, action=action_str.strip())
 
     steps = fd_plan_to_steps_room_level(
-        fd_actions, origin, destination,
+        fd_actions,
+        origin,
+        destination,
         places_locations=agent._locations,
         local_distance=agent._local_distance,
         local_hint=agent._local_hint,
@@ -185,8 +201,7 @@ def compute_route(
 
     log_event(
         "ROUTE",
-        f"compacted {len(fd_actions)} PDDL actions  →  "
-        f"{len(steps)} user-facing navigation step(s)",
+        f"compacted {len(fd_actions)} PDDL actions  →  {len(steps)} user-facing navigation step(s)",
         pddl_action_count=len(fd_actions),
         step_count=len(steps),
     )
@@ -196,7 +211,7 @@ def compute_route(
 _GENERIC_FAILURE = "I couldn't compute a route. Please try a different destination."
 
 
-def planner_failure_message(ctx: "ConversationContext") -> str:
+def planner_failure_message(ctx: ConversationContext) -> str:
     """User-facing error when :func:`compute_route` returns ``None``.
 
     Prefers a pending closure announcement (informative: ``"X is closed,
@@ -210,27 +225,29 @@ def planner_failure_message(ctx: "ConversationContext") -> str:
     return _GENERIC_FAILURE
 
 
-def compute_same_floor(bld: int, flr: int) -> List[Dict]:
+def compute_same_floor(bld: int, flr: int) -> list[dict]:
     """Trivial fallback when origin and destination are on the same floor."""
-    return [{
-        "instruction": (
-            f"Walk along {floor_text(flr)} in "
-            f"{BUILDING_FULL.get(bld, 'the building')} "
-            f"to reach your destination."
-        ),
-        "type": "local_walk",
-        "verification": "voice",
-        "expected_photo_type": None,
-    }]
+    return [
+        {
+            "instruction": (
+                f"Walk along {floor_text(flr)} in "
+                f"{BUILDING_FULL.get(bld, 'the building')} "
+                f"to reach your destination."
+            ),
+            "type": "local_walk",
+            "verification": "voice",
+            "expected_photo_type": None,
+        }
+    ]
 
 
 def _apply_closure_preflight(
-    agent: "ConversationAgent",
-    destination: Dict,
+    agent: ConversationAgent,
+    destination: dict,
     d_bld: int,
     d_flr: int,
     d_loc: str,
-    matching_ctx: Optional["ConversationContext"],
+    matching_ctx: ConversationContext | None,
 ):
     """Substitute a closed destination with an open alternative when possible.
 
@@ -246,7 +263,9 @@ def _apply_closure_preflight(
     alt = find_open_alternative(
         agent._hierarchical_converter,
         agent._locations,
-        d_bld, d_flr, d_loc,
+        d_bld,
+        d_flr,
+        d_loc,
     )
     orig_name = nice_location_name(d_loc)
     reason = closure.get("reason") or "currently unavailable"
@@ -256,16 +275,15 @@ def _apply_closure_preflight(
         destination["floor"] = alt["floor"]
         destination.pop("functional", None)
         alt_name = nice_location_name(alt["location_id"])
-        announcement = (
-            f"{orig_name} is {reason}. "
-            f"I'll guide you to {alt_name} instead."
-        )
+        announcement = f"{orig_name} is {reason}. I'll guide you to {alt_name} instead."
         if matching_ctx:
             matching_ctx.pending_announcement = announcement
         log_event(
             "CLOSURE",
             f"{orig_name} closed ({reason}); redirecting to {alt_name}",
-            original=orig_name, alternative=alt_name, reason=reason,
+            original=orig_name,
+            alternative=alt_name,
+            reason=reason,
         )
         return destination["location_id"], destination["floor"]
 
@@ -276,14 +294,16 @@ def _apply_closure_preflight(
     log_event(
         "CLOSURE",
         f"{orig_name} closed ({reason}); no alternative found",
-        original=orig_name, reason=reason, blocked=True,
+        original=orig_name,
+        reason=reason,
+        blocked=True,
     )
     return None, None
 
 
 def _find_matching_ctx(
-    agent: "ConversationAgent", origin: Dict, destination: Dict
-) -> Optional["ConversationContext"]:
+    agent: ConversationAgent, origin: dict, destination: dict
+) -> ConversationContext | None:
     """Locate the ConversationContext that owns this (origin, dest) pair."""
     for ctx in agent.contexts.values():
         if ctx.origin == origin and ctx.destination == destination:

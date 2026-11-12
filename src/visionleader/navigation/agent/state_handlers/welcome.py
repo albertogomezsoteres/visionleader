@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING
 
 from visionleader.api.telemetry import log_event
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from ...conversation_agent import ConversationAgent
 
 
-def handle_welcome(agent: "ConversationAgent", ctx: ConversationContext) -> Dict:
+def handle_welcome(agent: ConversationAgent, ctx: ConversationContext) -> dict:
     tts = (
         "VisionLeader ready. Do you know where you are? "
         "If not, photograph any sign nearby so I can extract your location."
@@ -30,11 +30,11 @@ def handle_welcome(agent: "ConversationAgent", ctx: ConversationContext) -> Dict
 
 
 def handle_ask_knows_location(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
     msg: str,
-    image_analysis: Optional[Dict] = None,
-) -> Dict:
+    image_analysis: dict | None = None,
+) -> dict:
     # Photo taken directly from the welcome screen: route through the
     # unified origin-photo handler. The user skipped the verbal "no".
     if image_analysis is not None:

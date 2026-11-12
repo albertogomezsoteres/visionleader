@@ -6,26 +6,36 @@ return strings. Nothing touches state or files.
 """
 
 import re
-from typing import Dict, Optional
 
-
-BUILDING_NAMES: Dict[int, str] = {
-    1: "G",   2: "CD",  3: "H",   4: "P",
-    5: "O",   6: "M",   7: "N",   8: "CSQ",
-    9: "K",  10: "CSC", 11: "C",  12: "E",
-    13: "CM", 14: "LCB", 15: "Rodilla", 16: "Chapel",
+BUILDING_NAMES: dict[int, str] = {
+    1: "G",
+    2: "CD",
+    3: "H",
+    4: "P",
+    5: "O",
+    6: "M",
+    7: "N",
+    8: "CSQ",
+    9: "K",
+    10: "CSC",
+    11: "C",
+    12: "E",
+    13: "CM",
+    14: "LCB",
+    15: "Rodilla",
+    16: "Chapel",
 }
 
-BUILDING_FULL: Dict[int, str] = {
-    1:  "Building G",
-    2:  "Building CD",
-    3:  "Building H",
-    4:  "Building P",
-    5:  "Building O",
-    6:  "Building M",
-    7:  "Building N",
-    8:  "Building CSQ",
-    9:  "Building K",
+BUILDING_FULL: dict[int, str] = {
+    1: "Building G",
+    2: "Building CD",
+    3: "Building H",
+    4: "Building P",
+    5: "Building O",
+    6: "Building M",
+    7: "Building N",
+    8: "Building CSQ",
+    9: "Building K",
     10: "Building CSC",
     11: "Building C",
     12: "Building E",
@@ -36,7 +46,7 @@ BUILDING_FULL: Dict[int, str] = {
 }
 
 
-PHOTO_LABELS: Dict[str, str] = {
+PHOTO_LABELS: dict[str, str] = {
     "room_plate": "classroom door plate",
     "directory_sign": "directory sign",
     "elevator_state": "elevator",
@@ -45,7 +55,7 @@ PHOTO_LABELS: Dict[str, str] = {
 }
 
 
-def photo_label(prompt_id: Optional[str]) -> str:
+def photo_label(prompt_id: str | None) -> str:
     """TTS-friendly phrase for a VLM prompt id (e.g. 'elevator_state' -> 'elevator')."""
     if not prompt_id:
         return "area"
@@ -88,7 +98,7 @@ def nice_location_name(loc_id: str) -> str:
     return loc_id.replace("_", " ")
 
 
-def location_text(loc: Optional[Dict]) -> str:
+def location_text(loc: dict | None) -> str:
     """Render a location dict as a single English phrase ready for TTS."""
     if not loc:
         return "an unknown location"
@@ -126,8 +136,6 @@ def normalize_instruction(text: str) -> str:
     out = out.replace("mentoring_room", "mentoring room").replace(
         "sala mentorias", "mentoring room"
     )
-    out = re.sub(
-        r"\baula[_\s]+(\d+)[_\s]+(\d+)\b", r"room \1.\2", out, flags=re.IGNORECASE
-    )
+    out = re.sub(r"\baula[_\s]+(\d+)[_\s]+(\d+)\b", r"room \1.\2", out, flags=re.IGNORECASE)
     out = re.sub(r"\s+", " ", out).strip()
     return out

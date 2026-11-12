@@ -23,7 +23,9 @@ async def analyze_image_endpoint(
     endpoint never has to guess what's in the photo.
     """
     if file.content_type not in _ALLOWED_CONTENT_TYPES:
-        raise HTTPException(status_code=400, detail=f"Unsupported image format: {file.content_type}")
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported image format: {file.content_type}"
+        )
 
     if prompt_id not in valid_prompt_ids():
         raise HTTPException(status_code=400, detail=f"Unknown prompt_id: {prompt_id}")

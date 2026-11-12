@@ -81,10 +81,7 @@ def cmd_open(args) -> None:
     data = _load()
     closed = data.setdefault("closed", [])
     before = len(closed)
-    closed[:] = [
-        e for e in closed
-        if not _matches(e, args.building, args.location_id, args.floor)
-    ]
+    closed[:] = [e for e in closed if not _matches(e, args.building, args.location_id, args.floor)]
     _save(data)
     removed = before - len(closed)
     if removed:
@@ -104,7 +101,7 @@ def cmd_list(_args) -> None:
         return
     print(f"Currently closed ({len(closed)}):")
     for e in closed:
-        floor = f"  floor={e.get('floor')}" if e.get('floor') is not None else ""
+        floor = f"  floor={e.get('floor')}" if e.get("floor") is not None else ""
         reason = f"  ({e.get('reason')})" if e.get("reason") else ""
         print(f"  {e['building']} / {e['location_id']}{floor}{reason}")
 
@@ -124,8 +121,9 @@ def main() -> None:
     p_close = sub.add_parser("close", help="close a room")
     p_close.add_argument("building", help="G | CD | H")
     p_close.add_argument("location_id", help="e.g. classroom_g_1_4, elevator, stairs")
-    p_close.add_argument("--floor", type=int, default=None,
-                         help="floor, required only for ids shared across floors")
+    p_close.add_argument(
+        "--floor", type=int, default=None, help="floor, required only for ids shared across floors"
+    )
     p_close.add_argument("--reason", default="currently unavailable")
     p_close.set_defaults(func=cmd_close)
 

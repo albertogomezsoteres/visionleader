@@ -16,7 +16,6 @@ from starlette.requests import Request
 
 from visionleader.api.telemetry import log_event, log_separator, set_request_context
 
-
 _TRACKED_PATHS = ("/api/conversation", "/api/analyze-image")
 
 

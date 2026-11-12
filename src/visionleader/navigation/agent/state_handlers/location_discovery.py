@@ -11,7 +11,7 @@ fully resolved ``(building, floor, location_id)`` tuple:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from ..context import ConversationContext, ConversationState
 from ..parsing import (
@@ -27,9 +27,7 @@ if TYPE_CHECKING:
     from ...conversation_agent import ConversationAgent
 
 
-def handle_ask_location_voice(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_ask_location_voice(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     loc = parse_location(msg, agent._room_lookup)
     if loc and loc.get("building") and loc.get("floor") is not None:
         ctx.origin = loc
@@ -64,9 +62,7 @@ def handle_ask_location_voice(
     return agent._reply(ctx, tts, "voice", "ask_location")
 
 
-def handle_ask_situation(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_ask_situation(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     low = msg.lower()
 
     if any(w in low for w in ("classroom", "door", "aula", "puerta", "room", "clase")):
@@ -93,10 +89,18 @@ def handle_ask_situation(
         ctx.photo_attempts = 0
         return agent._reply(ctx, tts, "photo", "request_photo_sign")
 
-    if any(w in low for w in (
-        "don't know", "dont know", "no idea", "not sure",
-        "no sé", "no se", "ni idea",
-    )):
+    if any(
+        w in low
+        for w in (
+            "don't know",
+            "dont know",
+            "no idea",
+            "not sure",
+            "no sé",
+            "no se",
+            "ni idea",
+        )
+    ):
         tts = "Tell me what you see. A classroom door, the elevator, or the stairs?"
         return agent._reply(ctx, tts, "voice", "ask_situation")
 
@@ -113,10 +117,10 @@ def handle_ask_situation(
 
 
 def handle_waiting_photo(
-    agent: "ConversationAgent",
+    agent: ConversationAgent,
     ctx: ConversationContext,
-    analysis: Optional[Dict],
-) -> Dict:
+    analysis: dict | None,
+) -> dict:
     if not analysis:
         tts = "I am waiting for a photo. Please take one now."
         return agent._reply(ctx, tts, "photo", "waiting_photo")
@@ -143,9 +147,7 @@ def handle_waiting_photo(
     return agent._reply(ctx, tts, "photo", "retry_photo")
 
 
-def handle_ask_building(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_ask_building(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     bid = extract_building(msg)
     if bid:
         floor = ctx.partial_floor
@@ -154,10 +156,7 @@ def handle_ask_building(
         if floor is not None:
             return origin.confirm_origin(agent, ctx)
         ctx.partial_building = bid
-        tts = (
-            f"You are in {BUILDING_FULL.get(bid, 'that building')}. "
-            "What floor are you on?"
-        )
+        tts = f"You are in {BUILDING_FULL.get(bid, 'that building')}. What floor are you on?"
         ctx.state = ConversationState.ASK_FLOOR
         return agent._reply(ctx, tts, "voice", "ask_floor")
 
@@ -165,9 +164,7 @@ def handle_ask_building(
     return agent._reply(ctx, tts, "voice", "ask_building")
 
 
-def handle_ask_floor(
-    agent: "ConversationAgent", ctx: ConversationContext, msg: str
-) -> Dict:
+def handle_ask_floor(agent: ConversationAgent, ctx: ConversationContext, msg: str) -> dict:
     floor = extract_floor(msg)
     if floor is not None:
         bid = ctx.partial_building
@@ -183,9 +180,7 @@ def handle_ask_floor(
     return agent._reply(ctx, tts, "voice", "ask_floor")
 
 
-def resolve_location_id(
-    agent: "ConversationAgent", location_id: str
-) -> Optional[Tuple[int, int, str]]:
+def resolve_location_id(agent: ConversationAgent, location_id: str) -> tuple[int, int, str] | None:
     """Resolve a bare PDDL ``location_id`` to ``(building, floor, id)``.
 
     Validated prompts emit atoms scoped to buildings G and CD, so this
