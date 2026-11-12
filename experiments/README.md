@@ -20,5 +20,7 @@ Pixel 10 Pro, and the planner in a Docker container.
 | `symbolic_grounding/` | Whether an optimized prompt grounds inputs to PDDL better than a basic one | optimized prompt |
 | `end_to_end/` | Whether the components work correctly when composed, door to door | 3 of 3 scenarios pass |
 
-Each folder has its own README with the full protocol. Result files are
-regenerable and kept local, not committed to the repository.
+Each folder has its own README with the full protocol. The result CSVs and the
+reproducibility cards are committed next to the code that produced them, and the
+test suite (`tests/test_data_and_results.py`) recomputes every headline number from
+them, so the figures quoted in the docs cannot drift from the data.

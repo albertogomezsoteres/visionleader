@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+type: software
+title: "VisionLeader: Neuro-Symbolic Indoor Navigation for Visually Impaired Users"
+abstract: >-
+  An assistive indoor navigation system that combines on-device speech
+  recognition, a vision-language model that grounds campus signage into PDDL
+  atoms, and a classical planner (Fast Downward, A* with LM-Cut) that computes
+  provably optimal routes, coordinated by a finite-state dialogue agent.
+authors:
+  - family-names: "Gomez Soteres"
+    given-names: "Alberto"
+    affiliation: "Universidad Francisco de Vitoria"
+version: 1.1.0
+date-released: 2026-11-12
+license: MIT
+repository-code: "https://github.com/albertogomezsoteres/visionleader"
+keywords:
+  - accessibility
+  - neuro-symbolic AI
+  - automated planning
+  - PDDL
+  - vision-language models
+  - speech recognition
+preferred-citation:
+  type: thesis
+  thesis-type: "Bachelor's thesis"
+  title: "VisionLeader: Neuro-Symbolic Campus Navigation for Visually Impaired Users"
+  authors:
+    - family-names: "Gomez Soteres"
+      given-names: "Alberto"
+  institution:
+    name: "Universidad Francisco de Vitoria"
+    city: "Madrid"
+    country: "ES"
+  year: 2026
+  notes: "B.Sc. in Computer Engineering. Graded 10/10 with Matrícula de Honor."

@@ -1,0 +1,20 @@
+# Normalise line endings in the repository.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+
+# GitHub language statistics: count the code that was written for this
+# project, not the platform scaffolding Flutter generates or the notebooks
+# that record experiment runs.
+*.ipynb linguist-documentation
+mobile_app/android/** linguist-generated
+mobile_app/ios/** linguist-generated
+mobile_app/linux/** linguist-generated
+mobile_app/macos/** linguist-generated
+mobile_app/windows/** linguist-generated
+mobile_app/web/** linguist-generated
+experiments/stt/phase3_flutter_integration/whisper_smoke_test/** linguist-vendored
+uv.lock linguist-generated
+mobile_app/pubspec.lock linguist-generated
+experiments/**/results/** linguist-generated
+experiments/end_to_end/logs/** linguist-generated
