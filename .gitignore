@@ -34,6 +34,9 @@ Thumbs.db
 *.temp
 
 # Caches and build artefacts
+.coverage
+htmlcov/
+dist/
 .cache/
 .dart_tool/
 **/build/
@@ -54,7 +57,6 @@ Thumbs.db
 /*.zip
 /*.csv
 /*.txt
-!/requirements.txt
 *.bin
 **/assets/models/
 **/assets/audios/

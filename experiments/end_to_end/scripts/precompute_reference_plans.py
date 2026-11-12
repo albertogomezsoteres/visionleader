@@ -20,11 +20,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BASE = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from navigation.agent.planner_bridge import run_indoor_planner  # noqa: E402
-from navigation.fast_downward_client import FastDownwardPlanner  # noqa: E402
-from navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter  # noqa: E402
+from visionleader.navigation.agent.planner_bridge import run_indoor_planner  # noqa: E402
+from visionleader.navigation.fast_downward_client import FastDownwardPlanner  # noqa: E402
+from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter  # noqa: E402
 
 
 SCENARIOS_PATH = BASE / "scenarios.json"

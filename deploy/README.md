@@ -10,7 +10,7 @@ on the phone and planning runs in Docker, so this is the only model served remot
 `POST /analyze` with an image and a prompt. The notebook runs the model with
 deterministic decoding (greedy, seed 0) and a fixed system prompt, the same setup
 used to evaluate it. The prompts come from `config/prompts.json`; the backend
-(`src/api/services/image_analysis.py`) builds them and sends them here.
+(`src/visionleader/api/services/image_analysis.py`) builds them and sends them here.
 
 ## Run it
 

@@ -45,12 +45,11 @@ except Exception:
 # Project bootstrap
 project_root = Path(__file__).resolve().parent.parent
 load_dotenv(project_root / ".env")
-sys.path.insert(0, str(project_root / "src"))
 
-from api.app import app  # noqa: E402
+from visionleader.api.app import app  # noqa: E402
 
 # Logging config: keep the terminal clean. Only the structured telemetry
-# events from api.telemetry should narrate the run.
+# events from visionleader.api.telemetry should narrate the run.
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",

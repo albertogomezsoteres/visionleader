@@ -41,7 +41,7 @@ search and, if it succeeds, the plan line by line.
 
 ## Use from the backend
 
-The backend never launches Docker by hand. `src/navigation/fast_downward_client.py`
+The backend never launches Docker by hand. `src/visionleader/navigation/fast_downward_client.py`
 wraps the call and cleans up the temporary files. The planning endpoint (`/api/plan`)
 needs the `fast-downward:latest` image available locally; if it is missing, the
 response reports that no route could be computed.

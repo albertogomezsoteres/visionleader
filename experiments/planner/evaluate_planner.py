@@ -24,10 +24,9 @@ from pathlib import Path
 # Everything the planner needs (the domain, the topology, the closures) is
 # resolved relative to that root so the script runs from any working directory.
 repoRoot = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(repoRoot))
 
-from src.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
-from src.navigation.fast_downward_client import FastDownwardPlanner
+from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
+from visionleader.navigation.fast_downward_client import FastDownwardPlanner
 
 topologyPath    = repoRoot / "config" / "campus_topology.json"
 pddlDir         = repoRoot / "pddl"
