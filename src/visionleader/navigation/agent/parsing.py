@@ -1,0 +1,534 @@
+"""Parsing helpers: turn raw user messages and VLM analysis dicts
+into structured location / destination dicts.
+
+Functions in this module are intentionally state-free: anything they need
+beyond the message itself is passed in as an argument (e.g. the room
+lookup table built by the agent in __init__).
+"""
+
+import re
+from typing import Any
+
+AFFIRM = {
+    "yes",
+    "yeah",
+    "yep",
+    "sure",
+    "ok",
+    "okay",
+    "correct",
+    "right",
+    "sí",
+    "si",
+    "vale",
+    "claro",
+    "por supuesto",
+    "confirm",
+    "confirmed",
+}
+NEGATE = {
+    "no",
+    "nope",
+    "nah",
+    "cancel",
+    "wrong",
+    "incorrect",
+    "not",
+    "don't",
+    "dont",
+}
+
+BUILDING_MAP: dict[str, int] = {
+    "g": 1,
+    "politécnica": 1,
+    "politecnica": 1,
+    "eps": 1,
+    "cd": 2,
+    "centro deportivo": 2,
+    "sports": 2,
+    "sport": 2,
+    "h": 3,
+    "p": 4,
+    "o": 5,
+    "m": 6,
+    "n": 7,
+    "csq": 8,
+    "k": 9,
+    "csc": 10,
+    "c": 11,
+    "e": 12,
+    "cm": 13,
+    "lcb": 14,
+    "rodilla": 15,
+    "chapel": 16,
+}
+
+FLOOR_WORDS: dict[str, int] = {
+    "ground": 0,
+    "ground floor": 0,
+    "first": 1,
+    "first floor": 1,
+    "second": 2,
+    "second floor": 2,
+    "basement": -1,
+    "minus one": -1,
+    "minus 1": -1,
+    "planta baja": 0,
+    "planta 0": 0,
+    "planta 1": 1,
+    "planta 2": 2,
+    "planta -1": -1,
+    "floor 0": 0,
+    "floor 1": 1,
+    "floor 2": 2,
+    "floor -1": -1,
+    "0": 0,
+    "1": 1,
+    "2": 2,
+}
+
+
+def _word_set(msg: str) -> set:
+    """Tokenise into a lowercase word set, stripping punctuation so that
+    transcriptions like "No!" or "Yes," still match the AFFIRM/NEGATE
+    vocabularies."""
+    cleaned = re.sub(r"[^\w\s]", " ", msg.lower())
+    return set(cleaned.split())
+
+
+def is_yes(msg: str) -> bool:
+    """True if the message reads as an affirmative answer."""
+    return bool(_word_set(msg) & AFFIRM)
+
+
+def is_no(msg: str) -> bool:
+    """True if the message reads as a negative answer (and not also affirmative)."""
+    words = _word_set(msg)
+    has_neg = bool(words & NEGATE)
+    has_aff = bool(words & AFFIRM)
+    return has_neg and not has_aff
+
+
+def building_id_from_name(name: str | None) -> int:
+    """Resolve a short building name (e.g. 'g', 'cd') to its numeric id."""
+    if not name:
+        return 0
+    return BUILDING_MAP.get(name.lower(), 0)
+
+
+# English contractions ("I'm", "it's", "we're"): the apostrophe is a word
+# boundary, so without stripping them "I'm" would match building M.
+_CONTRACTION_RE = re.compile(r"['\u2019](?:m|s|re|ll|d|ve|t)\b")
+
+
+def find_building_keyword(msg: str) -> int | None:
+    """Return the building named in ``msg`` as a whole word, or None.
+
+    Single-letter codes (G, H, P, ...) only count as standalone words, so
+    "building CD" resolves to CD rather than to the "g" inside "building".
+    """
+    low = _CONTRACTION_RE.sub("", msg.lower())
+    for keyword in BUILDING_MAP:
+        if re.search(r"\b" + re.escape(keyword) + r"\b", low):
+            return BUILDING_MAP[keyword]
+    return None
+
+
+def extract_building(msg: str) -> int | None:
+    """Best-effort extraction of a building id from a free-form message."""
+    return find_building_keyword(msg)
+
+
+def extract_floor(msg: str) -> int | None:
+    """Best-effort extraction of a floor number from a free-form message."""
+    low = msg.lower().strip()
+    for phrase, fnum in sorted(FLOOR_WORDS.items(), key=lambda x: -len(x[0])):
+        if phrase in low:
+            return fnum
+    fm = re.search(r"(-?\d+)", low)
+    if fm:
+        val = int(fm.group(1))
+        if -1 <= val <= 10:
+            return val
+    return None
+
+
+def normalize_room_code(code: str) -> str:
+    """Normalize room-code variants to canonical form (e.g. '14' -> '1.4')."""
+    raw = str(code).strip().lower()
+    m = re.search(r"(\d+\.\d+)", raw)
+    if m:
+        s = m.group(1)
+    else:
+        digits = re.sub(r"\D", "", raw)
+        if len(digits) == 2 and digits[0].isdigit() and digits[1].isdigit():
+            return f"{int(digits[0])}.{int(digits[1])}"
+        return raw
+    try:
+        parts = s.split(".")
+        if len(parts) == 2:
+            return f"{int(parts[0])}.{int(parts[1])}"
+    except Exception:
+        pass
+    return s.strip()
+
+
+def extract_location_id_from_pddl(raw: str) -> str | None:
+    """Extract a PDDL ``location_id`` from a VLM response atom.
+
+    The PDDL-atom prompts (``room_plate``, ``directory_sign``) return
+    ``(at user classroom_g_1_4)`` or ``(at user directory_sign_g_0)``.
+    This helper pulls out the bare id so callers can hand it straight to
+    HierarchicalPDDLConverter. Returns None when the string doesn't
+    match the expected shape.
+    """
+    if not raw:
+        return None
+    match = re.search(
+        r"\(\s*at\s+\w+\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\)",
+        str(raw),
+        re.IGNORECASE,
+    )
+    return match.group(1).lower() if match else None
+
+
+def extract_room_code_from_analysis(analysis: dict | None) -> str | None:
+    """Recover a canonical room code from a VLM analysis dict.
+
+    The ``room_plate`` prompt returns a PDDL atom that the service stores
+    in ``location_id``. This helper turns it back into the human-facing
+    room code used for arrival verification:
+
+    - ``classroom_g_X_Y`` → ``X.Y`` (G classrooms use decimal codes).
+    - ``classroom_cd_N``  → ``N``  (CD classrooms use bare digits, the
+      number after "Aula").
+
+    Falls back to scanning ``raw_response`` for the same patterns.
+    """
+    if not analysis:
+        return None
+
+    location_id = analysis.get("location_id")
+    if location_id:
+        lid = str(location_id).lower()
+        g_match = re.match(r"classroom_g_(\d+)_(\d+)", lid)
+        if g_match:
+            return normalize_room_code(f"{g_match.group(1)}.{g_match.group(2)}")
+        cd_match = re.match(r"classroom_cd_(\d+)", lid)
+        if cd_match:
+            return cd_match.group(1)
+
+    raw = str(analysis.get("raw_response") or "").lower()
+    g_class = re.search(r"classroom_g_(\d+)_(\d+)", raw)
+    if g_class:
+        return normalize_room_code(f"{g_class.group(1)}.{g_class.group(2)}")
+    cd_class = re.search(r"classroom_cd_(\d+)", raw)
+    if cd_class:
+        return cd_class.group(1)
+    return None
+
+
+def parse_location(msg: str, room_lookup: dict[str, tuple[int, int, str]]) -> dict | None:
+    """Parse a user message into ``{building, floor, location_id}``.
+
+    ``room_lookup`` is the precomputed map ``room_code -> (building, floor, location_id)``
+    that the agent builds at startup from campus_places.json.
+    """
+    low = msg.lower().strip()
+    result: dict[str, Any] = {"building": None, "floor": None, "location_id": None}
+
+    room_match = re.search(r"\b(\d+\.\d+)\b", low)
+    if room_match:
+        code = room_match.group(1)
+        if code in room_lookup:
+            bid, fnum, loc_id = room_lookup[code]
+            result["building"] = bid
+            result["floor"] = fnum
+            result["location_id"] = loc_id
+
+    # Building CD classrooms are referenced as "Aula N" (matches the
+    # plate text and the room_code stored in campus_places.json). The
+    # decimal regex above does not catch this, so resolve it explicitly
+    # by location_id lookup against the agent's room_lookup.
+    if result["location_id"] is None:
+        aula_match = re.search(r"\baula\s+(\d+)\b", low)
+        if aula_match:
+            target_id = f"classroom_cd_{aula_match.group(1)}"
+            for _, (bid, fnum, lid) in room_lookup.items():
+                if lid == target_id:
+                    result["building"] = bid
+                    result["floor"] = fnum
+                    result["location_id"] = lid
+                    break
+
+    named_building = find_building_keyword(low)
+    if named_building is not None:
+        result["building"] = named_building
+    if result["building"] is None:
+        bm = re.search(r"\bbuilding\s+([a-z]+)\b", low)
+        if bm:
+            result["building"] = BUILDING_MAP.get(bm.group(1))
+        em = re.search(r"\bedificio\s+([a-z]+)\b", low)
+        if em:
+            result["building"] = BUILDING_MAP.get(em.group(1))
+
+    if result["floor"] is None:
+        for phrase, fnum in sorted(FLOOR_WORDS.items(), key=lambda x: -len(x[0])):
+            if phrase in low:
+                result["floor"] = fnum
+                break
+        if result["floor"] is None:
+            fm = re.search(r"\bfloor\s+(-?\d+)\b", low)
+            if fm:
+                result["floor"] = int(fm.group(1))
+            pm = re.search(r"\bplanta\s+(-?\d+)\b", low)
+            if pm:
+                result["floor"] = int(pm.group(1))
+
+    if result["location_id"] is None:
+        # Numbered G entrances first ("entrance 2", "entrada 3"), so the
+        # generic "entrance" fallback below doesn't swallow the number.
+        # Accept digits AND English/Spanish word forms - Whisper often
+        # transcribes "two" as "to" / "too" (homophones) when the user
+        # speaks naturally, so map those back to digit 2.
+        numbered_entrance = re.search(
+            r"\b(?:entrance|entrada)\s+(one|two|three|to|too|won|uno|dos|tres|[123])\b",
+            low,
+        )
+        if numbered_entrance:
+            word_to_digit = {
+                "one": "1",
+                "won": "1",
+                "uno": "1",
+                "two": "2",
+                "to": "2",
+                "too": "2",
+                "dos": "2",
+                "three": "3",
+                "tres": "3",
+            }
+            raw = numbered_entrance.group(1)
+            digit = word_to_digit.get(raw, raw)
+            result["location_id"] = f"entrance_{digit}"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 0
+        elif any(w in low for w in ("entrance", "entrada", "main entrance", "entrada principal")):
+            # Generic fallback: per campus convention, "the main entrance"
+            # of building G is the middle one (entrance 2, near the elevator).
+            # Mapping to entrance_main here would crash the planner since
+            # that node does not exist in the topology graph.
+            result["location_id"] = "entrance_2"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 0
+        elif any(w in low for w in ("elevator", "lift")):
+            result["location_id"] = "elevator"
+        elif any(w in low for w in ("stair", "escalera")):
+            result["location_id"] = "stairs"
+        elif any(w in low for w in ("restroom", "bathroom", "baño", "aseo", "toilet")):
+            result["location_id"] = "bathroom"
+        elif any(
+            w in low
+            for w in (
+                "ai lab",
+                "laboratorio ia",
+                "laboratorio de ia",
+                "lab ia",
+                "ia lab",
+                "ai laboratory",
+            )
+        ):
+            result["location_id"] = "ai_lab"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 0
+        elif any(w in low for w in ("office", "despacho", "faculty", "profesor")):
+            result["location_id"] = "offices"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 1
+        elif any(w in low for w in ("secretary", "secretar")):
+            result["location_id"] = "admin_office"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 2
+        elif any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
+            result["location_id"] = "mentoring_room"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 2
+        elif any(
+            w in low
+            for w in (
+                "eps office",
+                "eps faculty",
+                "despacho eps",
+                "offices eps",
+            )
+        ):
+            result["location_id"] = "eps_offices"
+            if result["building"] is None:
+                result["building"] = 1
+            if result["floor"] is None:
+                result["floor"] = 2
+
+    if result["building"] is None and result["floor"] is not None and result["location_id"]:
+        if result["location_id"].startswith("classroom_g_"):
+            result["building"] = 1
+        elif result["location_id"].startswith("classroom_cd_"):
+            result["building"] = 2
+
+    if result["building"] is None and result["floor"] is None and result["location_id"] is None:
+        return None
+
+    return result
+
+
+def parse_destination(
+    msg: str,
+    room_lookup: dict[str, tuple[int, int, str]],
+    last_origin: dict | None = None,
+    functional_locations: dict | None = None,
+) -> dict | None:
+    """Parse a destination from a free-form user message.
+
+    ``last_origin`` is used to resolve the "nearest restroom" shortcut.
+    ``functional_locations`` is the campus-level mapping for cafeteria/gym
+    (typically the ``functional_locations`` block inside the topology JSON);
+    when missing, sensible defaults are used.
+    """
+    low = msg.lower().strip()
+    fl_data = functional_locations or {}
+
+    if any(w in low for w in ("rodilla", "sandwich", "bocadillo")):
+        return {
+            "building": 15,
+            "floor": 0,
+            "location_id": "entrance_rodilla",
+            "label": "Rodilla",
+        }
+    if any(w in low for w in ("capilla", "chapel", "iglesia")):
+        return {
+            "building": 16,
+            "floor": 0,
+            "location_id": "entrance_chapel",
+            "label": "the UFV Chapel",
+        }
+
+    if any(w in low for w in ("cafeteria", "cafetería", "cafe", "coffee")):
+        fl = fl_data.get("cafeteria", {})
+        return {
+            "building": fl.get("building", 2),
+            "floor": fl.get("floor", 0),
+            "location_id": "cafeteria",
+            "label": "the cafeteria",
+            "functional": "cafeteria",
+        }
+    if any(w in low for w in ("gym", "gymnasium", "sport")):
+        fl = fl_data.get("gym", {})
+        return {
+            "building": fl.get("building", 2),
+            "floor": fl.get("floor", -1),
+            "location_id": "gym",
+            "label": "the gym",
+            "functional": "gym",
+        }
+
+    if any(
+        w in low
+        for w in (
+            "ai lab",
+            "laboratorio ia",
+            "laboratorio de ia",
+            "lab ia",
+            "ia lab",
+            "ai laboratory",
+        )
+    ):
+        return {
+            "building": 1,
+            "floor": 0,
+            "location_id": "ai_lab",
+            "label": "the AI Laboratory",
+        }
+    if any(
+        w in low
+        for w in (
+            "eps office",
+            "eps faculty",
+            "despacho eps",
+            "offices eps",
+            "eps professor",
+        )
+    ):
+        return {
+            "building": 1,
+            "floor": 2,
+            "location_id": "eps_offices",
+            "label": "the EPS Faculty Offices",
+        }
+    if any(w in low for w in ("faculty office", "despacho", "profesor")):
+        return {
+            "building": 1,
+            "floor": 1,
+            "location_id": "offices",
+            "label": "the faculty offices",
+        }
+    if any(w in low for w in ("mentoring", "mentoría", "mentoria", "tutoring")):
+        return {
+            "building": 1,
+            "floor": 2,
+            "location_id": "mentoring_room",
+            "label": "the Mentoring Room",
+        }
+    if any(w in low for w in ("secretary", "secretar")):
+        return {
+            "building": 1,
+            "floor": 2,
+            "location_id": "admin_office",
+            "label": "the Secretary Office",
+        }
+    if any(w in low for w in ("main entrance", "entrance", "entrada")):
+        return {
+            "building": 1,
+            "floor": 0,
+            "location_id": "entrance_main",
+            "label": "the main entrance",
+        }
+
+    if any(w in low for w in ("restroom", "bathroom", "baño", "aseo", "toilet")):
+        if last_origin:
+            return {
+                "building": last_origin["building"],
+                "floor": last_origin["floor"],
+                "location_id": "bathroom",
+                "label": "the nearest restroom",
+            }
+        return {
+            "building": 1,
+            "floor": 0,
+            "location_id": "bathroom",
+            "label": "the restroom",
+        }
+
+    loc = parse_location(msg, room_lookup)
+    if loc and (loc.get("building") or loc.get("location_id")):
+        if loc.get("building") is None:
+            loc["building"] = 1
+        if loc.get("floor") is None and loc.get("location_id"):
+            for bid, fnum, lid in room_lookup.values():
+                if lid == loc["location_id"] and bid == loc["building"]:
+                    loc["floor"] = fnum
+                    break
+        if loc.get("floor") is None:
+            loc["floor"] = 0
+        return loc
+
+    return None

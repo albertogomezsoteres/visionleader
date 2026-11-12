@@ -1,0 +1,109 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "visionleader"
+dynamic = ["version"]
+description = "Neuro-symbolic indoor navigation for visually impaired users: on-device speech, a vision-language model and a classical PDDL planner."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Alberto Gomez Soteres" }]
+requires-python = ">=3.10"
+keywords = [
+    "accessibility",
+    "assistive-technology",
+    "neuro-symbolic",
+    "pddl",
+    "automated-planning",
+    "vision-language-models",
+    "speech-recognition",
+    "fastapi",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "fastapi>=0.104",
+    "uvicorn[standard]>=0.24",
+    "pydantic>=2.0",
+    "python-multipart>=0.0.6",
+    "python-dotenv>=1.0",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6",
+    "pre-commit>=3.7",
+]
+
+[project.urls]
+Repository = "https://github.com/albertogomezsoteres/visionleader"
+
+[tool.hatch.version]
+path = "src/visionleader/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/visionleader"]
+
+# --- lint & format ---------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src", "tests"]
+extend-exclude = [
+    "*.ipynb",  # research notebooks are kept exactly as they were run
+    "mobile_app",
+    "experiments/stt/phase3_flutter_integration/whisper_smoke_test",
+]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "C4", "RUF"]
+ignore = [
+    "E501",    # long lines are left to the formatter
+    "RUF001",  # the agent's Spanish and typographic strings are intentional
+    "RUF002",
+    "RUF003",
+    "B008",    # FastAPI dependency defaults (File(...), Form(...))
+    "SIM102",  # nested ifs mirror the dialogue states they handle
+    "SIM105",  # explicit try/except/pass reads better in the telemetry paths
+    "SIM108",
+    "SIM110",
+    "RUF046",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402"]
+"experiments/**/*.py" = ["E402", "SIM115"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["visionleader"]
+
+# --- tests -----------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "error",
+    "ignore:Using `httpx` with",  # Starlette's TestClient migration notice
+]
+markers = [
+    "planner: solves real PDDL problems with Fast Downward (needs Docker and the fast-downward image)",
+]
+
+[tool.coverage.run]
+source = ["visionleader"]
+branch = true

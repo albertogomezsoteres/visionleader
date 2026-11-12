@@ -1,41 +1,44 @@
-# Dockerfile para Fast Downward Planner
-# Fast Downward se compila desde código fuente
+# Fast Downward classical planner, built from a pinned upstream release.
+#
+#   docker build -t fast-downward:latest docker/fast-downward
+#
+# Pinning the release keeps the planner experiment reproducible: rebuilding the
+# image months later yields the same search code and therefore the same plans.
 
-FROM ubuntu:22.04
+ARG FD_RELEASE=release-24.06.1
 
-# Evitar prompts interactivos durante la instalación
+# --- build stage -------------------------------------------------------------
+FROM ubuntu:22.04 AS build
+ARG FD_RELEASE
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Instalar dependencias necesarias para compilar Fast Downward
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cmake \
-    g++ \
-    make \
-    python3 \
-    python3-pip \
-    git \
-    wget \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates cmake g++ git make python3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio de trabajo
 WORKDIR /fast-downward
+RUN git clone --depth 1 --branch "${FD_RELEASE}" https://github.com/aibasel/downward.git . \
+    && ./build.py release \
+    && strip --strip-all builds/release/bin/downward
 
-# Clonar Fast Downward desde el repositorio oficial
-RUN git clone https://github.com/aibasel/downward.git .
+# --- runtime stage -----------------------------------------------------------
+FROM ubuntu:22.04
+ARG FD_RELEASE
+LABEL org.opencontainers.image.title="fast-downward" \
+      org.opencontainers.image.description="Fast Downward planner for the VisionLeader campus domain" \
+      org.opencontainers.image.version="${FD_RELEASE}"
 
-# Compilar Fast Downward (esto puede tardar varios minutos)
-RUN ./build.py
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Crear directorio para archivos PDDL
-RUN mkdir -p /pddl
+WORKDIR /fast-downward
+COPY --from=build /fast-downward/fast-downward.py .
+COPY --from=build /fast-downward/driver ./driver
+COPY --from=build /fast-downward/builds/release/bin ./builds/release/bin
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh && mkdir -p /pddl
 
-# Copiar script de entrada
-COPY entrypoint.sh /fast-downward/entrypoint.sh
-RUN chmod +x /fast-downward/entrypoint.sh
-
-# Configurar PATH para acceder a los binarios
-ENV PATH="/fast-downward:$PATH"
-
-# Punto de entrada
+ENV PATH="/fast-downward:${PATH}"
 ENTRYPOINT ["/fast-downward/entrypoint.sh"]

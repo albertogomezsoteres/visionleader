@@ -34,6 +34,9 @@ Thumbs.db
 *.temp
 
 # Caches and build artefacts
+.coverage
+htmlcov/
+dist/
 .cache/
 .dart_tool/
 **/build/
@@ -46,6 +49,7 @@ Thumbs.db
 # Local notes and planning documents (only README.md is tracked at root)
 /*.md
 !/README.md
+!/CHANGELOG.md
 
 # Experiment result CSVs and reproducibility cards ARE committed
 # (under experiments/**/results/). Build and cache outputs are ignored above.
@@ -54,7 +58,6 @@ Thumbs.db
 /*.zip
 /*.csv
 /*.txt
-!/requirements.txt
 *.bin
 **/assets/models/
 **/assets/audios/

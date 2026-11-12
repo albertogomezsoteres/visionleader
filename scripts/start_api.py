@@ -28,16 +28,18 @@ except Exception:
     pass
 
 try:
-    from colorama import Fore, Style, init as _colorama_init
+    from colorama import Fore, Style
+    from colorama import init as _colorama_init
+
     _colorama_init()
-    _C_BOLD   = Style.BRIGHT
-    _C_DIM    = Style.DIM
-    _C_RESET  = Style.RESET_ALL
-    _C_BLUE   = Fore.BLUE + Style.BRIGHT
-    _C_GREEN  = Fore.GREEN
+    _C_BOLD = Style.BRIGHT
+    _C_DIM = Style.DIM
+    _C_RESET = Style.RESET_ALL
+    _C_BLUE = Fore.BLUE + Style.BRIGHT
+    _C_GREEN = Fore.GREEN
     _C_YELLOW = Fore.YELLOW
-    _C_RED    = Fore.RED
-    _C_GRAY   = Fore.LIGHTBLACK_EX
+    _C_RED = Fore.RED
+    _C_GRAY = Fore.LIGHTBLACK_EX
 except Exception:
     _C_BOLD = _C_DIM = _C_RESET = ""
     _C_BLUE = _C_GREEN = _C_YELLOW = _C_RED = _C_GRAY = ""
@@ -45,12 +47,11 @@ except Exception:
 # Project bootstrap
 project_root = Path(__file__).resolve().parent.parent
 load_dotenv(project_root / ".env")
-sys.path.insert(0, str(project_root / "src"))
 
-from api.app import app  # noqa: E402
+from visionleader.api.app import app
 
 # Logging config: keep the terminal clean. Only the structured telemetry
-# events from api.telemetry should narrate the run.
+# events from visionleader.api.telemetry should narrate the run.
 logging.basicConfig(
     level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -61,6 +62,7 @@ for _name in ("uvicorn", "uvicorn.access", "uvicorn.error", "fastapi"):
 
 
 # ---- status helpers -------------------------------------------------------
+
 
 def _status(text: str) -> str:
     """Colour-code a short status word (configured / ready / missing / …)."""
@@ -82,7 +84,9 @@ def _check_docker_image(image: str) -> str:
     try:
         out = subprocess.run(
             ["docker", "images", "-q", image],
-            capture_output=True, timeout=3, text=True,
+            capture_output=True,
+            timeout=3,
+            text=True,
         )
         return "ready" if out.stdout.strip() else "image missing"
     except FileNotFoundError:
@@ -125,44 +129,54 @@ def _telemetry_status() -> str:
 
 # ---- banner ---------------------------------------------------------------
 
+
 def _print_banner() -> None:
     width = 76
     rule = "═" * width
     print(f"{_C_BLUE}{rule}{_C_RESET}")
-    print(
-        f"  {_C_BOLD}VisionLeaderUFV{_C_RESET}"
-        f"{_C_DIM}  ·  Campus Navigation Backend{_C_RESET}"
-    )
+    print(f"  {_C_BOLD}VisionLeaderUFV{_C_RESET}{_C_DIM}  ·  Campus Navigation Backend{_C_RESET}")
     print(f"{_C_BLUE}{rule}{_C_RESET}")
 
     colab_status = _check_env("COLAB_API_URL")
-    maps_status  = _check_env("GOOGLE_MAPS_API_KEY")
-    fd_status    = _check_docker_image("fast-downward:latest")
+    maps_status = _check_env("GOOGLE_MAPS_API_KEY")
+    fd_status = _check_docker_image("fast-downward:latest")
     domain_status = _check_file("pddl/domain.pddl")
-    topo_status   = _check_file("config/campus_topology.json")
+    topo_status = _check_file("config/campus_topology.json")
     places_status = _check_file("config/campus_places.json")
 
     sections = [
-        ("Endpoints", [
-            ("API",        "http://localhost:8000",                                 None),
-            ("Docs",       "http://localhost:8000/docs",                            None),
-        ]),
-        ("Models", [
-            ("VLM",        "Gemma 4 E4B-it",          f"Colab · {_status(colab_status)}"),
-            ("STT",        "Whisper Tiny Q5_0",       f"on-device · {_status('ready')}"),
-            ("TTS",        "Flutter TTS",             f"on-device · {_status('ready')}"),
-            ("Planner",    "Fast Downward A* + LM-Cut", f"Docker · {_status(fd_status)}"),
-            ("Outdoor",    "Google Maps Directions",  f"{_status(maps_status)}"),
-        ]),
-        ("Knowledge", [
-            ("Domain",     "pddl/domain.pddl",      _status(domain_status)),
-            ("Topology",   "config/campus_topology.json",  _status(topo_status)),
-            ("Places",     "config/campus_places.json",    _status(places_status)),
-            ("Closures",   _closures_summary(),            None),
-        ]),
-        ("Telemetry", [
-            ("Log",        _telemetry_status(),            None),
-        ]),
+        (
+            "Endpoints",
+            [
+                ("API", "http://localhost:8000", None),
+                ("Docs", "http://localhost:8000/docs", None),
+            ],
+        ),
+        (
+            "Models",
+            [
+                ("VLM", "Gemma 4 E4B-it", f"Colab · {_status(colab_status)}"),
+                ("STT", "Whisper Tiny Q5_0", f"on-device · {_status('ready')}"),
+                ("TTS", "Flutter TTS", f"on-device · {_status('ready')}"),
+                ("Planner", "Fast Downward A* + LM-Cut", f"Docker · {_status(fd_status)}"),
+                ("Outdoor", "Google Maps Directions", f"{_status(maps_status)}"),
+            ],
+        ),
+        (
+            "Knowledge",
+            [
+                ("Domain", "pddl/domain.pddl", _status(domain_status)),
+                ("Topology", "config/campus_topology.json", _status(topo_status)),
+                ("Places", "config/campus_places.json", _status(places_status)),
+                ("Closures", _closures_summary(), None),
+            ],
+        ),
+        (
+            "Telemetry",
+            [
+                ("Log", _telemetry_status(), None),
+            ],
+        ),
     ]
 
     for title, rows in sections:

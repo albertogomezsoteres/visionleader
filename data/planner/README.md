@@ -9,7 +9,8 @@ that forces a replan.
 ## Where the problems live
 
 The problem files stay next to the PDDL domain, in `pddl/problems/evaluation/`,
-where `experiments/planner/evaluate_planner.py` reads and regenerates them. This
+where `experiments/planner/evaluate_planner.py` solves them (`--regenerate` rebuilds
+them from the current topology instead). This
 folder documents and indexes the suite: the manifest describes each problem and
 `dataset_hashes.json` lets a held copy be verified byte for byte. Every problem is
 solved against the shared domain `pddl/domain.pddl`.
@@ -41,4 +42,6 @@ solved against the shared domain `pddl/domain.pddl`.
 
 The suite is solved by `experiments/planner/evaluate_planner.py` against the LM-Cut
 optimal search and two baselines. The 12 problems are fixed on disk so the benchmark
-is reproducible, and the hashes here pin their exact bytes.
+is reproducible, and the hashes here pin their exact bytes (taken with CRLF line
+endings on Windows; see `data/README.md`). `make test-planner` re-solves them with
+the pinned Fast Downward image and checks every run against the published CSV.

@@ -1,0 +1,60 @@
+"""
+Shared singletons used across routers and services.
+
+Expensive resources (campus graph, planner, conversation agent) are loaded
+once at startup and reused on every request.
+"""
+
+import json
+import os
+
+from dotenv import load_dotenv
+
+from visionleader.navigation.conversation_agent import ConversationAgent
+from visionleader.navigation.fast_downward_client import FastDownwardPlanner
+from visionleader.navigation.hierarchical_pddl_converter import HierarchicalPDDLConverter
+from visionleader.paths import ENV_FILE, PDDL_DIR
+from visionleader.paths import PLACES_PATH as PLACES_JSON
+from visionleader.paths import TOPOLOGY_PATH as TOPOLOGY_JSON
+
+load_dotenv(ENV_FILE)
+
+COLAB_API_URL: str = (os.getenv("COLAB_API_URL") or "").strip().rstrip("/")
+
+planner = FastDownwardPlanner()
+hierarchical_converter = HierarchicalPDDLConverter(
+    json_path=str(TOPOLOGY_JSON),
+    pddl_dir=str(PDDL_DIR),
+)
+
+_topology_data: dict | None = None
+_places_data: dict | None = None
+
+
+def load_topology() -> dict:
+    """Load campus_topology.json once and keep it in memory."""
+    global _topology_data
+    if _topology_data is None:
+        with open(TOPOLOGY_JSON, encoding="utf-8") as f:
+            _topology_data = json.load(f)
+    return _topology_data
+
+
+def load_places() -> dict:
+    """Load campus_places.json once and keep it in memory."""
+    global _places_data
+    if _places_data is None:
+        with open(PLACES_JSON, encoding="utf-8") as f:
+            _places_data = json.load(f)
+    return _places_data
+
+
+_conversation_agent: ConversationAgent | None = None
+
+
+def get_conversation_agent() -> ConversationAgent:
+    """Return the singleton ConversationAgent, creating it on first call."""
+    global _conversation_agent
+    if _conversation_agent is None:
+        _conversation_agent = ConversationAgent(load_topology(), load_places())
+    return _conversation_agent

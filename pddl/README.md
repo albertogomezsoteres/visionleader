@@ -61,7 +61,7 @@ never skipped; only the cost of the climb changes.
 
 ## How problems are generated
 
-`src/navigation/hierarchical_pddl_converter.py` builds a problem for every routing
+`src/visionleader/navigation/hierarchical_pddl_converter.py` builds a problem for every routing
 request. It reads two files:
 
 - `config/campus_topology.json`: the buildings, floors and rooms, the indoor links (`local_connections`) and the links between buildings (`connections`), each with its distance in metres.

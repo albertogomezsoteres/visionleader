@@ -59,3 +59,18 @@ it in a Docker container.
 3. If a photo is needed, the phone sends it to the vision model, which returns a PDDL atom or a state value.
 4. The backend builds a PDDL problem from the campus graph and solves it with Fast Downward for an optimal route.
 5. The route becomes spoken, step-by-step directions, played on the phone.
+
+## Code map
+
+| Concern | Module |
+|-|-|
+| HTTP routes | `src/visionleader/api/routers/` (`plan`, `conversation`, `image`, `gps`) |
+| VLM prompt catalogue and response grounding | `src/visionleader/api/services/vlm_prompts.py` |
+| Call to the Colab VLM | `src/visionleader/api/services/image_analysis.py` |
+| Dialogue state machine | `src/visionleader/navigation/conversation_agent.py` and `navigation/agent/state_handlers/` |
+| Utterance parsing (origin, destination, yes/no) | `src/visionleader/navigation/agent/parsing.py` |
+| Campus graph to PDDL problem | `src/visionleader/navigation/hierarchical_pddl_converter.py` |
+| Fast Downward in Docker | `src/visionleader/navigation/fast_downward_client.py` |
+| Plan to spoken steps | `src/visionleader/navigation/agent/plan_to_steps.py` |
+| Structured telemetry (used by the end-to-end validation) | `src/visionleader/api/telemetry.py` |
+| Repository paths (`VISIONLEADER_ROOT`) | `src/visionleader/paths.py` |

@@ -12,11 +12,15 @@ the mobile app each run in their own place.
 
 ## 1. Backend
 
+With [uv](https://docs.astral.sh/uv/) (installs the exact versions in `uv.lock`):
+
 ```bash
-pip install -r requirements.txt
-cp .env.example .env   # then fill in the values
-python scripts/start_api.py     # API on http://localhost:8000, docs at /docs
+make install                    # uv sync --frozen --extra dev + pre-commit hooks
+cp .env.example .env            # then fill in the values
+make serve                      # API on http://localhost:8000, docs at /docs
 ```
+
+Or with plain pip: `pip install -e ".[dev]"`, then `python scripts/start_api.py`.
 
 `.env` holds:
 
@@ -37,8 +41,7 @@ copy the printed tunnel URL into `.env` as `COLAB_API_URL`.
 Build the Fast Downward image once:
 
 ```bash
-cd docker/fast-downward
-docker build -t fast-downward:latest .
+make planner-image   # docker build -t fast-downward:latest docker/fast-downward
 ```
 
 The backend calls it on every routing request. Without it, routes that change floor
@@ -55,3 +58,11 @@ flutter run
 Point the app at the backend with `--dart-define=API_BASE_URL=http://<host>:8000`,
 or edit `mobile_app/lib/core/app_config.dart`. On the Android emulator use
 `http://10.0.2.2:8000`.
+
+## 5. Tests
+
+```bash
+make test           # unit, dialogue, API and data tests (no Docker or GPU needed)
+make test-planner   # re-solves the planner benchmark with the Docker image
+make lint           # ruff lint and format check
+```

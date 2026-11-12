@@ -6,14 +6,10 @@ import subprocess
 def find_process_on_port(port):
     """Find the PID of the process using the port."""
     try:
-        result = subprocess.run(
-            ["netstat", "-ano"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["netstat", "-ano"], capture_output=True, text=True)
 
-        for line in result.stdout.split('\n'):
-            if f':{port}' in line and 'LISTENING' in line:
+        for line in result.stdout.split("\n"):
+            if f":{port}" in line and "LISTENING" in line:
                 parts = line.split()
                 if len(parts) >= 5:
                     pid = parts[-1]
@@ -43,7 +39,7 @@ if __name__ == "__main__":
     if pid:
         print(f"Process found: PID {pid}")
         answer = input("Stop this process? (y/n): ")
-        if answer.lower() == 'y':
+        if answer.lower() == "y":
             if kill_process(pid):
                 print(f"[OK] Process {pid} stopped")
             else:
