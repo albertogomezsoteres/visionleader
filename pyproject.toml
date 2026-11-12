@@ -96,6 +96,10 @@ known-first-party = ["visionleader"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
+filterwarnings = [
+    "error",
+    "ignore:Using `httpx` with",  # Starlette's TestClient migration notice
+]
 markers = [
     "planner: solves real PDDL problems with Fast Downward (needs Docker and the fast-downward image)",
 ]
