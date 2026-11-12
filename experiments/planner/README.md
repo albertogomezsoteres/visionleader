@@ -27,13 +27,23 @@ Each problem is solved with three Fast Downward configurations:
 
 ## Run
 
-```
-python experiments/planner/evaluate_planner.py
+```bash
+make planner-image       # once: builds Fast Downward release-24.06.1
+make benchmark-planner   # = python experiments/planner/evaluate_planner.py
 ```
 
-It solves the 12 problems with the 3 configurations (36 runs) and writes the
-per-run metrics to `experiments/planner/results/planner_evaluation.csv`. Requires
-Docker with the `fast-downward` image available locally.
+It solves the 12 committed problems with the 3 configurations (36 runs) and writes
+the per-run metrics to `experiments/planner/results/planner_evaluation.csv`.
+
+The committed problem files are the frozen benchmark: rerunning against them with
+the pinned image reproduces the published CSV exactly (plan cost, plan length and
+expanded, generated and evaluated states for all 36 runs; only wall-clock times
+vary). `make test-planner` asserts this for the optimal configuration.
+
+`--regenerate` rebuilds the problems from the current topology first. The
+converter has grown since the benchmark was frozen (the outdoor graph now links
+every entrance pair), so this produces a different, larger benchmark and
+overwrites the committed files.
 
 ## Outcome
 

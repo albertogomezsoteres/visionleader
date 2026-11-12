@@ -8,6 +8,7 @@ numbers into the written report lives elsewhere; here we only produce data.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import os
@@ -347,12 +348,43 @@ def writeCsv(plannerResults: list[RunResult], path: Path) -> None:
 # === Main entry point ===
 
 
+def committedProblems() -> dict[str, Path]:
+    """Return the frozen benchmark problems committed under pddl/problems/evaluation/.
+
+    These are the exact files the reported results were produced from. The
+    converter has kept evolving since (for example, the outdoor graph now links
+    every entrance pair), so regenerating the problems from today's topology
+    gives a different, larger benchmark rather than the one in the thesis.
+    """
+    problemPaths = {p.key: evalProblemsDir / f"problem_{p.key}.pddl" for p in problems}
+    missing = [str(path) for path in problemPaths.values() if not path.exists()]
+    if missing:
+        raise SystemExit("Missing benchmark problems (run with --regenerate): " + ", ".join(missing))
+    return problemPaths
+
+
+def parseArgs() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "--regenerate",
+        action="store_true",
+        help="rebuild the 12 problems from the current topology instead of solving the "
+        "committed benchmark files (overwrites pddl/problems/evaluation/)",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parseArgs()
     outputDirectory.mkdir(exist_ok=True)
     planner = FastDownwardPlanner(timeout=perRunTimeoutSeconds)
 
-    print(f"Materialising {len(problems)} problem files to {evalProblemsDir}")
-    problemPaths = materialiseProblems()
+    if args.regenerate:
+        print(f"Materialising {len(problems)} problem files to {evalProblemsDir}")
+        problemPaths = materialiseProblems()
+    else:
+        print(f"Solving the {len(problems)} committed benchmark problems in {evalProblemsDir}")
+        problemPaths = committedProblems()
     for key, path in problemPaths.items():
         print(f"  {key:25s} -> {path.relative_to(repoRoot)}")
 
