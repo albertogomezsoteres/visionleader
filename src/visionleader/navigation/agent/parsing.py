@@ -116,16 +116,27 @@ def building_id_from_name(name: str | None) -> int:
     return BUILDING_MAP.get(name.lower(), 0)
 
 
+# English contractions ("I'm", "it's", "we're"): the apostrophe is a word
+# boundary, so without stripping them "I'm" would match building M.
+_CONTRACTION_RE = re.compile(r"['\u2019](?:m|s|re|ll|d|ve|t)\b")
+
+
+def find_building_keyword(msg: str) -> int | None:
+    """Return the building named in ``msg`` as a whole word, or None.
+
+    Single-letter codes (G, H, P, ...) only count as standalone words, so
+    "building CD" resolves to CD rather than to the "g" inside "building".
+    """
+    low = _CONTRACTION_RE.sub("", msg.lower())
+    for keyword in BUILDING_MAP:
+        if re.search(r"\b" + re.escape(keyword) + r"\b", low):
+            return BUILDING_MAP[keyword]
+    return None
+
+
 def extract_building(msg: str) -> int | None:
     """Best-effort extraction of a building id from a free-form message."""
-    low = msg.lower().strip()
-    for keyword, bid in BUILDING_MAP.items():
-        if keyword in low:
-            return bid
-    bm = re.search(r"\b([a-z]+)\b", low)
-    if bm and bm.group(1) in BUILDING_MAP:
-        return BUILDING_MAP[bm.group(1)]
-    return None
+    return find_building_keyword(msg)
 
 
 def extract_floor(msg: str) -> int | None:
@@ -250,11 +261,9 @@ def parse_location(msg: str, room_lookup: dict[str, tuple[int, int, str]]) -> di
                     result["location_id"] = lid
                     break
 
-    for keyword, bid in BUILDING_MAP.items():
-        pattern = r"\b" + re.escape(keyword) + r"\b"
-        if re.search(pattern, low):
-            result["building"] = bid
-            break
+    named_building = find_building_keyword(low)
+    if named_building is not None:
+        result["building"] = named_building
     if result["building"] is None:
         bm = re.search(r"\bbuilding\s+([a-z]+)\b", low)
         if bm:
