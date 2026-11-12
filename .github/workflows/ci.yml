@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install (locked)
+        run: uv sync --frozen --extra dev
+      - name: Ruff (lint)
+        run: uv run --frozen ruff check .
+      - name: Ruff (format)
+        run: uv run --frozen ruff format --check .
+
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+      - name: Install (locked)
+        run: uv sync --frozen --extra dev
+      - name: Unit, dialogue, API and data tests
+        run: uv run --frozen pytest -m "not planner" --cov --cov-report=term
+
+  planner:
+    name: Planner benchmark reproduction
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the pinned Fast Downward image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/fast-downward
+          tags: fast-downward:latest
+          load: true
+          cache-from: type=gha,scope=fast-downward
+          cache-to: type=gha,mode=max,scope=fast-downward
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install (locked)
+        run: uv sync --frozen --extra dev
+      - name: Re-solve the 36 benchmark runs and compare with the published CSV
+        run: uv run --frozen pytest -m planner -v
+        env:
+          REQUIRE_PLANNER: "1"

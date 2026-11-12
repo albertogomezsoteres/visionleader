@@ -7,6 +7,7 @@ Needs Docker and the pinned image (``make planner-image``). Run with
 from __future__ import annotations
 
 import csv
+import os
 import shutil
 import subprocess
 import tempfile
@@ -42,6 +43,8 @@ def _image_available() -> bool:
 
 
 if not _image_available():
+    if os.getenv("REQUIRE_PLANNER"):  # set in CI: a missing image is a failure, not a skip
+        raise RuntimeError(f"Docker image {IMAGE} not available")
     pytest.skip(f"Docker image {IMAGE} not available", allow_module_level=True)
 
 
